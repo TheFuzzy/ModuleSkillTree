@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Module Skill Tree</title>
+<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="./bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
+<link href="./css/listbox.css" type="text/css" rel="stylesheet"/>
+
+<script type="text/javascript" src="./js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./js/ui/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="./js/listbox.js"></script>
+<script type="text/javascript"> 
+$(document).ready(function(){
+    //$("#lb1").draggable();	
+    $('select').listbox({
+        'class':        'listbox',
+        'searchbar':    true,
+        'multiselect':  false
+    });
+    $('#selector').children().click(function(){
+    	alert($(this).attr("value"));
+    });
+}); 	
+	
+</script>
+</head>
+<body>
+<div id="lb1"> 
+<select id="selector">
+	<option value="CS1010">CS1010</option>
+	<option value="CS1020">CS1020</option>
+	<option value="CS2010">CS2010</option>
+	<option value="CS2100">CS2100</option>
+	<option value="CS2103">CS2103</option>
+	<option value="CS2103T">CS2103T</option>
+	<option value="CS2105">CS2105</option>
+	<option value="CS2106">CS2106</option>
+	<option value="CS2107">CS2107</option>
+	<option value="CS1231">CS1231</option>
+	<option value="MA1521">MA1521</option>
+</select>
+</div>
+</body>
+</html>
