@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Module Skill Tree</title>
+<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="./bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
+<link href="./js/w2ui-1.2/w2ui-1.2.min.css" type="text/css" rel="stylesheet" />
+<link href="./css/listbox.css" type="text/css" rel="stylesheet"/>
+<link href="./css/main.css" type="text/css" rel="stylesheet" />
+
+<script type="text/javascript" src="./js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./js/ui/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./js/w2ui-1.2/w2ui-1.2.min.js"></script>
+<script type="text/javascript" src="./bootstrap/bootstrap.min.js"></script>
+<script type="text/javascript" src="./js/jquery.jsPlumb-1.4.0-all.js"></script>
+<script type="text/javascript" src="./js/listbox.js"></script>
+<script type="text/javascript"> 
+$(document).ready(function(){
+	$('#layout').w2layout({
+		name: 'layout',
+		panels: [
+			{ type: 'left', size:300 , minSize: 300 },
+			{ type: 'main', minSize: 500 }
+		]
+	});
+	w2ui['layout'].load('left', 'Modules.html');
+	w2ui['layout'].load('main', 'skilltree.html');	
+}); 	
+	
+</script>
+</head>
+<body>
+<div id="titleContainer">
+</div>
+<div id="layout"></div>
+</body>
+</html>
