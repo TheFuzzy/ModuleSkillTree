@@ -91,6 +91,7 @@ jsPlumb.ready(function() {
 	// make all the window divs draggable						
 	jsPlumb.draggable($(".moduleBox"),
 		{
+			containment: "parent"
 		}
 	);
 	// THIS DEMO ONLY USES getSelector FOR CONVENIENCE. Use your library's appropriate selector method!
@@ -110,6 +111,8 @@ jsPlumb.ready(function() {
 });
 $(function() {
 	$(".moduleBox").click(function(e) {
+		$(".moduleBox").removeClass("selected");
+		$(this).addClass("selected");
 		properties = [".moduleCode", ".moduleTitle", ".moduleDesc"];
 		for (i in properties) {
 			$("#moduleInfo").find(properties[i]).text($(this).find(properties[i]).text());

@@ -7,10 +7,7 @@ $(document).ready(function(){
     $('select').listbox({
         'class':        'listbox',
         'searchbar':    true,
-        'multiselect':  false
-    });
-    $('#selector').children().click(function(){
-    	alert($(this).attr("value"));
+        'multiselect':  true
     });
 }); 	
 	
@@ -20,8 +17,10 @@ $(document).ready(function(){
 <div id="lb1"> 
 <select id="selector">
 	<option value="CS1010">CS1010</option>
+	<option value="CS1010">CS1101S</option>
 	<option value="CS1020">CS1020</option>
 	<option value="CS2010">CS2010</option>
+	<option value="CS2010">CS2020</option>
 	<option value="CS2100">CS2100</option>
 	<option value="CS2103">CS2103</option>
 	<option value="CS2103T">CS2103T</option>

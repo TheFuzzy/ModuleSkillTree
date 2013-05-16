@@ -134,7 +134,6 @@
                     .appendTo(instance._list)
                     .text($(this).text())
                     .click(function () {
-						alert($(this).html());
                         instance._settings['multiselect']
                             ? instance._toggleItem($(this))
                             : instance._setItem($(this));
