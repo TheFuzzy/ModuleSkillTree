@@ -1,4 +1,4 @@
-application: ModuleSkillTree
+application: module-skill-tree
 version: 1
 runtime: python27
 api_version: 1
@@ -9,9 +9,49 @@ handlers:
   static_files: favicon.ico
   upload: favicon\.ico
 
-- url: .*
-  script: main.app
+# Home page
+- url: /
+  script: home.app
+
+# Skill Tree Management Pages
+- url: /manage/.*
+  script: manage.app
+  login: required
+  secure: always
+
+# Image folder
+- url: /images
+  static_dir: images
+
+# CSS folder
+- url: /css
+  static_dir: css
+
+# Scripts folder
+- url: /scripts
+  static_dir: scripts
+
+# Twitter Bootstrap
+- url: /bootstrap
+  static_dir: bootstrap
+
+# Administration pages
+- url: /admin/.*
+  script: admin.app
+  login: admin
+
+# Any other unrecognized URL
+- url: /.*
+  static_files: not_found.html
+  upload: not_found\.html
+  
+admin_console:
+  pages:
+  - name: Admin Home
+    url: /admin/
 
 libraries:
 - name: webapp2
-  version: "2.5.2"
+  version: latest
+- name: jinja2
+  version: latest
