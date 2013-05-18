@@ -13,8 +13,6 @@ class Module(db.Model):
     mc = db.IntegerProperty()
     preclusions = db.StringListProperty() # List of module codes as Strings
     prerequisites = db.StringListProperty() # List of module codes as Strings
-    department = db.StringProperty()
-    workload = db.StringProperty()
 
 class AssignedModule(db.Model):
     module = db.ReferenceProperty(Module)
