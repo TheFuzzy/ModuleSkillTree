@@ -15,14 +15,13 @@
 # limitations under the License.
 #
 import webapp2
-from google.appengine.api import memcache
+from google.appengine.api import files, taskqueue
 
-# import datetime
-import time
+from datetime import date, datetime
 import json
 import urllib
 import urllib2
-from datatypes import Student, Module, AssignedModule
+from datatypes import Student, Module, AssignedModule, CachedModuleRepo
 
 class AdminHandler(webapp2.RequestHandler):
     def get(self):
@@ -77,21 +76,29 @@ class IndexModules(webapp2.RequestHandler):
 
     def get(self):
         #if (self.request.headers.get('X-Appengine-Cron') == 'true'):
-        self.response.write("Retrieving modules...")
-        start_time = time.time()
+        start_time = datetime.now()
         
-        # Attempt to retrieve any past request made on the same date from the memcache, as the request takes FUCKING FOREVER
-        # date = datetime.datetime.now().strftime("%d-%m-%Y")
-        # json_modules = memcache.get('search%s' % date)
-        # if json_modules is None:
-            # if not memcache.add('search%s' % date, json_modules, 86400):
-                # logging.error('Failed to store module request in memcache')
-        modules_string = self.req_modules("2012/2013", "Semester 1")
-        json_modules = json.loads(modules_string)["Results"]
+        # Attempt to retrieve any past request made on the same date from the blobstore, as the request takes FUCKING FOREVER
+        json_modules = None
+        query = CachedModuleRepo.all().filter('date_retrieved =', date.today())
+        cached_module_file = query.get()
+        if cached_module_file != None:
+            reader = cached_module_file.data.open()
+            json_modules = json.load(reader)
+        else:
+            modules_string = self.req_modules("2012/2013", "Semester 1")
+            json_modules = json.loads(modules_string)["Results"]
+            file_name = files.blobstore.create(mime_type="application/json")
+            with files.open(file_name, 'a') as file:
+                json.dump(json_modules, file)
+            files.finalize(file_name)
+            blob_key = files.blobstore.get_blob_key(file_name)
+            cached_module_file = CachedModuleRepo(data=BlobInfo.get(blob_key), date_retrieved=date.today())
+            cached_module_file.put()
         self.add_modules(json_modules)
         
-        elapsed_time = time.time() - start_time
-        self.response.write("Successful! Operation took %g seconds!" % elapsed_time)
+        elapsed_time = datetime.now() - start_time
+        self.response.write("%g" % elapsed_time)
 
 app = webapp2.WSGIApplication([
     ('/admin/', AdminHandler),
