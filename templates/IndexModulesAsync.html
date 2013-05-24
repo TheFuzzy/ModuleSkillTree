@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+    <meta charset="utf-8" />
+	<head>
+		<link href="../css/jquery-ui.css" type="text/css" rel="stylesheet" />
+		<script type="text/javascript" src="../scripts/jquery-1.9.1.min.js"></script>
+		<script type="text/javascript" src="../scripts/jquery-ui.min.js"></script>
+		<script type="text/javascript"> 
+			$(function(){
+				$('#progressBar').progressbar({
+					value: false
+				});
+				$('#label').text("{{ label }}");
+				$.get("{{ async_op }}", function(data) {
+					$('#label').text("Success! Operation took " + data + " seconds.");
+				});
+			}); 	
+		</script>
+		<style>
+			#progressbar .ui-progressbar-value {
+				background-color: #ccc;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="progressBar"></div>
+		<p id="label">Label</p>
+	</body>
+</html>
+{% endautoescape %}
