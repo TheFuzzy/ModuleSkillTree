@@ -1,5 +1,7 @@
 $(document).ready(function(){
-	$('input[type=button]').click(function(){
-		alert("test");	
+	$('#module_search').on('input',function(){
+		$.each($('#module_list').children(),function(){
+			//Search Substring to toggle show and hide.
+		});
 	});
 });
