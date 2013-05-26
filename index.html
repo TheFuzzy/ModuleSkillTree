@@ -1,0 +1,109 @@
+<!DOCTYPE html> 
+<html lang="en" >
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+<!--Link all external css files here-->
+<link href="./mockup/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="./mockup/bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
+<link href="./mockup/css/custom.css" type="text/css" rel="stylesheet" />
+<link href="./mockup/css/main.css" type="text/css" rel="stylesheet" />
+<!--end of css files-->
+<title>Module Skill Tree</title>
+</head>
+<body>
+<div id="main_container">
+	<div id="top_panel">
+		<h3 classs="title" style="display:inline">NUS Module Skill Tree</h3>
+		<div class="pull-right">
+		<label class="control-label">User Name:</label>
+		<input class="input-small" type="text" placeholder="user name">
+		<label class="control-label">Password:</label>
+		<input class="input-small" type="text" placeholder="password">
+		<input class="btn btn-small btn-primary" type="button" value="Sign in">
+		</div>
+	</div>
+	<div id="bottom_panel_group">
+		<div id="left_panel">
+			<input  id="module_search" type="text" placeholder="e.g. CS1010">
+			<select id="module_list" multiple="multiple">
+				<option>CS1010</option>
+				<option>CS1020</option>
+				<option>CS2010</option>
+				<option>CS1231</option>
+				<option>CS2100</option>
+			</select>
+		</div>
+		<div id="right_panel">
+			<div id="skillTreeView">
+				<div id="skillTree">
+					<div id="moduleInfo" style="display : none;">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">Module Code</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Module Title</td>
+							</tr>
+							<tr>
+								<td><span class="moduleDesc">Module Description</span></td>
+							</tr>
+						</table>
+					</div>
+					<div id="CS1010box" class="moduleBox">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">CS1010</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Programming Methodology</td>
+							</tr>
+						</table>
+						<span style="display: none;" class="moduleDesc">This module introduces the fundamental concepts of problem solving by computing and programming using an imperative programming language. It is the first and foremost introductory course to computing and the first part of a three-part series on programming and problem solving by computing, which includes CS1020 and CS2010.</span>
+					</div>
+					<div id="CS1101Sbox" class="moduleBox">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">CS1101S</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Programming Methodology</td>
+							</tr>
+						</table>
+						<span style="display: none;" class="moduleDesc">This module introduces the concepts of programming from a functional perspective, and is perceived as the first and foremost introductory course to computing. It is the first of a two part series on introductory programming, which also includes CS1102S. This series is characterized by the use of a minimalist syntax of functional languages that enables an emphasis on fundamental programming issues.</span>
+					</div>
+					<div id="CS1020box" class="moduleBox">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">CS1020</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Data Structures and Algorithms I</td>
+							</tr>
+						</table>
+						<span style="display: none;" class="moduleDesc">This module is the second part of a three-part series on introductory programming and problem solving by computing. It continues the introduction that begins in CS1010, and emphasises objectoriented programming with application to simple data structures.</span>
+					</div>
+					<div id="CS2010box" class="moduleBox">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">CS2010</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Data Structures and Algorithms II</td>
+							</tr>
+						</table>
+						<span style="display: none;" class="moduleDesc">his module is the third part of a three-part series on introductory programming and problem solving by computing. It continues the introduction in CS1010 and CS1020, and emphasises object-oriented programming with application to complex data structures.</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!--Scripts after this line-->
+<script type="text/javascript" src="./mockup/js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./mockup/js/ui/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./mockup/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./mockup/js/jquery.jsPlumb-1.4.0-all.js"></script>
+<script type="text/javascript" src="./mockup/js/script.js"></script>
+<script type="text/javascript" src="./mockup/js/skillTree.js"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+#main_container{	
+}
+
+#top_panel{
+	background-color: #8A885B;
+	min-height: 50px;
+}
+
+#bottom_panel_group{
+	display: inline;
+}
+
+#left_panel{
+	display: inline-block;
+	width: 20%;
+	padding: 25px;
+}
+#right_panel{
+	width: 70%;
+	float: right;
+	padding: 25px;
+}
+
+#module_list{
+	min-height: 320px;
+	font-size: 18px;
+	overflow: auto;
+}
+div.pull-right label.control-label, 
+div.pull-right input.input-small,
+div.pull-right input.btn.btn-small{
+	display: inline;
+	padding: 5px;
+	vertical-align: middle;
+}
+div.pull-right input.input-small{
+	height: 16px;
+	margin-top: 10px;
+}
+
+div.pull-right input.btn.btn-small{
+	width: 80px;
+	margin-right: 20px;	
+}
+
+option{
+	border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+}
+option:hover{
+	background-color: #A1F57F;
+}
