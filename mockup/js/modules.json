@@ -1,0 +1,138 @@
+[
+	{
+		"code":"CS1010",
+		"name":"Programming Methodology",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":["CG1101", "CS1010E", "CS1101", "CS1101C", "CS1101S", "CZ1102", "IT1002"],
+		"description":"This module introduces the fundamental concepts of problem solving by computing and programming using an imperative programming language. It is the first and foremost introductory course to computing.&nbsp; It is also the first part of a three-part series on introductory programming and problem solving by computing, which also includes CS1020 and CS2010. Topics covered include problem solving by computing, writing pseudo-codes, basic problem formulation and problem solving, program development, coding, testing and debugging, fundamental programming constructs (variables, types, expressions, assignments, functions, control structures, etc.), fundamental data structures: arrays, strings and structures, simple file processing, and basic recursion."
+	{
+	},
+		"code":"CS1101S",
+		"name":"Programming Methodology",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":["CG1101", "CS1010", "CS1010E", "CS1101", "CS1101C", "CZ1102", "IT1002"],
+		"description":"This module introduces the concepts of programming from a functional perspective, and is perceived as the first and foremost introductory course to computing. Topics covered include: overview of programming languages and compilation process, procedural abstraction, recursion, data abstraction, algorithmic strategies, higher-order functions, state mutation, evaluation strategies, debugging and testing. Module activities include lectures, recitation, tutorial and laboratory exercises."
+	},
+	{
+		"code":"CS2010",
+		"name":"DATA STRUCTURES AND ALGORITHMS II",
+		"mc":4,
+		"prerequisites":[["CS1020"]],
+		"preclusions":["CG1102", "CS1102", "CS1102C", "CS1102S", "CS2020"],
+		"description":"CS2010 is the third part of a three-part series on introductory programming and problem solving with computing (the CS1010 - CS1020 - CS2010 series). The module will focus on the basic data structures and algorithms that lie at the core of computer science, and how they can be used to improve performance in real-world problems. Throughout the module, we will discuss how to model problems in different ways, and how differing strategies can yield very different performance characteristics. We will both analyze algorithms to better understand their asymptotic performance, and implement them in Java to understand the issues that arise in practice. The goal of this module is both to help you learn how to how to choose and use&nbsp;better data structures and algorithms."
+	},
+	{
+		"code":"CS2100",
+		"name":"COMPUTER ORGANISATION",
+		"mc":4,
+		"prerequisites":[["CS1101", "CS1101S", "CS1101C"]],
+		"preclusions":["CS1104"],
+		"description":"The objective of this module is to familiarise students with the fundamentals of computing devices. Through this module students will understand the basics of data representation, and how the various parts of a computer work, separately and with each other. This allows students to understand the issues in computing devices, and how these issues affect the implementation of solutions. Topics covered include data representation systems, combinational and sequential circuit design techniques, assembly language, processor execution cycles, pipelining, memory hierarchy and input/output systems."
+	},
+	{
+		"code":"CS1231",
+		"name":"DISCRETE STRUCTURES",
+		"mc":4,
+		"prerequisites":[["MA1301"]],
+		"preclusions":["MA1100"],
+		"description":"This module introduces mathematical tools required in the study of computer science. Topics include: (1) Logic and proof techniques: propositions, conditionals, quantifications.  (2) Relations and Functions: Equivalence relations and partitions.  Partially ordered sets.  Well-Ordering Principle. Function equality.  Boolean/identity/inverse functions.  Bijection. (3) Mathematical formulation of data models (linear model, trees, graphs). (4) Counting and Combinatoric: Pigeonhole Principle. Inclusion-Exclusion Principle.  Number of relations on a set, number of injections from one finite set to another, Diagonalisation proof: An infinite countable set has an uncountable power set; Algorithmic proof: An infinite set has a countably infinite subset.  Subsets of countable sets are countable."
+	},
+	{
+		"code":"CS2103",
+		"name":"Software Engineering",
+		"mc":4,
+		"prerequisites":[["CS1020"]],
+		"preclusions":[],
+		"description":"This module introduces the necessary conceptual and analytical tools for systematic and rigorous development of software systems. It covers four main areas of software development, namely objectoriented system analysis, object-oriented system modelling and design, implementation, and testing, with emphasis on system modelling and design and implementation of software modules that work cooperatively to fulfill the requirements of the system. Tools and techniques for software development, such as Universal Modelling Language (UML), program specification, and testing methods, will be taught. Major software engineering issues such as modularisation criteria, program correctness, and software quality will also be covered."
+	},
+	{
+		"code":"CS2105",
+		"name":"INTRODUCTION TO COMPUTER NETWORKS",
+		"mc":4,
+		"prerequisites":[["CS1020", "CS1020E", "CS1102", "CS1102C", "CS1102S"], ["CS1104", "CS2100"]],
+		"preclusions":["IT2001", "EE3204/E", "EE4210"],
+		"description":"This course aims to provide a broad introduction to computer networks and some appreciations of network application programming. It covers a range of topics including basic data communication and computer network concepts, protocols, networked computing concepts and principles, network applications development and network security. The emphasis of teaching is on the working principles and application of computer networks.   As an integral part of the course, tutorials and practical assignments enforcing learning will also be given. These assignments provide an early exposure in network application programming and they should be able to complete by using personal computers and school's network facilities."
+	},
+	{
+		"code":"CS2106",
+		"name":"INTRODUCTION TO OPERATING SYSTEMS",
+		"mc":4,
+		"prerequisites":[["CS2100", "EE2007", "EE2024"]],
+		"preclusions":["CG2271", "EE4214"],
+		"description":"This module introduces the basic concepts in operating systems and links it with contemporary operating systems (eg. Unix/Linux and Windows). It focuses on OS structuring and architecture, processes, memory management, concurrency and file systems. Topics include kernel architecture, system calls, interrupts, models of processes, process abstraction and services, scheduling, review of physical memory and memory management hardware, kernel memory management, virtual memory and paging, caches, working set, deadlock, mutual exclusion, synchronisation mechanisms, data and metadata in file systems, directories and structure, file system abstraction and operations. Examples will be discussed from contemporary operating systems such as Unix/Linux and/or Windows."
+	},
+	{
+		"code":"CS3230",
+		"name":"DESIGN AND ANALYSIS OF ALGORITHMS",
+		"mc":4,
+		"prerequisites":[["CS2010"], ["CS1231", "MA1100"],
+		"preclusions":[],
+		"description":"This module introduces different techniques of designing and analysing algorithms. Students will learn about the framework for algorithm analysis, for example, lower bound arguments, average case analysis, and the theory of NP-completeness. In addition, students are exposed to various algorithm design paradigms. The module serves two purposes: to improve the students' ability to design algorithms in different areas, and to prepare students for the study of more advanced algorithms. The module covers lower and upper bounds, recurrences, basic algorithm paradigms (such as prune-and-search, dynamic programming, branch-and-bound, graph traversal, and randomised approaches), amortized analysis, NP-completeness, and some selected advanced topics."
+	},
+	{
+		"code":"LSM1301",
+		"name":"General Biology",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":[],
+		"description":"The student will learn the concept of life functions from cells to tissues to organs to systems, basic terminologies and concepts in biology and basic biological processes, diversity of life including some of the major developments and adaptations in life forms, and to relate the knowledge acquired to everyday life, which includes dealing with common day controversies between science and society."
+	},
+	{
+		"code":"LSM1302/GEK1527",
+		"name":"Genes and Society",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":[],
+		"description":"The primary aim of this module is to introduce students to the modern concepts in biology and to enable them to evaluate independently the potential benefits and risks of thebiotechnological revolution and its implications for society. The topics taught will cover an understanding of the nature of the genetic material and the passage of information from DNA to protein, as well as the major technologies currently used for genetic engineering. Examples of genetic engineering of micro-organisms, plants and animals will be given in detail, and cloning will also be discussed. The students will become aware of the impact of the various genome projects on their own lives and will also able to recognise difficulties associated with deciding which kinds of genetic engineering are ethically and morally acceptable."
+	},
+	{
+		"code":"MA1101R",
+		"name":"LINEAR ALGEBRA I",
+		"mc":4,
+		"prerequisites":[["MA1301"]],
+		"preclusions":["EG1401", "EG1402", "MA1101", "MA1311", "MA1506", "MA1508"],
+		"description":"This module is a first course in linear algebra.  Fundamental concepts of linear algebra will be introduced and investigated in the context of the Euclidean spaces R^n.  Proofs of results will be presented in the concrete setting.  Students are expected to acquire computational facilities and geometric intuition with regard to vectors and matrices.  Some applications will be presented. Major topics: Systems of linear equations, matrices, determinants, Euclidean spaces, linear combinations and linear span, subspaces, linear independence, bases and dimension, rank of a matrix, inner products, eigenvalues and eigenvectors, diagonalization, linear transformations between Euclidean spaces, applications."
+	},
+	{
+		"code":"MA1301",
+		"name":"INTRODUCTORY MATHEMATICS",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":["MA1101R", "MA1102R", "MA1505", "MA1506", "MA1507", "MA1508", "MA1521", "MA1311", "MA1312", "MA1421"],
+		"description":"This module serves as a bridging module for students without 'A' - level mathematics. Its aim is to equip students with appropriate mathematical knowledge and skill so as to prepare them for further study of mathematics-related disciplines. At the end of the course, students are expected to attain a level of proficiency in algebra and calculus equivalent to the GCE Advanced Level. Major topics: Sets, functions and graphs, polynomials and rational functions, inequalities in one variable, logarithmic and exponential functions, trigonometric functions, sequences and series, techniques of differentiation, applications of differentiation, maxima and minima, increasing and decreasing functions, curve sketching, techniques of integration, applications of integration, areas, volumes of solids of revolution, solution of first order ordinary differential equations by separation of variables and by integrating factor, complex numbers, vectors."
+	},
+	{
+		"code":"MA1521",
+		"name":"CALCULUS FOR COMPUTING",
+		"mc":4,
+		"prerequisites":[["MA1301"]],
+		"preclusions":["MA1102R", "MA1312", "MA1505", "MA1507", "MA2501"],
+		"description":"This module provides a basic foundation for calculus and its related subjects required by computing students. The objective is to train the students to be able to handle calculus techniques arising in their courses of specialization. In addition to the standard calculus material, the course also covers simple mathematical modeling techniques and numerical methods in connection with ordinary differential equations."
+	},
+	{
+		"code":"PC1221",
+		"name":"Fundamentals of Physics 1",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":[],
+		"description":"This module aims to bridge the gap between O-level physics and 1st year university physics level. This is the modules you have to take if you intend to major in Physics but do not have the A-level Physics or its equivalent. You can also take this module as an elective to increase your knowledge outside your major. Please do not take this module if you have the knowledge of A-level Physics because I will disapoint you. I also suggest that you do not take this module if you have scored A in O-level Physics."
+	},
+	{
+		"code":"PC1222",
+		"name":"FUNDAMENTALS OF PHYSICS II",
+		"mc":4,
+		"prerequisites":[],
+		"preclusions":["PC1143", "PC1144", "PC1432"],
+		"description":"The module aims to bridge the gap between O level physics and first year university physics. It covers the fundamentals of three branches of physics: electricity &amp; magnetism, optics and modern physics. As an introductory physics module, PC1222 serves to build a firm foundation for those students embarking on university level studies in Physics, Engineering and related fields. Most of the students would be tackling advanced physics concepts for the first time. The module would train students to understand the physical pictures behind laws and equations and prepare them for future studies."
+	},
+	{
+		"code":"ST2334",
+		"name":"PROBABILITY AND STATISTICS",
+		"mc":4,
+		"prerequisites":[["MA1306", "MA1102", "MA1102R", "MA1505", "MA1505C", "MA1521", "MA1312", "MA1507"]],
+		"preclusions":["ST1131", "ST1131A", "ST1232", "ST2131", "MA2216", "CE2407", "EC2231", "EC2303", "PR2103", "DSC2008", "ME4273"],
+		"description":"Basic concepts of probability, conditional probability, independence, random variables, joint and marginal distributions, mean and variance, some common probability distributions, sampling distributions, estimation and hypothesis testing based on a normal population.  This module is targeted at students who are interested in Statistics and are able to meet the pre-requisites. Preclude ME students taking or have taken ME4273."
+	}
+]
