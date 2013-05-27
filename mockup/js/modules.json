@@ -6,14 +6,22 @@
 		"prerequisites":[],
 		"preclusions":["CG1101", "CS1010E", "CS1101", "CS1101C", "CS1101S", "CZ1102", "IT1002"],
 		"description":"This module introduces the fundamental concepts of problem solving by computing and programming using an imperative programming language. It is the first and foremost introductory course to computing.&nbsp; It is also the first part of a three-part series on introductory programming and problem solving by computing, which also includes CS1020 and CS2010. Topics covered include problem solving by computing, writing pseudo-codes, basic problem formulation and problem solving, program development, coding, testing and debugging, fundamental programming constructs (variables, types, expressions, assignments, functions, control structures, etc.), fundamental data structures: arrays, strings and structures, simple file processing, and basic recursion."
-	{
 	},
+	{
 		"code":"CS1101S",
 		"name":"Programming Methodology",
 		"mc":4,
 		"prerequisites":[],
 		"preclusions":["CG1101", "CS1010", "CS1010E", "CS1101", "CS1101C", "CZ1102", "IT1002"],
 		"description":"This module introduces the concepts of programming from a functional perspective, and is perceived as the first and foremost introductory course to computing. Topics covered include: overview of programming languages and compilation process, procedural abstraction, recursion, data abstraction, algorithmic strategies, higher-order functions, state mutation, evaluation strategies, debugging and testing. Module activities include lectures, recitation, tutorial and laboratory exercises."
+	},
+	{
+		"code":"CS1231",
+		"name":"DISCRETE STRUCTURES",
+		"mc":4,
+		"prerequisites":[["MA1301"]],
+		"preclusions":["MA1100"],
+		"description":"This module introduces mathematical tools required in the study of computer science. Topics include: (1) Logic and proof techniques: propositions, conditionals, quantifications.  (2) Relations and Functions: Equivalence relations and partitions.  Partially ordered sets.  Well-Ordering Principle. Function equality.  Boolean/identity/inverse functions.  Bijection. (3) Mathematical formulation of data models (linear model, trees, graphs). (4) Counting and Combinatoric: Pigeonhole Principle. Inclusion-Exclusion Principle.  Number of relations on a set, number of injections from one finite set to another, Diagonalisation proof: An infinite countable set has an uncountable power set; Algorithmic proof: An infinite set has a countably infinite subset.  Subsets of countable sets are countable."
 	},
 	{
 		"code":"CS2010",
@@ -30,14 +38,6 @@
 		"prerequisites":[["CS1101", "CS1101S", "CS1101C"]],
 		"preclusions":["CS1104"],
 		"description":"The objective of this module is to familiarise students with the fundamentals of computing devices. Through this module students will understand the basics of data representation, and how the various parts of a computer work, separately and with each other. This allows students to understand the issues in computing devices, and how these issues affect the implementation of solutions. Topics covered include data representation systems, combinational and sequential circuit design techniques, assembly language, processor execution cycles, pipelining, memory hierarchy and input/output systems."
-	},
-	{
-		"code":"CS1231",
-		"name":"DISCRETE STRUCTURES",
-		"mc":4,
-		"prerequisites":[["MA1301"]],
-		"preclusions":["MA1100"],
-		"description":"This module introduces mathematical tools required in the study of computer science. Topics include: (1) Logic and proof techniques: propositions, conditionals, quantifications.  (2) Relations and Functions: Equivalence relations and partitions.  Partially ordered sets.  Well-Ordering Principle. Function equality.  Boolean/identity/inverse functions.  Bijection. (3) Mathematical formulation of data models (linear model, trees, graphs). (4) Counting and Combinatoric: Pigeonhole Principle. Inclusion-Exclusion Principle.  Number of relations on a set, number of injections from one finite set to another, Diagonalisation proof: An infinite countable set has an uncountable power set; Algorithmic proof: An infinite set has a countably infinite subset.  Subsets of countable sets are countable."
 	},
 	{
 		"code":"CS2103",
@@ -67,7 +67,7 @@
 		"code":"CS3230",
 		"name":"DESIGN AND ANALYSIS OF ALGORITHMS",
 		"mc":4,
-		"prerequisites":[["CS2010"], ["CS1231", "MA1100"],
+		"prerequisites":[["CS2010"], ["CS1231", "MA1100"]],
 		"preclusions":[],
 		"description":"This module introduces different techniques of designing and analysing algorithms. Students will learn about the framework for algorithm analysis, for example, lower bound arguments, average case analysis, and the theory of NP-completeness. In addition, students are exposed to various algorithm design paradigms. The module serves two purposes: to improve the students' ability to design algorithms in different areas, and to prepare students for the study of more advanced algorithms. The module covers lower and upper bounds, recurrences, basic algorithm paradigms (such as prune-and-search, dynamic programming, branch-and-bound, graph traversal, and randomised approaches), amortized analysis, NP-completeness, and some selected advanced topics."
 	},
@@ -80,7 +80,7 @@
 		"description":"The student will learn the concept of life functions from cells to tissues to organs to systems, basic terminologies and concepts in biology and basic biological processes, diversity of life including some of the major developments and adaptations in life forms, and to relate the knowledge acquired to everyday life, which includes dealing with common day controversies between science and society."
 	},
 	{
-		"code":"LSM1302/GEK1527",
+		"code":"LSM1302",
 		"name":"Genes and Society",
 		"mc":4,
 		"prerequisites":[],

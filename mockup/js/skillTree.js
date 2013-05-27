@@ -38,7 +38,7 @@ jsPlumb.ready(function() {
 		endpoint:"Blank",
 		/*paintStyle:{ fillStyle:"#225588",radius:7 },*/
 		isSource:true,
-		connector:[ "Bezier", { stub:[40, 60], gap:10, cornerRadius:5 } ],								                
+		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],								                
 		connectorStyle:connectorPaintStyle,/*
 		hoverPaintStyle:endpointHoverStyle,
 		connectorHoverStyle:connectorHoverStyle,*/
@@ -122,5 +122,9 @@ $(function() {
 			moduleCode = $(this).find(".moduleDesc").text();
 		$("#moduleInfo").find(".moduleCode).text(*/
 		$("#moduleInfo").fadeIn("slow");
+	});
+	$(window).resize(function () {
+		$("#skillTree").css('width', w );
+$('#resizable').css('height', h );
 	});
 });
