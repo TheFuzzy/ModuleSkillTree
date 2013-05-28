@@ -20,13 +20,14 @@ body {
 }
 
 .semester {
+    z-index: 3;
     height: 200px;
     border: 2px solid black;
     border-radius: 6px;
     position: relative;
 }
 
-.semester p {
+.semester_meta {
     width: 100%;
     text-align: center;
     display: block;
@@ -38,6 +39,7 @@ body {
 }
 
 .moduleBox {
+    z-index: 20;
     height: 90px;
     width: 150px;
     padding: 10px 20px;
@@ -83,3 +85,14 @@ body {
     border: 2px;
 }
 
+._jsPlumb_endpoint {
+    z-index: 4;
+}
+
+._jsPlumb_connector {
+    z-index: 5;
+}
+
+._jsPlumb_overlay {
+    z-index: 6;
+}

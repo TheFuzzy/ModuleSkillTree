@@ -148,7 +148,7 @@ jsPlumb.ready(function() {
 	}
 });
 $(function() {
-	$(".moduleBox").click(function(e) {
+	$("#skillTree").on("click", ".moduleBox", function(e) {
 		$(".moduleBox").removeClass("selected");
 		$(this).addClass("selected");
 		properties = [".moduleCode", ".moduleTitle"];
@@ -161,12 +161,21 @@ $(function() {
 		$("#moduleInfo").find(".moduleCode).text(*/
 		$("#moduleInfo").fadeIn("slow");
 	});
+	$(".semester").droppable({
+		accept : ".moduleBox",
+		tolerance : "pointer",
+		drop : function(event, ui) {
+			var div_id = ui.draggable.attr('id');
+			var module_code = div_id.substring(0, div_id.length-3);
+			alert(module_code + " dropped into " + $(this).attr('id'));
+		}
+	});
 	$(window).resize(function() {
-		$("#skillTree").css("min-height", 
-			$("body").innerHeight()
+		skillTreeHeight=$("body").innerHeight()
 			- $("#top_panel").outerHeight()
-			- ($("#right_panel").innerHeight() - $("#right_panel").height())
-			+ "px");
+			- ($("#right_panel").innerHeight() - $("#right_panel").height());
+		$("#skillTree").css("min-height", skillTreeHeight + "px");
+		$("#skillTreeView").css("height", skillTreeHeight + "px");
 	});
 	$(window).resize();
 	$("#skillTreeView").scroll(function() {

@@ -1,5 +1,6 @@
 var myGlobal = {
 	MODULE_SPACING : 100,
+	num_semesters : 1,
 	modules : [],
 	assignedModules : []
 };
@@ -11,12 +12,11 @@ $(function(){
 		return null;
 	}
 	$(window).resize(function() {
-		$("#module_list").css("height", 
-			$("body").innerHeight()
+		moduleListHeight = $("body").innerHeight()
 			- $("#top_panel").outerHeight()
 			- ($("#left_panel").innerHeight() - $("#left_panel").height())
-			- $("#module_search").outerHeight()
-			+ "px");
+			- $("#module_search").outerHeight();
+		$("#module_list").css("height", moduleListHeight + "px");
 	});
 	$(window).resize();
 	$.getJSON("js/modules.json", function(json) {
