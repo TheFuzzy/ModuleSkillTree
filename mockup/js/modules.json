@@ -11,7 +11,7 @@
 		"code":"CS1020",
 		"name":"DATA STRUCTURES AND ALGORITHMS I",
 		"mc":4,
-		"prerequisites":[["CS1010"]],
+		"prerequisites":[["CS1010","CS1101S"]],
 		"preclusions":["CG1102", "CG1103", "CS1020E", "CS1102", "CS1102C", "CS1102S", "CS2020"],
 		"description":"This module is the second part of a three-part series on introductory programming and problem solving by computing. It continues the introduction that begins in CS1010, and emphasizes object-oriented programming with application to simple data structures. Topics covered include object-oriented problem modeling with concepts of objects, classes and methods, object-oriented problem formulation and problem solving, data structure implementation strategies, abstraction and encapsulation of data structures, object-oriented programming constructs, use of APIs and class libraries, exception handling, lists, linked lists, stacks, queues, hash tables and their algorithmic design, various forms of sorting and searching methods, recursive algorithms, and Big-O notation. After taking the modules, the students will acquire the knowledge and skills in object-oriented programming (Java) and applications of simple data structures, as well as problem formulation and problem solving involving simple data structures."
 	},
