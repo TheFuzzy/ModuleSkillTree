@@ -18,7 +18,7 @@ $(function(){
 			- $("#module_search").outerHeight();
 		$("#module_list").css("height", moduleListHeight + "px");
 	});
-	$(window).resize();
+	$(window).resize(); // Trigger the resize event
 	$.getJSON("js/modules.json", function(json) {
 		myGlobal.modules = json;
 		for (i in myGlobal.modules) {
@@ -27,9 +27,15 @@ $(function(){
 		console.log("Modules added!");
 	});
 	$('#module_search').on('input',function(){
-		$.each($('#module_list').children(),function(){
-			//if ($.text() == $('#module_search').text
-			//Search Substring to toggle show and hide.
+		$.each($('.module'),function(){	
+			if($(this).text().indexOf($('#module_search').val()) !== -1) 
+			{ 
+				$(this).show(); 
+			}
+			else 
+			{
+				$(this).hide(); 
+			}
 		});
 	});
 	$('#module_list').on('dblclick','div',function(){
