@@ -18,8 +18,8 @@
 }
 
 #left_panel{
-	padding-left: 50px;
-	padding-top: 25px;
+	padding: 25px 50px;
+	padding-right:0;
 }
 #left_panel input{
     width: 100%;

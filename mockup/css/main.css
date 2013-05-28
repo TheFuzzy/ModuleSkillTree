@@ -1,13 +1,10 @@
 html, body {
 	height: 100%;
 	width: 100%;
-	padding: 0;
-	margin: 0;
 }
 body {
     background-color: #fff;
 }
-
 #skillTreeView {
     height: 100%;
     width: 100%;
@@ -19,6 +16,25 @@ body {
 
 #skillTree {
     margin: 0px;
+    position: relative;
+}
+
+.semester {
+    height: 200px;
+    border: 2px solid black;
+    border-radius: 6px;
+    position: relative;
+}
+
+.semester p {
+    width: 100%;
+    text-align: center;
+    display: block;
+    position: absolute;
+    bottom: 0;
+    padding: 0;
+    background-color: #000;
+    color: #fff;
 }
 
 .moduleBox {
@@ -27,7 +43,7 @@ body {
     padding: 10px 20px;
     background-color: #ddd;
     background: linear-gradient(to bottom,  #f7f7f7 0%,#e2e2e2 100%);
-    position: relative;
+    position: absolute;
     display: inline-block;
     border-color: #555;
     border-width: 1px;
