@@ -1,6 +1,6 @@
 html, body {
-	height: 100%;
-	width: 100%;
+    height: 100%;
+    width: 100%;
 }
 body {
     background-color: #fff;
@@ -15,7 +15,12 @@ body {
 }
 
 #skillTree {
-    margin: 0px;
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+    box-shadow: inset 0 0 15px 1px #000000;
+    background-color: #eee;
+    border-radius: 6px;
     position: relative;
 }
 
@@ -25,9 +30,10 @@ body {
     border: 2px solid #555;
     border-radius: 6px;
     position: relative;
+    color: #fff;
 }
 
-.semester_meta {
+.semester .semester_meta {
     width: 100%;
     text-align: center;
     display: block;
@@ -35,7 +41,15 @@ body {
     bottom: 0;
     padding: 0;
     background-color: #555;
+}
+
+.semester.drop-hover {
+    border: 2px solid #fb5;
     color: #fff;
+}
+
+.semester.drop-hover .semester_meta {
+    background-color: #fb5;
 }
 
 .moduleBox {
@@ -56,7 +70,12 @@ body {
     color: #212;
     font-family: sans-serif;
     font-size: 12pt;
-    text-shadow: 2px 2px 2px #888
+    text-shadow: 2px 2px 2px #888;
+    cursor: default;
+}
+
+.moduleBox.ui-draggable-dragging {
+    cursor: move;
 }
 
 .moduleBox table {

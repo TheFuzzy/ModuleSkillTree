@@ -115,6 +115,10 @@ jsPlumb.ready(function() {
 		this.addClass("moduleBox");
 		jsPlumb.draggable(this,
 		{
+			distance: 15,
+			scroll: true,
+			scrollSensitivity: 50,
+			stack: ".moduleBox",
 			containment: "parent"
 		});
 		this.each(function() {
@@ -125,6 +129,14 @@ jsPlumb.ready(function() {
 			jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
 		});
 		return this;
+	}
+	$.fn.semester = function() {
+		this.addClass("semester");
+		this.droppable({
+			accept : ".moduleBox",
+			tolerance : "pointer",
+			hoverClass: "drop-hover"
+		});
 	}
 	$.fn.connectBottomTo = function(id) {
 		if ($("#" + id).hasClass("moduleBox")) {
@@ -155,27 +167,25 @@ $(function() {
 		for (i in properties) {
 			$("#moduleInfo").find(properties[i]).text($(this).find(properties[i]).text());
 		}
-		/*var moduleCode = $(this).find(".moduleCode").text(),
-			moduleTitle = $(this).find(".moduleTitle").text(),
-			moduleCode = $(this).find(".moduleDesc").text();
-		$("#moduleInfo").find(".moduleCode).text(*/
 		$("#moduleInfo").fadeIn("slow");
+		e.stopPropogation();
 	});
-	$(".semester").droppable({
-		accept : ".moduleBox",
-		tolerance : "pointer",
-		drop : function(event, ui) {
-			var div_id = ui.draggable.attr('id');
-			var module_code = div_id.substring(0, div_id.length-3);
-			alert(module_code + " dropped into " + $(this).attr('id'));
-		}
+	$("#skillTree")
+	.on("dragstart", ".moduleBox", function(e) {
+		$(".moduleBox").removeClass("selected");
+		$("#moduleInfo").fadeOut("slow");
+	})
+	.on("click", function(e) {
+		$(".moduleBox").removeClass("selected");
+		$("#moduleInfo").fadeOut("slow");
 	});
+	$(".semester").semester();
 	$(window).resize(function() {
 		skillTreeHeight=$("body").innerHeight()
 			- $("#top_panel").outerHeight()
 			- ($("#right_panel").innerHeight() - $("#right_panel").height());
-		$("#skillTree").css("min-height", skillTreeHeight + "px");
-		$("#skillTreeView").css("height", skillTreeHeight + "px");
+		$("#skillTree").css("height", skillTreeHeight + "px");
+		//$("#skillTreeView").css("height", skillTreeHeight + "px");
 	});
 	$(window).resize();
 	$("#skillTreeView").scroll(function() {

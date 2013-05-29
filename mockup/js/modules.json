@@ -139,7 +139,7 @@
 		"code":"ST2334",
 		"name":"PROBABILITY AND STATISTICS",
 		"mc":4,
-		"prerequisites":[["MA1306", "MA1102", "MA1102R", "MA1505", "MA1505C", "MA1521", "MA1312", "MA1507"]],
+		"prerequisites":[["MA1521", "MA1306", "MA1102", "MA1102R", "MA1505", "MA1505C", "MA1312", "MA1507"]],
 		"preclusions":["ST1131", "ST1131A", "ST1232", "ST2131", "MA2216", "CE2407", "EC2231", "EC2303", "PR2103", "DSC2008", "ME4273"],
 		"description":"Basic concepts of probability, conditional probability, independence, random variables, joint and marginal distributions, mean and variance, some common probability distributions, sampling distributions, estimation and hypothesis testing based on a normal population.  This module is targeted at students who are interested in Statistics and are able to meet the pre-requisites. Preclude ME students taking or have taken ME4273."
 	}
