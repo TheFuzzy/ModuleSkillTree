@@ -119,6 +119,7 @@ jsPlumb.ready(function() {
 			scroll: true,
 			scrollSensitivity: 50,
 			stack: ".moduleBox",
+			refreshPositons: true,
 			containment: "parent"
 		});
 		this.each(function() {
@@ -168,7 +169,7 @@ $(function() {
 			$("#moduleInfo").find(properties[i]).text($(this).find(properties[i]).text());
 		}
 		$("#moduleInfo").fadeIn("slow");
-		e.stopPropogation();
+		e.stopPropagation();
 	});
 	$("#skillTree")
 	.on("dragstart", ".moduleBox", function(e) {

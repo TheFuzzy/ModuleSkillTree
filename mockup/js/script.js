@@ -1,13 +1,58 @@
 // Global variable to store all global variables
 var skillTree = {
-	MODULE_SPACING : 20,
-	MODULE_WIDTH : 150,
-	semesters : [],
+	MODULE_HORIZ_SPACING : 20,
+	MODULE_VERT_SPACING : 50,
+	MODULE_WIDTH : 200,
+	MODULE_HEIGHT : 150,
+	semesters : [[]],
 	modules : [],
 	assignedModules : []
 };
 $(function(){
-	function repositionModules() {
+	function repositionModules(animate=true) {
+		var numSemesters = skillTree.semesters.length;
+		for (var i = 0; i < numSemesters; i++) {
+			var semester = skillTree.semesters[i];
+			var numModules = semester.length;
+			for (var j = 0; j < numModules; j++) {
+				var assignedModule = getAssignedModule(semester[j]);
+				var moduleBox = $('#' + assignedModule.module.code + 'box');
+				// Check if a position was already set programmatically.
+				var topOffset = new Number(i);
+				var leftOffset = new Number(j);
+				
+				topOffset = ((topOffset+1) * skillTree.MODULE_VERT_SPACING) + (topOffset * skillTree.MODULE_HEIGHT);
+				leftOffset = ((leftOffset+1) * skillTree.MODULE_HORIZ_SPACING) + (leftOffset * skillTree.MODULE_WIDTH);
+				console.log(assignedModule.module.code + ": left=" + leftOffset + ",top=" + topOffset);
+				if (animate && moduleBox[0].style.left == "") {
+					moduleBox.css('left', -500 + 'px');
+					moduleBox.css('top', 50 + 'px');
+				}
+				if (!animate) {
+					moduleBox.css('left', leftOffset + 'px');
+					moduleBox.css('top', topOffset + 'px');
+				} else {
+					/*jsPlumb.animate(
+						el=moduleBox,
+						properties={ left : leftOffset + 'px', top : topOffset + 'px' },
+						options={
+							duration: 1000
+						}
+					);*/
+					moduleBox.animate(
+						properties={ left : leftOffset + 'px', top : topOffset + 'px' },
+						options={
+							duration: 1000,
+							progress: function () {
+								jsPlumb.repaintEverything();
+							}
+						}
+					);
+				}
+				console.log(moduleBox.css('top'));
+			}
+		}
+		jsPlumb.repaintEverything();
 		
 	}
 	function getModule(code) {
@@ -26,6 +71,8 @@ $(function(){
 	function ensureSemester(semesterNum) {
 		if (!skillTree.semesters[semesterNum-1]) {
 			skillTree.semesters[semesterNum-1] = [];
+			var semesterDiv = $('<div id="semester' + semesterNum + '"><div class="semester_meta"><span>Semester ' + semesterNum + '</span><input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/></div></div>');
+			semesterDiv.appendTo("#skillTree").semester();
 		}
 	}
 	// Recursively shift modules. Returns false if invalid.
