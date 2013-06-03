@@ -72,10 +72,13 @@ body {
     font-size: 12pt;
     text-shadow: 2px 2px 2px #888;
     cursor: default;
+    transition: opacity 0.2s, transform 0.2s;
 }
 
 .moduleBox.ui-draggable-dragging {
     cursor: move;
+    opacity: 0.5;
+    transform: scale(1.1,1.1);
 }
 
 .moduleBox table {

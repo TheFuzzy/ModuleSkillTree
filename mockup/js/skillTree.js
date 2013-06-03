@@ -111,6 +111,7 @@ jsPlumb.ready(function() {
 	jsPlumb.connect({uuids:["window4BottomCenter", "window1TopCenter"], editable:true});
 	jsPlumb.connect({uuids:["window3BottomCenter", "window1BottomCenter"], editable:true});*/
 	//
+	// Defines a module box div. Can support many divs at once.
 	$.fn.moduleBox = function() {
 		this.addClass("moduleBox");
 		jsPlumb.draggable(this,
@@ -131,6 +132,7 @@ jsPlumb.ready(function() {
 		});
 		return this;
 	}
+	// Defines a .semester div
 	$.fn.semester = function() {
 		this.addClass("semester");
 		this.droppable({
@@ -139,6 +141,7 @@ jsPlumb.ready(function() {
 			hoverClass: "drop-hover"
 		});
 	}
+	// Connects the bottom of the current div to the top of the div with the given id.
 	$.fn.connectBottomTo = function(id) {
 		if ($("#" + id).hasClass("moduleBox")) {
 			this.filter('.moduleBox').each(function() {
@@ -149,6 +152,7 @@ jsPlumb.ready(function() {
 		}
 		return this;
 	}
+	// Connects the top of the current div to the bottom of the div with the given id.
 	$.fn.connectTopTo = function(id) {
 		if ($("#" + id).hasClass("moduleBox")) {
 			this.filter('.moduleBox').each(function() {
@@ -161,6 +165,7 @@ jsPlumb.ready(function() {
 	}
 });
 $(function() {
+	// Show information in the moduleInfo div when a moduleBox is clicked.
 	$("#skillTree").on("click", ".moduleBox", function(e) {
 		$(".moduleBox").removeClass("selected");
 		$(this).addClass("selected");
@@ -170,8 +175,8 @@ $(function() {
 		}
 		$("#moduleInfo").fadeIn("slow");
 		e.stopPropagation();
-	});
-	$("#skillTree")
+	})
+	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
 		$(".moduleBox").removeClass("selected");
 		$("#moduleInfo").fadeOut("slow");
@@ -179,8 +184,15 @@ $(function() {
 	.on("click", function(e) {
 		$(".moduleBox").removeClass("selected");
 		$("#moduleInfo").fadeOut("slow");
+	})
+	// Make the skillTree accept .moduleBox divs as drops
+	.droppable({
+			accept : ".moduleBox",
+			tolerance : "pointer"
 	});
+	// Initialise any .semester divs on the page as semesters.
 	$(".semester").semester();
+	// Resize elements to fit page.
 	$(window).resize(function() {
 		skillTreeHeight=$("body").innerHeight()
 			- $("#top_panel").outerHeight()
@@ -189,7 +201,9 @@ $(function() {
 		//$("#skillTreeView").css("height", skillTreeHeight + "px");
 	});
 	$(window).resize();
+	/*
 	$("#skillTreeView").scroll(function() {
 		jsPlumb.repaintEverything();
 	});
+	*/
 });
