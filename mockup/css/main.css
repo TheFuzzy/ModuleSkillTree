@@ -43,6 +43,10 @@ body {
     background-color: #555;
 }
 
+.semester .btn-link {
+    color: #ff0;
+}
+
 .semester.drop-hover {
     border: 2px solid #fb5;
     color: #fff;

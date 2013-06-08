@@ -18,10 +18,11 @@ import webapp2
 import os
 import jinja2
 from google.appengine.api import files, taskqueue
+from google.appengine.ext.blobstore import BlobInfo
 
 from datetime import date, datetime
 import logging
-import json
+from django.utils import simplejson as json
 import urllib
 import urllib2
 from datatypes import Student, Module, AssignedModule, CachedModuleRepo
@@ -99,12 +100,16 @@ class IndexModules(webapp2.RequestHandler):
             logging.info('JSON retrieved')
             json_modules = json.loads(modules_string)["Results"]
             file_name = files.blobstore.create(mime_type="application/json")
+            logging.info('Dumping file into blobstore')
             with files.open(file_name, 'a') as file:
                 json.dump(json_modules, file)
+            logging.info('File dumped successful')
             files.finalize(file_name)
+            logging.info('File finalized')
             blob_key = files.blobstore.get_blob_key(file_name)
             cached_module_file = CachedModuleRepo(data=BlobInfo.get(blob_key), date_retrieved=date.today())
             cached_module_file.put()
+            logging.info('Cached module record added to database')
         logging.info('Adding modules from JSON')
         self.add_modules(json_modules)
         
