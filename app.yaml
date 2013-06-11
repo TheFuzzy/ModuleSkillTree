@@ -19,6 +19,17 @@ handlers:
   login: required
   secure: always
 
+# Private Data
+- url: /private_data/.*
+  script: data.app
+  login: required
+  secure: always
+
+# Public Data
+- url: /data/.*
+  script: data.app
+  secure: always
+
 # Image folder
 - url: /images
   static_dir: images

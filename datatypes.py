@@ -7,7 +7,8 @@ class Student(db.Model):
     
 # Skill tree model, to allow one user to save several skill trees.
 class SkillTree(db.Model):
-    student = db.ReferenceProperty(reference_class=Student, verbose_name="Student", collection_name="skill_trees", required=True)
+    student = db.ReferenceProperty(reference_class=Student, verbose_name="Student", collection_name="skill_trees") # Not required; may be anonymous
+    name = db.StringProperty(verbose_name="Name", required=True)
     first_year = db.StringProperty(verbose_name="First Academic Year", required=True) # The year in which the first semester falls into
     first_semester = db.IntegerProperty(verbose_name="First Semester", required=True) # The semester in which the first semester of the skill tree occurs in
 
@@ -38,8 +39,12 @@ class AssignedModule(db.Model):
     prerequisites = db.StringListProperty(verbose_name="Prerequisites") # List of module codes as Strings, may amend to be keys instead
     is_exception = db.BooleanProperty(verbose_name="Is an exceptional case", required=True) # Whether the client should ignore pre-requisites as a "special case"
 
+class ModuleList(db.Model):
+    data = blobstore.BlobReferenceProperty(verbose_name="Blob Info", required=True)
+    time_generated = db.DateTimeProperty(verbose_name="Date Retrieved", auto_now_add=True)
+
 class CachedModuleRepo(db.Model):
     data = blobstore.BlobReferenceProperty(verbose_name="Blob Info", required=True)
-    date_retrieved = db.DateProperty(verbose_name="Date Retrieved", required=True)
+    date_retrieved = db.DateProperty(verbose_name="Date Retrieved", auto_now_add=True)
     acad_year = db.StringProperty(verbose_name="Academic Year", required=True)
     semester = db.IntegerProperty(verbose_name="Semester", required=True)

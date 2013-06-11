@@ -1,14 +1,13 @@
 import os
 import logging
-from google.appengine.api import files, taskqueue
-from google.appengine.ext.blobstore import BlobInfo
+from google.appengine.api import files
+from google.appengine.ext import blobstore, db
 
 from django.utils import simplejson as json
-import urllib
 import urllib2
 from datetime import date, datetime
 
-from datatypes import Module, ModulePrerequisiteGroup, CachedModuleRepo
+from datatypes import Module, ModulePrerequisiteGroup, CachedModuleRepo, ModuleList
 
 class Sources:
     NUSMODS = 'nusmods'
@@ -24,7 +23,7 @@ def retrieve_modules(acad_year, semester):
         logging.debug("Modules in %s, %d are cached." % (acad_year, semester))
         modules = get_cached_modules(acad_year, semester, SOURCE)
     else:
-        must_cache_modules = True
+        #must_cache_modules = True
         logging.debug("Modules in %s, %d are not cached." % (acad_year, semester))
         logging.debug("Scraping from source: %s" % SOURCE)
         if SOURCE == Sources.TEST:
@@ -34,9 +33,10 @@ def retrieve_modules(acad_year, semester):
     logging.debug("Modules retrieved, storing in datastore")
     store_modules(acad_year, semester, modules)
     logging.debug("Modules completely stored")
-    if must_cache_modules:
-        logging.debug("Caching modules retrieved")
-        cache_modules(acad_year, semester, SOURCE, modules)
+    #if must_cache_modules:
+    #    logging.debug("Caching modules retrieved")
+    #    cache_modules(acad_year, semester, SOURCE, modules)
+    generate_module_list()
 
 def retrieve_modules_from_cache(acad_year, semester):
     modules = None
@@ -62,13 +62,34 @@ def cache_modules(acad_year, semester, source, modules):
     logging.debug('File finalized')
     blob_key = files.blobstore.get_blob_key(file_name)
     cached_module_file = CachedModuleRepo(
-        data=BlobInfo.get(blob_key),
+        data=blobstore.BlobInfo.get(blob_key),
         date_retrieved=date.today(),
         acad_year=acad_year,
         semester=semester
         )
     cached_module_file.put()
     logging.debug('Cached module record added to database')
+    
+def generate_module_list():
+    module_query = db.Query(model_class=Module, projection=('code', 'name'), distinct=True)
+    modules = module_query.fetch(limit=3000)
+    json_modules = {}
+    for module in modules:
+        json_modules[module.code] = {
+            "code" : module.code,
+            "name" : module.name
+            }
+    file_name = files.blobstore.create(mime_type="application/json")
+    logging.debug('Generating simple module list in blobstore')
+    with files.open(file_name, 'a') as file:
+        json.dump(json_modules, file, sort_keys=True)
+    logging.debug('List generated')
+    files.finalize(file_name)
+    logging.debug('List file finalized')
+    blob_key = files.blobstore.get_blob_key(file_name)
+    module_list = ModuleList(data=blobstore.BlobInfo.get(blob_key))
+    module_list.put()
+    logging.debug('List file record added to database')
     
 def store_modules(acad_year, semester, modules):
     for module_code, module in modules.iteritems():
@@ -149,6 +170,7 @@ def scrape_nusmods(acad_year, semester):
             "description" : description,
             "mc" : int(nusmods_module["mcs"])
             }
+        # TODO: Parse the preclusions and pre-requisite group(s)
     return modules
 
 # Unit test scraper
