@@ -1,16 +1,32 @@
 from google.appengine.ext import db, blobstore
+import uuid
 
 # Student model
 class Student(db.Model):
     user = db.UserProperty(verbose_name="User", required=True)
+    name = db.StringProperty(verbose_name="Name", required=True)
     admin_no = db.StringProperty(verbose_name="Admin No.") # optional property?
     
 # Skill tree model, to allow one user to save several skill trees.
 class SkillTree(db.Model):
     student = db.ReferenceProperty(reference_class=Student, verbose_name="Student", collection_name="skill_trees") # Not required; may be anonymous
     name = db.StringProperty(verbose_name="Name", required=True)
+    guid = db.StringProperty(verbose_name="GUID")
     first_year = db.StringProperty(verbose_name="First Academic Year", required=True) # The year in which the first semester falls into
     first_semester = db.IntegerProperty(verbose_name="First Semester", required=True) # The semester in which the first semester of the skill tree occurs in
+    
+    # Factory method to generate a GUID for the skill tree
+    @classmethod
+    def with_guid(cls, **kwargs):
+        guid = uuid.uuid1().hex
+        self = SkillTree(
+            student = kwargs.get("student"),
+            name = kwargs.get("name"),
+            guid = guid,
+            first_year = kwargs.get("first_year"),
+            first_semester = kwargs.get("first_semester")
+        )
+        return self
 
 class Module(db.Model):
     code = db.StringProperty(verbose_name="Code", required=True)
@@ -27,7 +43,7 @@ class ModulePrerequisiteGroup(db.Model):
     prerequisites = db.StringListProperty(verbose_name="Pre-requisites")
     type = db.StringProperty(
         verbose_name="Type",
-        choices=["and", "or"],  
+        choices=["and", "or"],  # There may be other types of conditions
         required=True
         ) # Whether it is an AND condition, OR condition, etc.
     is_nested = db.BooleanProperty(verbose_name="Is nested pre-requisite group", required=True) # Whether the group is within another group

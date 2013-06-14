@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<!--Skill Tree Jinja Template
+args:
+		user : Google App Engine User
+		loginurl : The URL that the login/logout button should redirect to.
+		skilltree : Skill Tree data entity
+
+-->
+<html lang="en" >
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+<!--Link all external css files here-->
+<link href='http://fonts.googleapis.com/css?family=Mouse+Memoirs' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="./bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
+<link href="./css/main.css" type="text/css" rel="stylesheet" />
+<link href="./css/skilltree.css" type="text/css" rel="stylesheet" />
+<!--end of css files-->
+
+<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
+<title>Module Skill Tree</title>
+</head>
+<body>
+<div id="main_container">
+	<div id="top_panel" class="row-fluid">
+		<h3 class="title" style="display:inline">NUS Module Skill Tree</h3>
+		<div id="userBox" class="pull-right">
+			{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>{% endif %}
+			<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
+		</div>
+	</div>
+	<div id="bottom_panel_group" class="row-fluid">
+		<div id="left_panel" class="span2">
+			<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
+			<div id="module_list">
+				<!--Modules will be inserted dynamically here-->
+			</div>
+		</div>
+		<div id="right_panel" class="span10">
+			<!--<div id="skillTreeView">-->
+				<div id="skillTree">
+					<div id="moduleInfo" style="display:none">
+						<table cellspacing="0" cellpadding="0">
+							<tr>
+								<th class="moduleCode">Module Code</th>
+							</tr>
+							<tr>
+								<td class="moduleTitle">Module Title</td>
+							</tr>
+							<tr>
+								<td><span class="moduleDesc">Module Description</span></td>
+							</tr>
+						</table>
+					</div>
+					<div class="semester" id="semester1">
+						{% if skilltree is defined and skilltree is not none %}
+						<span>{{ skilltree.name }}</span>
+						{% endif %}
+						<div class="semester_meta">
+							<span>Semester 1</span>
+							<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>
+						</div>
+					</div>
+					<!--Modules will be inserted dynamically here-->
+				</div>
+			<!--</div>-->
+		</div>
+	</div>
+</div>
+<!--Scripts after this line-->
+<script type="text/javascript" src="./scripts/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./scripts/jquery-ui.min.js"></script>
+<script type="text/javascript">
+	// Fix conflicts between JqueryUI and Bootstrap.
+	$.widget.bridge('uibutton', $.ui.button);
+	$.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+<script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="./bootstrap/js/bootstrap-editable.js"></script>
+<script type="text/javascript" src="./scripts/jquery.jsPlumb-1.4.1-all-min.js"></script>
+<script type="text/javascript" src="./scripts/skillTree.js"></script>
+<script type="text/javascript" src="./scripts/script.js"></script>
+<script type="text/javascript">
+$(function() {
+	//$('#userBox .nickname').popover('show');
+{% if isNewUser is defined %}
+{% endif %}
+{% if skilltree is defined and skilltree is not none %}
+{% endif %}
+})
+</script>
+</body>
+</html>

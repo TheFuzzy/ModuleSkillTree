@@ -15,11 +15,20 @@
 # limitations under the License.
 #
 import webapp2
+from google.appengine.api import users
 
-class MainHandler(webapp2.RequestHandler):
+class OpenId_LoginHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write('Hello world!')
+        user = users.get_current_user()
+
+        if user:
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.response.write('Hello, ' + user.nickname() + '\n')
+            self.response.write(users.create_logout_url('/'))
+        else:
+            self.redirect(users.create_login_url(self.request.uri))
+
 
 app = webapp2.WSGIApplication([
-    ('/manage/', MainHandler)
+    ('/_ah/login_required', OpenId_LoginHandler)
 ], debug=True)

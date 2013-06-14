@@ -14,9 +14,8 @@ handlers:
   script: home.app
 
 # Skill Tree Management Pages
-- url: /manage/.*
-  script: manage.app
-  login: required
+- url: /skilltree
+  script: skill_tree.app
   secure: always
 
 # Private Data
@@ -45,6 +44,10 @@ handlers:
 # Twitter Bootstrap
 - url: /bootstrap
   static_dir: bootstrap
+  
+# OpenID login page
+- url: /_ah/login_required
+  script: openid_login.app
 
 # Administration pages
 - url: /admin/.*
@@ -55,7 +58,7 @@ handlers:
 - url: /.*
   static_files: not_found.html
   upload: not_found\.html
-  
+
 admin_console:
   pages:
   - name: Admin Home

@@ -17,6 +17,7 @@
 import webapp2
 import os
 import jinja2
+from google.appengine.api import users
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
 
@@ -24,38 +25,63 @@ from datetime import date, datetime
 import logging
 import urllib
 from django.utils import simplejson as json
-from datatypes import Student, Module, AssignedModule, CachedModuleRepo, ModuleList
+import datatypes
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
     extensions=['jinja2.ext.autoescape'])
 
-class GetModuleList(blobstore_handlers.BlobstoreDownloadHandler):
+class GetModuleListHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self):
-        module_list = ModuleList.all().order('-time_generated').get()
+        module_list = datatypes.ModuleList.all().order('-time_generated').get()
         if module_list is not None and blobstore.get(module_list.data.key()) is not None:
             logging.debug("Retrieved module list (size: %d bytes)" % module_list.data.size)
             self.send_blob(module_list.data.key())
         else:
+            if module_list is None:
+                logging.debug("No module list to retrieve")
+            elif blobstore.get(module_list.data.key()) is None:
+                logging.debug("Blob is missing")
             self.error(404)
     
-class GetModule(webapp2.RequestHandler):
+class GetModuleHandler(webapp2.RequestHandler):
     def get(self):
-        module_code = urllib.unquote_plus(self.request.get('Code', default_value=''))
-        if module_code is not '':
-            module = Module.all().filter('code =', module_code).get()
+        module_code = urllib.unquote_plus(self.request.get('code', default_value=''))
+        if module_code != '':
+            module = datatypes.Module.all().filter('code =', module_code).get()
             json_module = {
                 "code" : module.code,
                 "name" : module.name,
                 "description" : module.description,
                 "mc" : module.mc,
-                "preclusions" : module.preclusions
+                "preclusions" : module.preclusions,
+                "prerequisites" : []
                 }
             self.response.headers['Content-Type'] = 'application/json'
             self.response.write(json.dumps(json_module))
 
+class GetSkillTreeHandler(webapp2.RequestHandler):
+    def post(self):
+        guid = urllib.unquote_plus(self.request.get('guid', default_value=''))
+        module_code = urllib.unquote_plus(self.request.get('Code', default_value=''))
+
+class SetNameHandler(webapp2.RequestHandler):
+    def post(self):
+        name = urllib.unquote_plus(self.request.get('name', default_value=''))
+        value = urllib.unquote_plus(self.request.get('value', default_value=''))
+        user = users.get_current_user()
+        if name == 'nickname':
+            student = datatypes.Student.all().filter('user =', user).get()
+            logging.debug("Changing student name from %s to %s." % (student.name, value))
+            student.name = value
+            student.put()
+        else:
+            logging.debug("Error, name is %s." % (name))
+            self.error(400)
+
+
 app = webapp2.WSGIApplication([
-    ('/data/GetModuleList', GetModuleList),
-    ('/data/GetModule', GetModule),
-    #('/private_data/GetUsers', GetUsers)
+    ('/data/GetModuleList', GetModuleListHandler),
+    ('/data/GetModule', GetModuleHandler),
+    ('/private_data/SetName', SetNameHandler)
 ], debug=True)
