@@ -39,14 +39,13 @@ class Module(db.Model):
 
 class ModulePrerequisiteGroup(db.Model):
     module = db.ReferenceProperty(reference_class=Module, verbose_name="Module", collection_name="prerequisite_groups")
-    parent_group = db.SelfReferenceProperty(verbose_name="Parent group", collection_name="groups")
     prerequisites = db.StringListProperty(verbose_name="Pre-requisites")
-    type = db.StringProperty(
-        verbose_name="Type",
-        choices=["and", "or"],  # There may be other types of conditions
-        required=True
-        ) # Whether it is an AND condition, OR condition, etc.
-    is_nested = db.BooleanProperty(verbose_name="Is nested pre-requisite group", required=True) # Whether the group is within another group
+    #type = db.StringProperty(
+    #    verbose_name="Type",
+    #    choices=["and", "or"],  # There may be other types of conditions
+    #    required=True
+    #    ) # Whether it is an AND condition, OR condition, etc.
+    #is_nested = db.BooleanProperty(verbose_name="Is nested pre-requisite group", required=True) # Whether the group is within another group
     
 class AssignedModule(db.Model):
     module = db.ReferenceProperty(reference_class=Module, verbose_name="Module", required=True)

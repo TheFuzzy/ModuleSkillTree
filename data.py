@@ -49,14 +49,17 @@ class GetModuleHandler(webapp2.RequestHandler):
         module_code = urllib.unquote_plus(self.request.get('code', default_value=''))
         if module_code != '':
             module = datatypes.Module.all().filter('code =', module_code).get()
+            prerequisites = []
+            for prerequisite_group in module.prerequisite_groups:
+                prerequisites.append[prerequisite_group.prerequisites]
             json_module = {
                 "code" : module.code,
                 "name" : module.name,
                 "description" : module.description,
                 "mc" : module.mc,
                 "preclusions" : module.preclusions,
-                "prerequisites" : []
-                }
+                "prerequisites" : prerequisites
+            }
             self.response.headers['Content-Type'] = 'application/json'
             self.response.write(json.dumps(json_module))
 
@@ -86,10 +89,24 @@ class TestJSONHandler(webapp2.RequestHandler):
             self.response.write(b)
         except ValueError:
             self.error(403)
+            
+class GetTestModuleHandler(webapp2.RequestHandler):
+    def get(self):        
+        json_module = {
+            "code" : "MOD1020",
+            "name" : "Test Module",
+            "description" : "Test Description",
+            "mc" : 4,
+            "preclusions" : [ "MOD1021" ],
+            "prerequisites" : [[ "MOD1010", "MOD1015" ], ["MOD1101", "MOD1105"]]
+        }
+        self.response.headers['Content-Type'] = 'application/json'
+        self.response.write(json.dumps(json_module))
 
 app = webapp2.WSGIApplication([
     ('/data/GetModuleList', GetModuleListHandler),
     ('/data/GetModule', GetModuleHandler),
+    ('/data/GetTestModule', GetTestModuleHandler),
     ('/data/TestJSON', TestJSONHandler),
     ('/private_data/SetName', SetNameHandler)
 ], debug=True)
