@@ -4,10 +4,34 @@ var skillTree = {
 	MODULE_VERT_SPACING : 50,
 	MODULE_WIDTH : 200,
 	MODULE_HEIGHT : 150,
+	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
 	semesters : [[]],
 	modules : {},
 	assignedModules : {}
 };
+// Test function
+function testJSON(data) {
+	$.ajax("/data/TestJSON", {
+		type : "POST",
+		data : { data : JSON.stringify(data) }
+	})
+}
+// Alert the user
+function notify(message, type) {
+	var notificationBox = $("#notification");
+	var notificationBoxContent = $("#notification .content");
+	for (var notificationType in skillTree.NOTIFICATIONS) {
+		notificationBox.removeClass(skillTree.NOTIFICATIONS[notificationType]);
+	}
+	notificationBox.addClass(type);
+	notificationBoxContent.text(message);
+	notificationBox.slideDown({ duration : 300, queue : false });
+}
+// Hide the notification box
+// Method is used by the box's close button.
+function hideNotification() {
+	$("#notification:visible").slideUp();
+}
 // Helper class to reposition all .moduleBox divs to proper positions, based only on the values in the global variable.
 // animate=false will prevent any animations from running.
 function repositionModules(animate) {
@@ -211,8 +235,10 @@ $(function(){
 	$(window).resize(function() {
 		moduleListHeight = $("body").innerHeight()
 			- $("#top_panel").outerHeight()
+			- $("#notification_panel").outerHeight()
 			- ($("#left_panel").innerHeight() - $("#left_panel").height())
-			- $("#module_search").outerHeight() - 50;
+			- $("#module_search").outerHeight() - 50
+			- $("#control_panel").outerHeight();
 		$("#module_list").css("height", moduleListHeight + "px");
 	});
 	$(window).resize(); // Trigger the resize event
@@ -225,9 +251,11 @@ $(function(){
 		pk : 1,
 		name : 'nickname'
 	}).tooltip({
-		placement : 'top',
+		placement : 'left',
 		title : 'Click to change your nickname.'
 	});
+	// Hide the alert box when the close button is clicked.
+	$("#notification .close").click(hideNotification);
 	// Filters the module list based on the input of the search box
 	$('#module_search').on('input',function(){
 		searchText = $('#module_search').val().replace('_', '').toLowerCase();

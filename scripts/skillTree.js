@@ -196,6 +196,7 @@ $(function() {
 	$(window).resize(function() {
 		skillTreeHeight=$("body").innerHeight()
 			- $("#top_panel").outerHeight()
+			- $("#notification_panel").outerHeight()
 			- ($("#right_panel").innerHeight() - $("#right_panel").height());
 		$("#skillTree").css("height", skillTreeHeight + "px");
 		//$("#skillTreeView").css("height", skillTreeHeight + "px");

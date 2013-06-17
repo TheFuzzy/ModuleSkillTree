@@ -79,9 +79,17 @@ class SetNameHandler(webapp2.RequestHandler):
             logging.debug("Error, name is %s." % (name))
             self.error(400)
 
+class TestJSONHandler(webapp2.RequestHandler):
+    def post(self):
+        try:
+            b = json.loads(self.request.get('data', default_value=''))
+            self.response.write(b)
+        except ValueError:
+            self.error(403)
 
 app = webapp2.WSGIApplication([
     ('/data/GetModuleList', GetModuleListHandler),
     ('/data/GetModule', GetModuleHandler),
+    ('/data/TestJSON', TestJSONHandler),
     ('/private_data/SetName', SetNameHandler)
 ], debug=True)

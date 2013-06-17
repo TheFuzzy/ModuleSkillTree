@@ -1,15 +1,55 @@
-#main_container{	
+* {
+    font-family: 'Roboto', sans-serif;
 }
-
+html, body {
+    height: 100%;
+    width: 100%;
+}
+body {
+    background-color: #fff;
+}
+#main_container{
+}
+#notification_panel{
+    height: 0;
+}
+#notification{
+    position: absolute;
+    width: 100%;
+    line-height: 1;
+    padding: 0.5em 2em;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+    background-color: #000000;
+    z-index: 100;
+	display: none;
+}
+#notification.success{
+    background-color: #ccffcc;
+    border-top: 1px solid #22aa22;
+    border-bottom: 1px solid #22aa22;
+}
+#notification.warning{
+    background-color: #ffff88;
+    border-top: 1px solid #aaaa22;
+    border-bottom: 1px solid #aaaa22;
+}
+#notification.error{
+    background-color: #ffcccc;
+    border-top: 1px solid #ff2222;
+    border-bottom: 1px solid #ff2222;
+}
 #top_panel{
 	background-color: #353535;
 	background: linear-gradient(to bottom,  #353535 0%,#1c1c1c 28%,#131313 58%);
 	color: #dedeff;
-	min-height: 50px;
-	padding: 25px 0;
+	height: 30px;
+	padding: 15px 0;
 }
-#top_panel h3.title{
+#top_panel .title{
+	font-size: 2em;
     margin-left: 50px;
+	line-height: 1;
 }
 #top_panel .popover {
     color: black;
@@ -22,19 +62,15 @@
 	padding: 25px 50px;
 	padding-right:0;
 }
-#left_panel input{
-    width: 100%;
-}
-#left_panel select{
-    width: 100%;
-}
 #right_panel{
     height: 100%;
 	padding: 25px;
 }
-
+#module_search {
+    width: 100%;
+}
 #module_list{
-	height: 200px;
+	min-height: 200px;
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	padding: 2px;
@@ -63,7 +99,9 @@
 #module_list .module.selected{
 	background-color: #000;
 }
-
+#control_panel {
+	margin: 10px 0;
+}
 div.pull-right label.control-label, 
 div.pull-right input.input-small,
 div.pull-right input.btn.btn-small{

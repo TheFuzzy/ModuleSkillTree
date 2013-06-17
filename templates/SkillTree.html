@@ -10,8 +10,7 @@ args:
 <head>
 <meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
 <!--Link all external css files here-->
-<link href='http://fonts.googleapis.com/css?family=Mouse+Memoirs' rel='stylesheet' type='text/css'>
-<link href='http://fonts.googleapis.com/css?family=Lato' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
 <link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
 <link href="./bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
 <link href="./css/main.css" type="text/css" rel="stylesheet" />
@@ -30,11 +29,20 @@ args:
 			<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
 		</div>
 	</div>
+	<div id="notification_panel">
+		<div id="notification" class="warning"><span class="content"></span><button class="close">&times;</button></div>
+	</div>
 	<div id="bottom_panel_group" class="row-fluid">
 		<div id="left_panel" class="span2">
 			<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
 			<div id="module_list">
 				<!--Modules will be inserted dynamically here-->
+			</div>
+			<div id="control_panel">
+				<form class="form-inline">
+					<input class="btn btn-primary" type="button" value="Save">
+					<input class="btn pull-right" type="button" value="Reset">
+				</form>
 			</div>
 		</div>
 		<div id="right_panel" class="span10">
