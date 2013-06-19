@@ -65,6 +65,7 @@ body {
 #right_panel{
     height: 100%;
 	padding: 25px;
+	box-sizing: border-box;
 }
 #module_search {
     width: 100%;
@@ -81,11 +82,11 @@ body {
 #module_list .module {
     padding: 5px;
 	border: 1px solid #ccc;
-	border-radius: 2px;
 	background-color: #eee;
 	
 	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
+	   -moz-border-radius: 5px;
+	        border-radius: 5px;
 }
 #module_list .module.hidden {
     display:none;

@@ -17,7 +17,7 @@
 import webapp2
 import os
 import jinja2
-from google.appengine.api import users
+from google.appengine.api import users, memcache, taskqueue
 from google.appengine.ext import blobstore
 from google.appengine.ext.webapp import blobstore_handlers
 
@@ -31,18 +31,60 @@ JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
     extensions=['jinja2.ext.autoescape'])
 
+# Web hook to cache the module list from the blobstore. Expects the "key" param to be set to "local", so that external
+# users cannot use this handler. Intended for use with the internal TaskQueue.
+class CacheModuleListHandler(webapp2.RequestHandler):
+    def post(self):
+        key = self.request.get("key")
+        if key == "local":
+            module_list = datatypes.ModuleList.all().order('-time_generated').get()
+            if module_list is not None:
+                blobInfo = blobstore.get(module_list.data.key())
+                if blobInfo is not None:
+                    with blobInfo.open() as file:
+                        json_module_list = file.read()
+                        client = memcache.Client()
+                        logging.debug('Caching module list')
+                        curr_json_string = client.get(key=datatypes.MEMCACHE_MODULELIST_KEY)
+                        if curr_json_string is None:
+                            logging.debug('Creating new key in cache')
+                            client.add(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list)
+                        else:
+                            while True:
+                                logging.debug('Updating key in cache')
+                                curr_json_string = client.gets(key=datatypes.MEMCACHE_MODULELIST_KEY)
+                                if client.cas(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list):
+                                    break
+                        self.response.write('Successful')
+                else:
+                    self.response.write("Blob is missing")
+                    self.error(404)
+            else:
+                self.response.write("No module list to retrieve")
+                self.error(404)
+        else:
+            self.redirect("/not_found.html")
+
 class GetModuleListHandler(blobstore_handlers.BlobstoreDownloadHandler):
     def get(self):
-        module_list = datatypes.ModuleList.all().order('-time_generated').get()
-        if module_list is not None and blobstore.get(module_list.data.key()) is not None:
-            logging.debug("Retrieved module list (size: %d bytes)" % module_list.data.size)
-            self.send_blob(module_list.data.key())
+        json_module_list = memcache.get(datatypes.MEMCACHE_MODULELIST_KEY)
+        if json_module_list is None:
+            logging.debug("Module list is not cached")
+            module_list = datatypes.ModuleList.all().order('-time_generated').get()
+            if module_list is not None and blobstore.get(module_list.data.key()) is not None:
+                logging.debug("Retrieved module list (size: %d bytes)" % module_list.data.size)
+                self.send_blob(module_list.data.key())
+                taskqueue.add(url="/data/CacheModuleList", params={ 'key' : 'local' })
+            else:
+                if module_list is None:
+                    logging.debug("No module list to retrieve")
+                elif blobstore.get(module_list.data.key()) is None:
+                    logging.debug("Blob is missing")
+                self.error(404)
         else:
-            if module_list is None:
-                logging.debug("No module list to retrieve")
-            elif blobstore.get(module_list.data.key()) is None:
-                logging.debug("Blob is missing")
-            self.error(404)
+            logging.debug("Writing module list from cache")
+            self.response.headers['Content-Type'] = 'application/json'
+            self.response.write(json_module_list)
     
 class GetModuleHandler(webapp2.RequestHandler):
     def get(self):
@@ -104,6 +146,7 @@ class GetTestModuleHandler(webapp2.RequestHandler):
         self.response.write(json.dumps(json_module))
 
 app = webapp2.WSGIApplication([
+    ('/data/CacheModuleList', CacheModuleListHandler),
     ('/data/GetModuleList', GetModuleListHandler),
     ('/data/GetModule', GetModuleHandler),
     ('/data/GetTestModule', GetTestModuleHandler),

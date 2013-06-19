@@ -178,6 +178,7 @@ $(function() {
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
+		$(this).stop(false)
 		$(".moduleBox").removeClass("selected");
 		$("#moduleInfo").fadeOut("slow");
 	})

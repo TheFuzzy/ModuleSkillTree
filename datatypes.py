@@ -1,6 +1,8 @@
 from google.appengine.ext import db, blobstore
 import uuid
 
+MEMCACHE_MODULELIST_KEY = "moduleList"
+
 # Student model
 class Student(db.Model):
     user = db.UserProperty(verbose_name="User", required=True)
@@ -36,10 +38,11 @@ class Module(db.Model):
     description = db.TextProperty(verbose_name="Description", required=True)
     mc = db.IntegerProperty(verbose_name="MCs", required=True)
     preclusions = db.StringListProperty(verbose_name="Preclusions", required=True) # List of module codes as Strings
+    represented_codes = db.StringListProperty(verbose_name="Represented Codes", required=True) # List preclusions and the module code itself as Strings, used for searching
 
 class ModulePrerequisiteGroup(db.Model):
-    module = db.ReferenceProperty(reference_class=Module, verbose_name="Module", collection_name="prerequisite_groups")
-    prerequisites = db.StringListProperty(verbose_name="Pre-requisites")
+    module = db.ReferenceProperty(reference_class=Module, verbose_name="Module", collection_name="prerequisite_groups", required=True)
+    prerequisites = db.StringListProperty(verbose_name="Pre-requisites", required=True)
     #type = db.StringProperty(
     #    verbose_name="Type",
     #    choices=["and", "or"],  # There may be other types of conditions

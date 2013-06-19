@@ -104,6 +104,7 @@
 }
 
 .moduleBox.ui-draggable-dragging {
+    z-index: 21;
     cursor: move;
     opacity: 0.5;
     /*transform*/

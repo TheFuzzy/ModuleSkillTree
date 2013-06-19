@@ -44,8 +44,8 @@ function repositionModules(animate) {
 			var assignedModule = getAssignedModule(semester[j]);
 			var moduleBox = $('#' + assignedModule.module.code + 'box');
 			
-			var topOffset = new Number(i);
-			var leftOffset = new Number(j);
+			var topOffset = parseInt(i);
+			var leftOffset = parseInt(j);
 			
 			topOffset = ((topOffset+1) * skillTree.MODULE_VERT_SPACING) + (topOffset * skillTree.MODULE_HEIGHT);
 			leftOffset = ((leftOffset+1) * skillTree.MODULE_HORIZ_SPACING) + (leftOffset * skillTree.MODULE_WIDTH);
@@ -298,7 +298,7 @@ $(function(){
 		var module_code = div_id.substring(0, div_id.length-3);
 		var semester_num = $(this).attr('id');
 		// Forced cast from string to Number.
-		semester_num = new Number(semester_num.substr(semester_num.length-1));
+		semester_num = parseInt(semester_num.substr(semester_num.length-1));
 		console.log(module_code + " assigned to " + semester_num);
 		var assignedModule = getAssignedModule(module_code);
 		assignSemester(assignedModule, semester_num);
