@@ -93,7 +93,7 @@ class GetModuleHandler(webapp2.RequestHandler):
             module = datatypes.Module.all().filter('code =', module_code).get()
             prerequisites = []
             for prerequisite_group in module.prerequisite_groups:
-                prerequisites.append[prerequisite_group.prerequisites]
+                prerequisites.append(prerequisite_group.prerequisites)
             json_module = {
                 "code" : module.code,
                 "name" : module.name,

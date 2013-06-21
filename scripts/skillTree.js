@@ -1,7 +1,7 @@
 jsPlumb.ready(function() {
 	jsPlumb.importDefaults({
 		// default to blue at one end and green at the other
-		EndpointStyles : [{ fillStyle:'#225588' }, { fillStyle:'#558822' }],/*
+		/*EndpointStyles : [{ fillStyle:'#225588' }, { fillStyle:'#558822' }],
 		// blue endpoints 7 px; green endpoints 11.
 		Endpoints : [ [ "Dot", {radius:7} ], [ "Dot", { radius:11 } ]],*/
 		// the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
@@ -32,7 +32,7 @@ jsPlumb.ready(function() {
 		strokeStyle:"#2e2aF8",
 		dashstyle: "dash"
 	},
-	endpointHoverStyle = {fillStyle:"#2e2aF8"},
+	//endpointHoverStyle = {fillStyle:"#2e2aF8"},
 	// the definition of source endpoints (the small blue ones)
 	sourceEndpoint = {
 		endpoint:"Blank",
@@ -41,8 +41,8 @@ jsPlumb.ready(function() {
 		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],
 		maxConnections:-1,								                
 		connectorStyle:connectorPaintStyle,/*
-		hoverPaintStyle:endpointHoverStyle,
-		connectorHoverStyle:connectorHoverStyle,*/
+		hoverPaintStyle:endpointHoverStyle,*/
+		connectorHoverStyle:connectorHoverStyle,
 		dragOptions:{},
 		
 	},
@@ -181,6 +181,11 @@ $(function() {
 		$(this).stop(false)
 		$(".moduleBox").removeClass("selected");
 		$("#moduleInfo").fadeOut("slow");
+		jsPlumb.hide($(this).attr('id'));
+	})
+	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
+	.on("dragstop", ".moduleBox", function(e) {
+		jsPlumb.show($(this).attr('id'));
 	})
 	.on("click", function(e) {
 		$(".moduleBox").removeClass("selected");
