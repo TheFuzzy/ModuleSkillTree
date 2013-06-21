@@ -120,7 +120,6 @@ jsPlumb.ready(function() {
 			scroll: true,
 			scrollSensitivity: 50,
 			stack: ".moduleBox",
-			refreshPositons: true,
 			containment: "parent"
 		});
 		this.each(function() {
@@ -130,6 +129,23 @@ jsPlumb.ready(function() {
 			jsPlumb.addEndpoint(id, sourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
 			jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
 		});
+		return this;
+	}
+	// Defines a module selection box div. Can only support one DIV at a time.
+	$.fn.moduleSelectBox = function(params) {
+		if (!$.isArray(this)) {
+			this.addClass("moduleBox");
+			this.addClass("moduleSelectBox");
+			jsPlumb.draggable(this,
+			{
+				distance: 15,
+				scroll: true,
+				scrollSensitivity: 50,
+				stack: ".moduleBox",
+				containment: "parent"
+			});
+			
+		}
 		return this;
 	}
 	// Defines a .semester div

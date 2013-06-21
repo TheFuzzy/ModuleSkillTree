@@ -39,6 +39,9 @@ body {
     border-top: 1px solid #ff2222;
     border-bottom: 1px solid #ff2222;
 }
+#notification.flash {
+	background-color: white;
+}
 #top_panel{
 	background-color: #353535;
 	background: linear-gradient(to bottom,  #353535 0%,#1c1c1c 28%,#131313 58%);

@@ -25,7 +25,8 @@ function notify(message, type) {
 	}
 	notificationBox.addClass(type);
 	notificationBoxContent.text(message);
-	notificationBox.slideDown({ duration : 300, queue : false });
+	if (notificationBox.is(":hidden")) notificationBox.slideDown({ duration : 500, queue : false });
+	else notificationBox.addClass('flash', 100).removeClass('flash', 300);
 }
 // Hide the notification box
 // Method is used by the box's close button.
@@ -96,7 +97,7 @@ function getModule(code) {
 		if (skillTree.modules[i].code === code) return skillTree.modules[i];
 	};
 	return null;*/
-	return skillTree.modules[code];
+	return typeof skillTree.modules[code] !== 'undefined' ? skillTree.modules[code] : null;
 }
 // Gets the assigned module instance from the global variable, given the module code
 // code - String
@@ -105,7 +106,7 @@ function getAssignedModule(code) {
 		if (skillTree.assignedModules[i].module.code === code) return skillTree.assignedModules[i];
 	};
 	return null;*/
-	return skillTree.assignedModules[code];
+	return typeof skillTree.assignedModules[code] !== 'undefined' ? skillTree.assignedModules[code] : null;
 }
 
 function countModules(modules) {
@@ -183,7 +184,10 @@ function ensureSemester(semesterNum) {
 // Recursively shift modules. Returns false if invalid.
 function assignSemester(assignedModule, semesterNum) {
 	if (semesterNum === assignedModule.semester) return true;
-	if (semesterNum < 1) return false;
+	if (semesterNum < 1) {
+		notify('Unable to shift module ' + assignedModule.module.code + ' before semester 1.', skillTree.NOTIFICATIONS.WARNING)
+		return false;
+	}
 	//process prerequisites if module is being shifted backwards
 	if (semesterNum < assignedModule.semester) {
 		// Iterate through all the prerequisites
@@ -244,7 +248,8 @@ function addModuleToTree(module) {
 	}).addClass('added');
 	// Iterate through all the prerequisites of the inserted module
 	for (var i = 0; i < module.prerequisites.length; i++) {
-		var isInnerPrereqSatisfied = false;
+		// Ignore if the prerequisite group is empty.
+		var isInnerPrereqSatisfied = module.prerequisites[i].length == 0;
 		for (var j in skillTree.assignedModules) {
 			if (skillTree.assignedModules.hasOwnProperty(j)) {
 				var assMod = skillTree.assignedModules[j];
@@ -269,8 +274,19 @@ function addModuleToTree(module) {
 			// insert the first module in the group, and ensure that the currently inserted module is inserted after it.
 			// needs to be altered to insert all modules in the group as suggestions.
 			console.log("Inner prerequisite of " + module.code + " is not satisfied!");
-			//var altTargetSemester = addModuleToTree(getModule(module.prerequisites[i][0])) + 1;
-			//if (targetSemester < altTargetSemester) targetSemester = altTargetSemester;
+			//
+			
+			if (module.prerequisites[i].length == 1) {
+				ensureModuleDetails(getModule(module.prerequisites[i][0]), {
+					callback  : addModuleToTree,
+					useModule : true
+				}); 
+				//var altTargetSemester = addModuleToTree(getModule(module.prerequisites[i][0])) + 1;
+				//if (targetSemester < altTargetSemester) targetSemester = altTargetSemester;
+			} else {
+				
+			}
+			
 		}
 	}
 	// Connect the inserted module to any modules in the tree that requires it.
@@ -300,6 +316,9 @@ function addModuleToTree(module) {
 	repositionModules();
 	return assignedModule.semester;
 }
+
+function addModuleSelectionToTree
+
 // Initialize the page when jQuery is loaded
 $(function(){
 	// Resize elements to fit the screen
@@ -335,12 +354,14 @@ $(function(){
 			$('.module').addClass('hidden');
 			var divs = [];
 			for (var code in skillTree.modules) {
-				var module = skillTree.modules[code];
-				var moduleName = module.name.toLowerCase();
-				var moduleCode = code.toLowerCase();
-				if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
-					var div_id = module.code.replace(/\s*\/\s*/gi, '_');
-					divs.push(div_id);
+				if (skillTree.modules.hasOwnProperty(code)) {
+					var module = skillTree.modules[code];
+					var moduleName = module.name.toLowerCase();
+					var moduleCode = code.toLowerCase();
+					if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
+						var div_id = module.code.replace(/\s*\/\s*/gi, '_');
+						divs.push(div_id);
+					}
 				}
 			}
 			for (var i = 0; i < divs.length; i++) {
@@ -368,11 +389,13 @@ $(function(){
 		console.log(module_code + " assigned to " + semester_num);
 		var assignedModule = getAssignedModule(module_code);
 		assignSemester(assignedModule, semester_num);
+		repositionModules();
+		event.stopPropagation();
 		//alert(module_code + " dropped into " + $(this).attr('id'));
 	})
 	// Reposition modules if a .moduleBox is dropped anywhere within the skillTree, including outside of a semester.
 	.on('drop', function(event, ui) {
-		repositionModules();
+		//repositionModules();
 	})
 	// Submit the semester to NUSMods for timetable planning.
 	.on('click', '.semester .btn', function(event) {
@@ -395,8 +418,10 @@ $(function(){
 	$.getJSON("/data/GetModuleList", function(json) {
 		skillTree.modules = json;
 		for (i in skillTree.modules) {
-			var div_id = skillTree.modules[i].code.replace(/\s*\/\s*/g, '_');
-			$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.modules[i].code + "</div>").appendTo("#module_list");
+			if (skillTree.modules.hasOwnProperty(i)) {
+				var div_id = skillTree.modules[i].code.replace(/\s*\/\s*/g, '_');
+				$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.modules[i].code + "</div>").appendTo("#module_list");
+			}	
 		}
 		console.log("Modules added!");
 	});
