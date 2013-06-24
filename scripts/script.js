@@ -7,7 +7,8 @@ var skillTree = {
 	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
 	semesters : [[]],
 	modules : {},
-	assignedModules : {}
+	assignedModules : {},
+	numOfSelections : 0
 };
 // Test function
 function testJSON(data) {
@@ -33,6 +34,10 @@ function notify(message, type) {
 function hideNotification() {
 	$("#notification:visible").slideUp();
 }
+// Determines whether the current state can be stored safely in the server.
+function stateIsValid() {
+	return false;
+}
 // Helper class to reposition all .moduleBox divs to proper positions, based only on the values in the global variable.
 // animate=false will prevent any animations from running.
 function repositionModules(animate) {
@@ -44,6 +49,8 @@ function repositionModules(animate) {
 		for (var j = 0; j < numModules; j++) {
 			var assignedModule = getAssignedModule(semester[j]);
 			var moduleBox = $('#' + assignedModule.module.code + 'box');
+			moduleBox.stop(true);
+			
 			
 			var topOffset = parseInt(i);
 			var leftOffset = parseInt(j);
@@ -175,33 +182,54 @@ function ensureModuleDetails(module, options) {
 // Ensures that the .semester div representing the given number exists.
 // semesterNum - int
 function ensureSemester(semesterNum) {
-	if (!skillTree.semesters[semesterNum-1]) {
+	if ((semesterNum > 0) && (!skillTree.semesters[semesterNum-1])) {
 		skillTree.semesters[semesterNum-1] = [];
 		var semesterDiv = $('<div id="semester' + semesterNum + '"><div class="semester_meta"><span>Semester ' + semesterNum + '</span>' + '<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>' + '</div></div>');
 		semesterDiv.appendTo("#skillTree").semester();
 	}
 }
-// Recursively shift modules. Returns false if invalid.
-function assignSemester(assignedModule, semesterNum) {
-	if (semesterNum === assignedModule.semester) return true;
-	if (semesterNum < 1) {
-		notify('Unable to shift module ' + assignedModule.module.code + ' before semester 1.', skillTree.NOTIFICATIONS.WARNING)
-		return false;
+function trimSemesters() {
+	var numOfEmptySemesters = 0;
+	var i = 0;
+	for (i = skillTree.semesters.length-1; i >= 0; i--) {
+		if (skillTree.semesters[i].length <= 0) numOfEmptySemesters++;
+		else break;
 	}
+	if (numOfEmptySemesters > 0) {
+		for (var semesterIndex = skillTree.semesters.length-1; semesterIndex > i; semesterIndex--) {
+			$('#semester' + (semesterIndex+1)).remove();
+		}
+		skillTree.semesters.splice(i+1, numOfEmptySemesters);
+	}
+}
+// Recursively shift modules. Returns the semester the module is assigned to (or left at).
+function assignSemester(assignedModule, semesterNum) {
+	if (semesterNum === assignedModule.semester) return semesterNum;
+	var calculatedSemesterNum = semesterNum;
 	//process prerequisites if module is being shifted backwards
-	if (semesterNum < assignedModule.semester) {
+	if (typeof assignedModule.semester === 'undefined' || semesterNum < assignedModule.semester) {
 		// Iterate through all the prerequisites
 		for (var i = 0; i < assignedModule.module.prerequisites.length; i++) {
 			for (var j = 0; j < assignedModule.module.prerequisites[i].length; j++) {
 				var prereqAssMod = getAssignedModule(assignedModule.module.prerequisites[i][j]);
 				// If the prerequisite mod exists and is on a greater or same semester as the target, reassign it.
 				if ((prereqAssMod !== null) && (prereqAssMod.semester >= semesterNum)) {
-					if (!assignSemester(prereqAssMod, semesterNum-1)) return false;
+					if (typeof assignedModule.semester === 'undefined') {
+						semesterNum = prereqAssMod.semester + 1;
+					} else {
+						semesterNum = assignSemester(prereqAssMod, semesterNum-1) + 1;
+					}
 				}
 			}
 		}
-	//Otherwise, process other modules that have it as a prerequisite.
-	} else {
+	}
+	// If the earliest possible module in the prerequisite tree (the leaf) is being shifted to a semester before 1, warn the user, and keep it at semester 1
+	if (semesterNum < 1) {
+		notify('Unable to shift module ' + assignedModule.module.code + ' before semester 1.', skillTree.NOTIFICATIONS.WARNING);
+		semesterNum = 1;
+	}
+	//Process other modules that have it as a prerequisite if module is being shifted forwards.
+	if (semesterNum > assignedModule.semester) {
 		// Iterate through all the assigned modules
 		for (var i in skillTree.assignedModules) {
 			if (skillTree.assignedModules.hasOwnProperty(i)) {
@@ -212,7 +240,7 @@ function assignSemester(assignedModule, semesterNum) {
 					for (var j = 0; j < postreqMod.module.prerequisites.length; j++) {
 						// If the assigned mod requires our current module and is on a lesser or same semester as the target, reassign it.
 						if ((postreqMod.module.prerequisites[j].indexOf(assignedModule.module.code) > -1) && (postreqMod.semester <= semesterNum)) {
-							if (!assignSemester(postreqMod, semesterNum+1)) return false;
+							semesterNum = assignSemester(postreqMod, semesterNum+1) - 1;
 						}
 					}
 				}
@@ -226,12 +254,17 @@ function assignSemester(assignedModule, semesterNum) {
 		if (assignedModuleIndex !== -1) skillTree.semesters[assignedModule.semester-1].splice(assignedModuleIndex, 1);
 	}
 	skillTree.semesters[semesterNum-1].push(assignedModule.module.code);
-	
+	trimSemesters();
+
 	assignedModule.semester = semesterNum;
-	return true;
+	return semesterNum;
 }
 // Returns the semester the module will be in.
 function addModuleToTree(module) {
+	if (getAssignedModule(module.code)) {
+		notify("Module " + module.code + " is already in the skill tree.", skillTree.NOTIFICATIONS.ERROR);
+		return;
+	}
 	// Initialise an assigned module with no semester.
 	var assignedModule = skillTree.assignedModules[module.code] = {
 		module : module
@@ -246,26 +279,45 @@ function addModuleToTree(module) {
 	$('.module').filter(function() {
 		return $(this).text() == module.code;
 	}).addClass('added');
+	// If an exception happens, log it.
+	if (!assignSemester(assignedModule, targetSemester)) {
+		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
+	}	
 	// Iterate through all the prerequisites of the inserted module
 	for (var i = 0; i < module.prerequisites.length; i++) {
 		// Ignore if the prerequisite group is empty.
 		var isInnerPrereqSatisfied = module.prerequisites[i].length == 0;
-		for (var j in skillTree.assignedModules) {
-			if (skillTree.assignedModules.hasOwnProperty(j)) {
-				var assMod = skillTree.assignedModules[j];
-				// If there is a prerequisite already available in the skill tree (as an assigned module)
-				if (assMod.module.code != module.code) {
-					console.log("Checking whether " + assMod.module.code + " is a prerequisite of " + module.code);
-					var modIndex = module.prerequisites[i].indexOf(assMod.module.code);
-					if (modIndex > -1) {
-						// The prerequisite is satisfied for this group of prerequisites.
-						isInnerPrereqSatisfied = true;
-						console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
-						// Connect the module to its prerequisite.
-						moduleBox.connectTopTo(module.prerequisites[i][modIndex] + 'box');
-						// Ensure the module is inserted after its prerequisite.
-						targetSemester = assMod.semester+1;
+		if (module.prerequisites[i][0] == '-') isInnerPrereqSatisfied = true;
+		if (!isInnerPrereqSatisfied) {
+			/*for (var j in skillTree.assignedModules) {
+				if (skillTree.assignedModules.hasOwnProperty(j)) {
+					var assMod = skillTree.assignedModules[j];
+					// If there is a prerequisite already available in the skill tree (as an assigned module)
+					if (assMod.module.code != module.code) {
+						console.log("Checking whether " + assMod.module.code + " is a prerequisite of " + module.code);
+						var modIndex = module.prerequisites[i].indexOf(assMod.module.code);
+						if (modIndex > -1) {
+							// The prerequisite is satisfied for this group of prerequisites.
+							isInnerPrereqSatisfied = true;
+							console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
+							// Connect the module to its prerequisite.
+							moduleBox.connectTopTo(module.prerequisites[i][modIndex] + 'box');
+							// Ensure the module is inserted after its prerequisite.
+							targetSemester = assMod.semester+1;
+						}
 					}
+				}
+			}*/
+			for (var j = 0; j < module.prerequisites[i].length; j++) {
+				var assMod = getAssignedModule(module.prerequisites[i][j]);
+				if (assMod != null) {
+					// The prerequisite is satisfied for this group of prerequisites.
+					isInnerPrereqSatisfied = true;
+					console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
+					// Connect the module to its prerequisite.
+					moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
+					// Ensure the module is inserted after its prerequisite.
+					targetSemester = assMod.semester+1;
 				}
 			}
 		}
@@ -284,7 +336,7 @@ function addModuleToTree(module) {
 				//var altTargetSemester = addModuleToTree(getModule(module.prerequisites[i][0])) + 1;
 				//if (targetSemester < altTargetSemester) targetSemester = altTargetSemester;
 			} else {
-				
+				//addModuleSelectionToTree(module);
 			}
 			
 		}
@@ -308,16 +360,16 @@ function addModuleToTree(module) {
 			}
 		}
 	}
-	// If an exception happens, log it.
-	if (!assignSemester(assignedModule, targetSemester)) {
-		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
-	}
 	// Reposition the modules after successful addition, and return the semester in which the module was inserted into.
 	repositionModules();
 	return assignedModule.semester;
 }
 
-function addModuleSelectionToTree
+function addModuleSelectionToTree(module) {
+	var moduleSelectId = "SELECT" + ++skillTree.numOfSelections;
+	var moduleSelectBox = $('<div id="'+moduleSelectId+'"><table cellspacing="0" cellpadding="0"><tr><th class="message">Pre-requisite Required</th></tr><tr><td class="prompt text-center">Click to select a module to resolve.</td></tr></table></div>');
+	moduleSelectBox.appendTo('#skillTree').moduleSelectBox();
+}
 
 // Initialize the page when jQuery is loaded
 $(function(){
@@ -379,6 +431,12 @@ $(function(){
 			useModule : true
 		});
 	});
+	// Saves the skill tree.
+	$('#save_button').click(function() {
+		if (!stateIsValid()) {
+			notify("All issues must be resolved before the skill tree can be saved.", skillTree.NOTIFICATIONS.ERROR);
+		}
+	});	
 	// Assign modules a different semester if a .moduleBox is dropped onto a different semester.
 	$("#skillTree").on('drop', '.semester', function(event, ui)  {
 		var div_id = ui.draggable.attr('id');
@@ -389,13 +447,12 @@ $(function(){
 		console.log(module_code + " assigned to " + semester_num);
 		var assignedModule = getAssignedModule(module_code);
 		assignSemester(assignedModule, semester_num);
-		repositionModules();
-		event.stopPropagation();
+		//repositionModules();
 		//alert(module_code + " dropped into " + $(this).attr('id'));
 	})
 	// Reposition modules if a .moduleBox is dropped anywhere within the skillTree, including outside of a semester.
 	.on('drop', function(event, ui) {
-		//repositionModules();
+		repositionModules();
 	})
 	// Submit the semester to NUSMods for timetable planning.
 	.on('click', '.semester .btn', function(event) {

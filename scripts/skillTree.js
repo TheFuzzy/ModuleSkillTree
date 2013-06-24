@@ -6,14 +6,14 @@ jsPlumb.ready(function() {
 		Endpoints : [ [ "Dot", {radius:7} ], [ "Dot", { radius:11 } ]],*/
 		// the overlays to decorate each connection with.  note that the label overlay uses a function to generate the label text; in this
 		// case it returns the 'labelText' member that we set on each connection in the 'init' method below.
-		ConnectionOverlays : [
-			[ "Arrow", { location:0.5 } ],
+		/*ConnectionOverlays : [
+			[ "Arrow", { location:0.5, id:"arrow" } ],
 			/*[ "Label", { 
 				location:0.1,
 				id:"label",
 				cssClass:"aLabel"
-			}]*/
-		],
+			}]
+		],*/
 		ConnectionsDetachable : false
 	});			
 
@@ -39,12 +39,11 @@ jsPlumb.ready(function() {
 		/*paintStyle:{ fillStyle:"#225588",radius:7 },*/
 		isSource:true,
 		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],
-		maxConnections:-1,								                
-		connectorStyle:connectorPaintStyle,/*
+		maxConnections:-1,					/*
 		hoverPaintStyle:endpointHoverStyle,*/
+		connectorStyle:connectorPaintStyle,
 		connectorHoverStyle:connectorHoverStyle,
 		dragOptions:{},
-		
 	},
 	// a source endpoint that sits at BottomCenter
 	//	bottomSource = jsPlumb.extend( { anchor:"BottomCenter" }, sourceEndpoint),
@@ -57,7 +56,26 @@ jsPlumb.ready(function() {
 		dropOptions:{ hoverClass:"hover", activeClass:"active" },
 		isTarget:true,			
 		
-	}/*,			
+	},
+	// An alternative source paintstyle and endpoint for a temporary module selection DIV
+	selectConnectorPaintStyle = {
+		lineWidth:2,
+		strokeStyle:"#d70",
+		joinstyle:"round",
+		dashstyle: "dash"
+	},
+	selectSourceEndpoint = {
+		endpoint:"Blank",
+		/*paintStyle:{ fillStyle:"#225588",radius:7 },*/
+		isSource:true,
+		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],
+		maxConnections:-1,					/*
+		hoverPaintStyle:endpointHoverStyle,*/
+		connectorStyle:selectConnectorPaintStyle,
+		connectorHoverStyle:connectorHoverStyle,
+		dragOptions:{},
+	}
+	/*,			
 	init = function(connection) {
 		connection.getOverlay("label").setLabel(connection.sourceId.substring(6) + "-" + connection.targetId.substring(6));
 		connection.bind("editCompleted", function(o) {
@@ -133,7 +151,7 @@ jsPlumb.ready(function() {
 	}
 	// Defines a module selection box div. Can only support one DIV at a time.
 	$.fn.moduleSelectBox = function(params) {
-		if (!$.isArray(this)) {
+		//if (!$.isArray(this)) {
 			this.addClass("moduleBox");
 			this.addClass("moduleSelectBox");
 			jsPlumb.draggable(this,
@@ -144,8 +162,14 @@ jsPlumb.ready(function() {
 				stack: ".moduleBox",
 				containment: "parent"
 			});
-			
-		}
+			this.each(function() {
+				id = $(this).attr('id');
+				sourceUUID = id + "BottomCenter";
+				targetUUID = id + "TopCenter";
+				jsPlumb.addEndpoint(id, selectSourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
+				jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
+			});
+		//}
 		return this;
 	}
 	// Defines a .semester div
@@ -154,7 +178,8 @@ jsPlumb.ready(function() {
 		this.droppable({
 			accept : ".moduleBox",
 			tolerance : "pointer",
-			hoverClass: "drop-hover"
+			hoverClass: "drop-hover",
+			greedy: true
 		});
 	}
 	// Connects the bottom of the current div to the top of the div with the given id.
@@ -185,27 +210,47 @@ $(function() {
 	$("#skillTree").on("click", ".moduleBox", function(e) {
 		$(".moduleBox").removeClass("selected");
 		$(this).addClass("selected");
+		/*
 		properties = [".moduleCode", ".moduleTitle"];
 		for (i in properties) {
 			$("#moduleInfo").find(properties[i]).text($(this).find(properties[i]).text());
 		}
 		$("#moduleInfo").fadeIn("slow");
+		*/
 		e.stopPropagation();
+	})
+	// Show arrow when mouse is over
+	.on("mouseover", ".moduleBox", function(e) {
+		/*
+		jsPlumb.select({ source: $(this).attr("id") }).showOverlays();
+		jsPlumb.select({ target: $(this).attr("id") }).showOverlays();
+		*/
+	})
+	// Hide arrow when mouse is out
+	.on("mouseleave", ".moduleBox", function(e) {
+		/*
+		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
+		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
+		*/
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
 		$(this).stop(false)
 		$(".moduleBox").removeClass("selected");
-		$("#moduleInfo").fadeOut("slow");
+		//$("#moduleInfo").fadeOut("slow");
 		jsPlumb.hide($(this).attr('id'));
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstop", ".moduleBox", function(e) {
 		jsPlumb.show($(this).attr('id'));
+		/*
+		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
+		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
+		*/
 	})
 	.on("click", function(e) {
 		$(".moduleBox").removeClass("selected");
-		$("#moduleInfo").fadeOut("slow");
+		//$("#moduleInfo").fadeOut("slow");
 	})
 	// Make the skillTree accept .moduleBox divs as drops
 	.droppable({

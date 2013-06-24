@@ -91,14 +91,18 @@ body {
 	   -moz-border-radius: 5px;
 	        border-radius: 5px;
 }
+#module_list .module.not_prerequisite {
+    display:none;
+}
 #module_list .module.hidden {
     display:none;
 }
 #module_list .module.added {
-    display:none;
+	background-color: #A1F57F;
+    /*display:none;*/
 }
 #module_list .module:hover{
-	background-color: #A1F57F;
+	background-color: #bee4f8;
 }
 #module_list .module.selected{
 	background-color: #000;
