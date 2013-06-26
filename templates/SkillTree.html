@@ -99,6 +99,7 @@ $(function() {
 {% if isNewUser is defined %}
 {% endif %}
 {% if skilltree is defined and skilltree is not none %}
+	loadFromServer('{{ skilltree.guid }}');
 {% endif %}
 })
 </script>

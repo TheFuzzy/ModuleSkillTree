@@ -17,6 +17,7 @@ handlers:
 - url: /skilltree
   script: skill_tree.app
   secure: always
+  login: required
 
 # Private Data
 - url: /private_data/.*

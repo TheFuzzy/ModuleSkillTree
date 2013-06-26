@@ -54,6 +54,7 @@ class AssignedModule(db.Model):
     module = db.ReferenceProperty(reference_class=Module, verbose_name="Module", required=True)
     skill_tree = db.ReferenceProperty(reference_class=SkillTree, verbose_name="Skill Tree", collection_name="assigned_modules", required=True)
     semester = db.IntegerProperty(verbose_name="Semester", required=True) # Which semester the student wishes to take the module in the skill tree
+    semester_index = db.IntegerProperty(verbose_name="Semester Index", required=True) # The location of the module within the semester 
     prerequisites = db.StringListProperty(verbose_name="Prerequisites") # List of module codes as Strings, may amend to be keys instead
     is_exception = db.BooleanProperty(verbose_name="Is an exceptional case", required=True) # Whether the client should ignore pre-requisites as a "special case"
 

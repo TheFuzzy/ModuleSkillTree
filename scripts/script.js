@@ -1,14 +1,17 @@
 // Global variable to store all global variables
 var skillTree = {
+	// Constants
 	MODULE_HORIZ_SPACING : 20,
 	MODULE_VERT_SPACING : 50,
 	MODULE_WIDTH : 200,
 	MODULE_HEIGHT : 120,
 	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
+	// Attributes
 	semesters : [[]],
 	modules : {},
 	assignedModules : {},
-	numOfPrereqGroups : 0
+	removeModules : {},
+	numOfPrereqGroups : 0 // Incrementer to prevent overlap of any prereq groups
 };
 // Test function
 function testJSON(data) {
@@ -36,7 +39,15 @@ function hideNotification() {
 }
 // Determines whether the current state can be stored safely in the server.
 function stateIsInvalid() {
-	return "";
+	// check whether any prerequisites are still unfulfilled
+	for (var code in skillTree.assignedModules) {
+		if (skillTree.assignedModules.hasOwnProperty(code)) {
+			if (code.substring(0, 5) === 'GROUP') {
+				return "One or more pre-requisites have not been fulfilled.";
+			}
+		}
+	}
+	return false;
 }
 // Save skill tree.
 function saveToServer() {
@@ -44,13 +55,96 @@ function saveToServer() {
 	if (error) {
 		notify(error, skillTree.NOTIFICATIONS.ERROR);
 	} else {
-		// TODO: server saving
-		notify("Saved!", skillTree.NOTIFICATIONS.SUCCESS);
+		var skillTreeData = {};
+		skillTreeData.assignedModules = {};
+		skillTreeData.removeModules = skillTree.removeModules;
+		
+		for (var code in skillTree.assignedModules) {
+			if (skillTree.assignedModules.hasOwnProperty(code)) {
+				var assignedModule = getAssignedModule(code);
+				var semesterIndex = skillTree.semesters[assignedModule.semester-1].indexOf(code);
+				skillTreeData.assignedModules[code] = {
+					module : code,
+					semester : assignedModule.semester,
+					semesterIndex : semesterIndex,
+					exception : false
+				}
+				if (typeof assignedModule.prerequisites !== 'undefined') {
+					skillTreeData.assignedModules[code].prerequisites = assignedModule.prerequisites;
+				}
+			}
+		}
+		$.ajax("/data/SaveSkillTree", {
+			type : "POST",
+			data : {
+				guid : skillTree.guid,
+				data : JSON.stringify(skillTreeData)
+			}
+		}).done(function() {
+			notify("Saved!", skillTree.NOTIFICATIONS.SUCCESS);
+			skillTree.removeModules = {};
+			for (var code in skillTree.assignedModules) {
+				if (skillTree.assignedModules.hasOwnProperty(code)) {
+					skillTree.removeModules[code] = false;
+				}
+			}
+		});
 	}
 }
 // Load skill tree. Should be called by embedded javascript in the HTML itself.
-function loadFromServer() {
-	// TODO: server loading
+function loadFromServer(guid) {
+	skillTree.guid = guid;
+	console.log("Loading skill tree with GUID " + guid);
+	$.ajax("/data/GetSkillTree", {
+		type : "POST",
+		data : { guid : guid }
+	}).done(function (data, textStatus) {
+		for (var code in data.assignedModules) {
+			if (data.assignedModules.hasOwnProperty(code)) {
+				var assignedModule  = data.assignedModules[code];
+				skillTree.modules[code] = assignedModule.module;
+				skillTree.assignedModules[code] = {
+					module : assignedModule.module,
+					semester : assignedModule.semester
+				}
+				if (typeof assignedModule.prerequisites !== 'undefined') {
+					skillTree.assignedModules[code].prerequisites = assignedModule.prerequisites;
+				}
+				skillTree.removeModules[code] = false;
+				
+				ensureSemester(assignedModule.semester);
+				skillTree.semesters[assignedModule.semester-1][assignedModule.semesterIndex] = code;
+				var newDivId = code + 'box';
+				var moduleBox = $('<div id="'+newDivId+'">' +
+									'<div class="moduleInfo">' +
+										'<div class="moduleCode">'+code+'</div>' +
+										'<div class="moduleTitle">'+skillTree.modules[code].name.toUpperCase()+'</div>' +
+									'</div>' +
+									'<div class="controlPanel">' +
+										'<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button>' +
+										' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
+									'</div>' +
+								'</div>');
+				moduleBox.appendTo('#skillTree').moduleBox();
+				// Hide the module code in the search list.
+				$('.module').filter(function() {
+					return $(this).text() == code;
+				}).addClass('added');
+				
+				moduleBox.css('left', -500 + 'px');
+				moduleBox.css('top', 50 + 'px');
+			}
+		}
+		for (var code in skillTree.assignedModules) {
+			if (skillTree.assignedModules.hasOwnProperty(code)) {
+				var assignedModule = skillTree.assignedModules[code];
+				for (var i = 0; i < assignedModule.prerequisites.length; i++) {
+					$('#' + code + 'box').connectTopTo(assignedModule.prerequisites[i] + 'box');
+				}
+			}
+		}
+		repositionModules();
+	});
 }
 
 
@@ -370,6 +464,9 @@ function addModuleToTree(module) {
 			// Ensure that the assignedModule isn't actually a moduleSelection
 			if (isPrereqGroup(assMod)) {
 				if (assMod.prerequisites.indexOf(module.code) > -1) {
+					var parentAssMod = getAssignedModule(assMod.module);
+					if (typeof parentAssMod.prerequisites === 'undefined') parentAssMod.prerequisites = [];
+					parentAssMod.prerequisites.push(module.code);
 					removeAssignedModule(assMod);
 				}
 			} else {
@@ -421,7 +518,9 @@ function addModuleToTree(module) {
 					console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
 					// Connect the module to its prerequisite.
 					moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
-					// Ensure the module is inserted after its prerequisite.
+					// Store the prerequisite in our newly inserted assigned module.
+					if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+					assignedModule.prerequisites.push(module.prerequisites[i][j]);
 				}
 			}
 		}
@@ -436,7 +535,9 @@ function addModuleToTree(module) {
 				ensureModuleDetails(getModule(module.prerequisites[i][0]), {
 					callback  : addModuleToTree,
 					useModule : true
-				}); 
+				});
+				if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+				assignedModule.prerequisites.push(module.prerequisites[i][0]);
 				//var altTargetSemester = addModuleToTree(getModule(module.prerequisites[i][0])) + 1;
 				//if (targetSemester < altTargetSemester) targetSemester = altTargetSemester;
 			} else {
@@ -448,6 +549,11 @@ function addModuleToTree(module) {
 			
 		}
 	}
+	
+	if (typeof skillTree.removeModules[assignedModule.module.code] !== 'undefined') {
+		skillTree.removeModules[module.code] = false;
+	}
+	
 	if (numOfUnsatisfiedPrereqs == 1) {
 		// Inform the user that at least one prerequisite group needs to be satisfied.
 		notify(module.code + " is missing a pre-requisite. Please click the highlighted box to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
@@ -513,6 +619,10 @@ function removeAssignedModule(assignedModule) {
 								var prereqGroup = addPrereqGroupToTree(otherAssMod.module.code, otherAssMod.module.prerequisites[j]);
 								if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
 								otherAssMod.prereqGroups.push(prereqGroup);
+								
+								var prereqIndex = otherAssMod.prerequisites.indexOf(assignedModule.module.code);
+								otherAssMod.prerequisites.splice(prereqIndex, 1);
+								if (otherAssMod.prerequisites.length == 0) delete otherAssMod.prerequisites;
 								isInvalidModule = true;
 							}
 						}
@@ -535,6 +645,9 @@ function removeAssignedModule(assignedModule) {
 			notify(numOfInvalidModules + " modules now have missing pre-requisites. Please click the highlighted boxes to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
 		}
 		
+		if (typeof skillTree.removeModules[assignedModule.module.code] !== 'undefined') {
+			skillTree.removeModules[assignedModule.module.code] = true;
+		}
 		
 		$('.module').filter(function() {
 			return $(this).text() == assignedModule.module.code;
@@ -683,8 +796,14 @@ $(function(){
 	});
 	// Load the modules from json.
 	$.getJSON("/data/GetModuleList", function(json) {
-		skillTree.modules = json;
-		for (i in skillTree.modules) {
+		for (var moduleCode in json) {
+			if (json.hasOwnProperty(moduleCode)) {
+				if (!skillTree.modules.hasOwnProperty(moduleCode)) {
+					skillTree.modules[moduleCode] = json[moduleCode];
+				}
+			}
+		}
+		for (var i in skillTree.modules) {
 			if (skillTree.modules.hasOwnProperty(i)) {
 				var div_id = skillTree.modules[i].code.replace(/\s*\/\s*/g, '_');
 				$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.modules[i].code + "</div>").appendTo("#module_list");

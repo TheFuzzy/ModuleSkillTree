@@ -18,7 +18,7 @@ import webapp2
 import os
 import jinja2
 from google.appengine.api import users, memcache, taskqueue
-from google.appengine.ext import blobstore
+from google.appengine.ext import blobstore, db
 from google.appengine.ext.webapp import blobstore_handlers
 
 from datetime import date, datetime
@@ -108,7 +108,142 @@ class GetModuleHandler(webapp2.RequestHandler):
 class GetSkillTreeHandler(webapp2.RequestHandler):
     def post(self):
         guid = urllib.unquote_plus(self.request.get('guid', default_value=''))
-        module_code = urllib.unquote_plus(self.request.get('Code', default_value=''))
+        logging.debug("GUID: %s" % guid)
+        if guid == '':
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.error(400)
+            self.response.write("Invalid GUID")
+        else:
+            skill_tree = datatypes.SkillTree.all().filter('guid =', guid).get()
+            if skill_tree is None:
+                self.response.headers['Content-Type'] = 'text/plain'
+                self.error(400)
+                self.response.write("No skill tree with that GUID exists")
+            else:
+                try:
+                    skill_tree_user = skill_tree.student.user
+                    logging.debug("Authenticating user")
+                    user = users.get_current_user()
+                    if user is None:
+                        self.response.headers['Content-Type'] = 'text/plain'
+                        self.error(400)
+                        self.response.write("Not logged in.")
+                        return
+                    elif skill_tree_user != user:
+                        self.response.headers['Content-Type'] = 'text/plain'
+                        self.error(400)
+                        self.response.write("Wrong user!")
+                        return
+                # No student associated with the skill tree, so it's fine.
+                except AttributeError:
+                    pass
+                logging.debug("Retrieved skill tree")
+                json_assigned_modules = {}
+                for assigned_module in skill_tree.assigned_modules:
+                    prerequisites = []
+                    for prerequisite_group in assigned_module.module.prerequisite_groups:
+                        prerequisites.append(prerequisite_group.prerequisites)
+                    json_module = {
+                        "code" : assigned_module.module.code,
+                        "name" : assigned_module.module.name,
+                        "description" : assigned_module.module.description,
+                        "mc" : assigned_module.module.mc,
+                        "preclusions" : assigned_module.module.preclusions,
+                        "prerequisites" : prerequisites
+                    }
+                    json_assigned_module = {
+                        "module" : json_module,
+                        "semester" : assigned_module.semester,
+                        "semesterIndex" : assigned_module.semester_index
+                    }
+                    if hasattr(assigned_module, 'prerequisites'):
+                        json_assigned_module["prerequisites"] = assigned_module.prerequisites
+                    json_assigned_modules[assigned_module.module.code] = json_assigned_module
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.write(json.dumps({
+                    "guid" : guid,
+                    "assignedModules" : json_assigned_modules
+                }))
+
+
+class SaveSkillTreeHandler(webapp2.RequestHandler):
+    def post(self):
+        guid = urllib.unquote_plus(self.request.get('guid', default_value=''))
+        logging.debug("GUID: %s" % guid)
+        data_string = self.request.get('data', default_value='')
+        if data_string == '':
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.error(400)
+            self.response.write("No data provided.")
+        if guid == '':
+            # Save a new skill tree. Invalid atm
+            self.response.headers['Content-Type'] = 'text/plain'
+            self.error(400)
+            self.response.write("Invalid GUID")
+        else:
+            skill_tree = datatypes.SkillTree.all().filter('guid =', guid).get()
+            if skill_tree is None:
+                self.response.headers['Content-Type'] = 'text/plain'
+                self.error(400)
+                self.response.write("No skill tree with that GUID exists")
+            else:
+                try:
+                    skill_tree_user = skill_tree.student.user
+                    logging.debug("Authenticating user")
+                    user = users.get_current_user()
+                    if user is None:
+                        self.response.headers['Content-Type'] = 'text/plain'
+                        self.error(400)
+                        self.response.write("Not logged in.")
+                        return
+                    elif skill_tree_user != user:
+                        self.response.headers['Content-Type'] = 'text/plain'
+                        self.error(400)
+                        self.response.write("Wrong user!")
+                        return
+                # No student associated with the skill tree, so it's fine.
+                except AttributeError:
+                    pass
+                logging.debug("Retrieved skill tree")
+                data = json.loads(data_string)
+                json_assigned_modules = data["assignedModules"]
+                json_remove_modules = data["removeModules"]
+                logging.debug("Parsed JSON data")
+                for json_assigned_module in json_assigned_modules.itervalues():
+                    logging.debug("Inserting/updating module %s" % json_assigned_module["module"])
+                    logging.debug(json_assigned_module)
+                    module = datatypes.Module.all().filter('code =', json_assigned_module["module"]).get(keys_only=True)
+                    # Get any existing assigned module associated with the same module
+                    assigned_module = datatypes.AssignedModule.all().filter('module =', module).filter('skill_tree =', skill_tree).get()
+                    if assigned_module is None:
+                        logging.debug("Does not exist, initializing new entity")
+                        assigned_module = datatypes.AssignedModule(
+                            skill_tree = skill_tree,
+                            module = module,
+                            parent = skill_tree,
+                            semester = json_assigned_module["semester"],
+                            semester_index = json_assigned_module["semesterIndex"],
+                            is_exception = json_assigned_module["exception"]
+                        )
+                    else:
+                        assigned_module.semester = json_assigned_module["semester"]
+                        assigned_module.semester_index = json_assigned_module["semesterIndex"]
+                        assigned_module.is_exception = json_assigned_module["exception"]
+                    if "prerequisites" in json_assigned_module:
+                        assigned_module.prerequisites = json_assigned_module["prerequisites"]
+                    assigned_module.put()
+                    logging.debug("Inserted successfully")
+                for code, remove_module in json_remove_modules.iteritems():
+                    if remove_module:
+                        module = datatypes.Module.all().filter('code =', code).get(keys_only=True)
+                        assigned_module = datatypes.AssignedModule.all().filter('module =', module).get(keys_only=True)
+                        db.delete(assigned_module)
+                        logging.debug("%s deleted." % code)
+                self.response.headers['Content-Type'] = 'text/plain'
+                self.response.write("SUCCESS")
+    #def addOrUpdateModule(self, module, json_assigned_module):
+        
+        
 
 class SetNameHandler(webapp2.RequestHandler):
     def post(self):
@@ -150,6 +285,8 @@ app = webapp2.WSGIApplication([
     ('/data/GetModuleList', GetModuleListHandler),
     ('/data/GetModule', GetModuleHandler),
     ('/data/GetTestModule', GetTestModuleHandler),
+    ('/data/GetSkillTree', GetSkillTreeHandler),
+    ('/data/SaveSkillTree', SaveSkillTreeHandler),
     ('/data/TestJSON', TestJSONHandler),
     ('/private_data/SetName', SetNameHandler)
 ], debug=True)
