@@ -66,9 +66,11 @@
 
 .moduleBox {
     z-index: 20;
-    height: 90px;
-    width: 150px;
-    padding: 10px 20px;
+    height: 120px;
+    width: 200px;
+    padding: 10px 10px;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
     background-color: #ddd;
     /*linear-gradient*/
 	background:-webkit-gradient(linear,left top,left bottom,color-stop(#f7f7f7,0),color-stop(#e2e2e2,1));
@@ -116,18 +118,57 @@
 		 -o-transform:scale(1.1,1.1);
 			transform:scale(1.1,1.1);
 }
-
-.moduleBox table {
-    width: 100%;
+.moduleBox .moduleCode, .moduleBox .title {
+    height: 20px;
+    padding-bottom: 10px;
+    font-weight: bold;
+	text-align: center;
+}
+.prereqGroup.moduleBox .title {
+    height: 30px;
 }
 
-.moduleBox th {
-    height: 40px;
-}
-
-.moduleBox td {
+.moduleBox .moduleTitle, .moduleBox .message {
     font-size: 0.9em;
+	text-align: center;
 }
+
+.moduleBox .controlPanel {
+    float: right;
+    position: absolute;
+    right: 20px;
+    top: 10px;
+    opacity:0;
+	-webkit-transition:opacity 0.5s;
+	   -moz-transition:opacity 0.5s;
+		 -o-transition:opacity 0.5s;
+			transition:opacity 0.5s;
+}
+
+.moduleBox .controlPanel button {
+    display: inline-block;
+	background: none repeat scroll 0% 0% transparent;
+	padding: 0;
+	border: 0;
+	opacity: 0.5;
+	-webkit-transition:opacity 0.2s;
+	   -moz-transition:opacity 0.2s;
+		 -o-transition:opacity 0.2s;
+			transition:opacity 0.2s;
+}
+
+.moduleBox .controlPanel button:hover {
+	opacity: 1;
+}
+
+.moduleBox:hover .controlPanel {
+    opacity: 1;
+}
+/* Settings button is unused for now. */
+.moduleBox .controlPanel .settings {
+	display: none;
+}
+
 .moduleBox.invalid {
 	border-color: #d00;
 }
@@ -138,7 +179,7 @@
 	   -moz-box-shadow:0px 0px 10px #ff0;
 			box-shadow:0px 0px 10px #ff0;
 }
-.moduleBox.moduleSelectBox {
+.moduleBox.prereqGroup {
     /* Background definitions */
     background: rgb(242,230,169); /* Old browsers */
     background: -moz-linear-gradient(top,  rgba(242,230,169,1) 0%, rgba(229,219,176,1) 100%); /* FF3.6+ */

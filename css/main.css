@@ -1,3 +1,12 @@
+/* font embeds */
+/*
+@font-face {
+	font-family: 'NUSMST-icons';
+	src:url('fonts/NUSMST-icons.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+*/
 * {
     font-family: 'Roboto', sans-serif;
 }
@@ -8,6 +17,31 @@ html, body {
 body {
     background-color: #fff;
 }
+.mst-icon-settings, .mst-icon-warning, .mst-icon-error, .mst-icon-success, .mst-icon-close {
+    font-family: 'NUSMST-icons';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+}
+.mst-icon-settings:before {
+	content: "\73";
+}
+.mst-icon-warning:before {
+	content: "\65";
+}
+.mst-icon-error:before {
+	content: "\77";
+}
+.mst-icon-success:before {
+	content: "\69";
+}
+.mst-icon-close:before {
+	content: "\63";
+}
 #main_container{
 }
 #notification_panel{
@@ -16,7 +50,7 @@ body {
 #notification{
     position: absolute;
     width: 100%;
-    line-height: 1;
+    line-height: 20px;
     padding: 0.5em 2em;
 	-moz-box-sizing: border-box;
 	     box-sizing: border-box;
@@ -24,20 +58,32 @@ body {
     z-index: 100;
 	display: none;
 }
+#notification .mst-icon-settings, #notification .mst-icon-warning, #notification .mst-icon-error, #notification .mst-icon-success, #notification .mst-icon-close {
+	display:none;
+}
 #notification.success{
     background-color: #ccffcc;
     border-top: 1px solid #22aa22;
     border-bottom: 1px solid #22aa22;
+}
+#notification.success .mst-icon-success{
+	display: inline;
 }
 #notification.warning{
     background-color: #ffff88;
     border-top: 1px solid #aaaa22;
     border-bottom: 1px solid #aaaa22;
 }
+#notification.warning .mst-icon-warning{
+	display: inline;
+}
 #notification.error{
     background-color: #ffcccc;
     border-top: 1px solid #ff2222;
     border-bottom: 1px solid #ff2222;
+}
+#notification.error .mst-icon-error{
+	display: inline;
 }
 #notification.flash {
 	background-color: white;
@@ -57,6 +103,10 @@ body {
 #top_panel .popover {
     color: black;
 }
+#userBox .nickname {
+    cursor: pointer;
+}
+
 #bottom_panel_group{
 
 }

@@ -36,85 +36,85 @@ class AdminHandler(webapp2.RequestHandler):
         self.response.write('Hello world!')
         
 class IndexModules(webapp2.RequestHandler):
-    MODULE_SEARCH_URL = 'https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Search'
-    API_KEY = 'wvGXXnp25lmkyO5x8Q6I4'
+    # MODULE_SEARCH_URL = 'https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Search'
+    # API_KEY = 'wvGXXnp25lmkyO5x8Q6I4'
     
-    def req_modules(self, year, semester):
-        params = urllib.urlencode({
-            "APIKey" : self.API_KEY,
-            "AcadYear" : year,
-            "Semester" : semester,
-            "IncludeAllInfo" : "true",
-            })
-        url_string = self.MODULE_SEARCH_URL + '?' + params
-        req = urllib2.Request(url_string)
-        res = urllib2.urlopen(req)
-        return res.read()
+    # def req_modules(self, year, semester):
+        # params = urllib.urlencode({
+            # "APIKey" : self.API_KEY,
+            # "AcadYear" : year,
+            # "Semester" : semester,
+            # "IncludeAllInfo" : "true",
+            # })
+        # url_string = self.MODULE_SEARCH_URL + '?' + params
+        # req = urllib2.Request(url_string)
+        # res = urllib2.urlopen(req)
+        # return res.read()
     
-    def parse_preclusions(self, preclusion_string):
-        return [ u"preclusions" ] #returns array of string
+    # def parse_preclusions(self, preclusion_string):
+        # return [ u"preclusions" ] #returns array of string
     
-    def parse_prerequisites(self, prerequisite_string):
-        return [ u"pre-req" ] #returns array of string
+    # def parse_prerequisites(self, prerequisite_string):
+        # return [ u"pre-req" ] #returns array of string
     
-    def add_modules(self, json_modules):
-        for json_module in json_modules:
-            desc = None
-            preclusions = []
-            prerequisites = []
-            for description in json_module["Descriptions"]:
-                if description["Title"] == "Aims & Objectives":
-                    desc = description["Description"]
-                elif description["Title"] == "Preclusions":
-                    preclusions = self.parse_preclusions(description["Description"])
-                elif description["Title"] == "Prerequisites":
-                    prerequisites = self.parse_prerequisites(description["Description"])
+    # def add_modules(self, json_modules):
+        # for json_module in json_modules:
+            # desc = None
+            # preclusions = []
+            # prerequisites = []
+            # for description in json_module["Descriptions"]:
+                # if description["Title"] == "Aims & Objectives":
+                    # desc = description["Description"]
+                # elif description["Title"] == "Preclusions":
+                    # preclusions = self.parse_preclusions(description["Description"])
+                # elif description["Title"] == "Prerequisites":
+                    # prerequisites = self.parse_prerequisites(description["Description"])
                     
             
             
-            mod = Module(
-                code = json_module["CourseCode"],
-                name = json_module["CourseName"].title(),
-                description = desc,
-                mc = int(json_module["CourseMC"]),
-                preclusions = preclusions,
-                prerequisites = prerequisites
-                )
-            mod.put()
+            # mod = Module(
+                # code = json_module["CourseCode"],
+                # name = json_module["CourseName"].title(),
+                # description = desc,
+                # mc = int(json_module["CourseMC"]),
+                # preclusions = preclusions,
+                # prerequisites = prerequisites
+                # )
+            # mod.put()
 
-    def get(self):
-        #if (self.request.headers.get('X-Appengine-Cron') == 'true'):
-        start_time = datetime.now()
+    # def get(self):
+        # #if (self.request.headers.get('X-Appengine-Cron') == 'true'):
+        # start_time = datetime.now()
         
-        # Attempt to retrieve any past request made on the same date from the blobstore, as the request takes FUCKING FOREVER
-        json_modules = None
-        query = CachedModuleRepo.all().filter('date_retrieved =', date.today())
-        cached_module_file = query.get()
-        if cached_module_file != None:
-            logging.info('Loading JSON from blobstore')
-            reader = cached_module_file.data.open()
-            json_modules = json.load(reader)
-        else:
-            logging.info('Loading JSON from service')
-            modules_string = self.req_modules("2012/2013", "Semester 1")
-            logging.info('JSON retrieved')
-            json_modules = json.loads(modules_string)["Results"]
-            file_name = files.blobstore.create(mime_type="application/json")
-            logging.info('Dumping file into blobstore')
-            with files.open(file_name, 'a') as file:
-                json.dump(json_modules, file)
-            logging.info('File dumped successful')
-            files.finalize(file_name)
-            logging.info('File finalized')
-            blob_key = files.blobstore.get_blob_key(file_name)
-            cached_module_file = CachedModuleRepo(data=BlobInfo.get(blob_key), date_retrieved=date.today())
-            cached_module_file.put()
-            logging.info('Cached module record added to database')
-        logging.info('Adding modules from JSON')
-        self.add_modules(json_modules)
+        # # Attempt to retrieve any past request made on the same date from the blobstore, as the request takes FUCKING FOREVER
+        # json_modules = None
+        # query = CachedModuleRepo.all().filter('date_retrieved =', date.today())
+        # cached_module_file = query.get()
+        # if cached_module_file != None:
+            # logging.info('Loading JSON from blobstore')
+            # reader = cached_module_file.data.open()
+            # json_modules = json.load(reader)
+        # else:
+            # logging.info('Loading JSON from service')
+            # modules_string = self.req_modules("2012/2013", "Semester 1")
+            # logging.info('JSON retrieved')
+            # json_modules = json.loads(modules_string)["Results"]
+            # file_name = files.blobstore.create(mime_type="application/json")
+            # logging.info('Dumping file into blobstore')
+            # with files.open(file_name, 'a') as file:
+                # json.dump(json_modules, file)
+            # logging.info('File dumped successful')
+            # files.finalize(file_name)
+            # logging.info('File finalized')
+            # blob_key = files.blobstore.get_blob_key(file_name)
+            # cached_module_file = CachedModuleRepo(data=BlobInfo.get(blob_key), date_retrieved=date.today())
+            # cached_module_file.put()
+            # logging.info('Cached module record added to database')
+        # logging.info('Adding modules from JSON')
+        # self.add_modules(json_modules)
         
-        elapsed_time = datetime.now() - start_time
-        self.response.write("%g" % elapsed_time)
+        # elapsed_time = datetime.now() - start_time
+        # self.response.write("%g" % elapsed_time)
 
 class IndexModulesAsync(webapp2.RequestHandler):
     def get(self):

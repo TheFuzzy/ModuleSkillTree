@@ -57,21 +57,21 @@ jsPlumb.ready(function() {
 		isTarget:true,			
 		
 	},
-	// An alternative source paintstyle and endpoint for a temporary module selection DIV
-	selectConnectorPaintStyle = {
+	// An alternative source paintstyle and endpoint for a prereq group DIV
+	groupConnectorPaintStyle = {
 		lineWidth:2,
 		strokeStyle:"#d70",
 		joinstyle:"round",
 		dashstyle: "dash"
 	},
-	selectSourceEndpoint = {
+	groupSourceEndpoint = {
 		endpoint:"Blank",
 		/*paintStyle:{ fillStyle:"#225588",radius:7 },*/
 		isSource:true,
 		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],
 		maxConnections:-1,					/*
 		hoverPaintStyle:endpointHoverStyle,*/
-		connectorStyle:selectConnectorPaintStyle,
+		connectorStyle:groupConnectorPaintStyle,
 		connectorHoverStyle:connectorHoverStyle,
 		dragOptions:{},
 	}
@@ -149,11 +149,11 @@ jsPlumb.ready(function() {
 		});
 		return this;
 	}
-	// Defines a module selection box div. Can only support one DIV at a time.
-	$.fn.moduleSelectBox = function(params) {
+	// Defines a prerequisite group box div. Can only support one DIV at a time.
+	$.fn.prereqGroupBox = function() {
 		//if (!$.isArray(this)) {
 			this.addClass("moduleBox");
-			this.addClass("moduleSelectBox");
+			this.addClass("prereqGroup");
 			jsPlumb.draggable(this,
 			{
 				distance: 15,
@@ -166,11 +166,17 @@ jsPlumb.ready(function() {
 				id = $(this).attr('id');
 				sourceUUID = id + "BottomCenter";
 				targetUUID = id + "TopCenter";
-				jsPlumb.addEndpoint(id, selectSourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
+				jsPlumb.addEndpoint(id, groupSourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
 				jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
 			});
 		//}
 		return this;
+	}
+	// Removes the module box from existence safely.
+	$.fn.removeModuleBox = function() {
+		if (this.hasClass("moduleBox")) {
+			jsPlumb.remove(this);
+		}
 	}
 	// Defines a .semester div
 	$.fn.semester = function() {
