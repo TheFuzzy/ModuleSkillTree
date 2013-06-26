@@ -511,8 +511,8 @@ function removeAssignedModule(assignedModule) {
 								return;
 							} else {
 								var prereqGroup = addPrereqGroupToTree(otherAssMod.module.code, otherAssMod.module.prerequisites[j]);
-								if (typeof assignedModule.prereqGroups === 'undefined') assignedModule.prereqGroups = [];
-								assignedModule.prereqGroups.push(prereqGroup);
+								if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
+								otherAssMod.prereqGroups.push(prereqGroup);
 								isInvalidModule = true;
 							}
 						}
