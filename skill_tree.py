@@ -34,20 +34,21 @@ class SkillTreeHandler(webapp2.RequestHandler):
         args['loginurl'] = users.create_login_url(self.request.uri)
         if user:
             # Gets the associated student if it exists, otherwise, create a new one
-            student = datatypes.Student.all().filter('user =', user).get()
+            student = datatypes.Student.query(datatypes.Student.user == user).get()
             
             if student is None:
                 student = datatypes.Student(
-                    key_name = user.nickname(),
+                    id = user.nickname(),
                     user = user,
                     name = user.nickname()
                 )
                 student.put()
             
-            skill_tree = datatypes.SkillTree.all().filter('student = ', student).get()
+            skill_tree = student.skill_trees.get()
             if skill_tree is None:
                 skill_tree = datatypes.SkillTree.with_guid(
-                    student = student,
+                    parent = student.key,
+                    student_k = student.key,
                     name = "Main Skill Tree",
                     first_year = "2013/2014",
                     first_semester = 1

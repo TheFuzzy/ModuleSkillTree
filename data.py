@@ -18,7 +18,7 @@ import webapp2
 import os
 import jinja2
 from google.appengine.api import users, memcache, taskqueue
-from google.appengine.ext import blobstore, db
+from google.appengine.ext import blobstore, ndb
 from google.appengine.ext.webapp import blobstore_handlers
 
 from datetime import date, datetime
@@ -37,49 +37,47 @@ class CacheModuleListHandler(webapp2.RequestHandler):
     def post(self):
         key = self.request.get("key")
         if key == "local":
-            module_list = datatypes.ModuleList.all().order('-time_generated').get()
-            if module_list is not None:
-                blobInfo = blobstore.get(module_list.data.key())
-                if blobInfo is not None:
-                    with blobInfo.open() as file:
-                        json_module_list = file.read()
-                        client = memcache.Client()
-                        logging.debug('Caching module list')
-                        curr_json_string = client.get(key=datatypes.MEMCACHE_MODULELIST_KEY)
-                        if curr_json_string is None:
-                            logging.debug('Creating new key in cache')
-                            client.add(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list)
-                        else:
-                            while True:
-                                logging.debug('Updating key in cache')
-                                curr_json_string = client.gets(key=datatypes.MEMCACHE_MODULELIST_KEY)
-                                if client.cas(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list):
-                                    break
-                        self.response.write('Successful')
+            module_list = datatypes.ModuleList.query().order(-datatypes.ModuleList.time_generated).get()
+            if module_list is not None and module_list.data is not None:
+                json_module_list = json.dumps(module_list.data)
+                client = memcache.Client()
+                logging.debug('Caching module list')
+                curr_json_string = client.get(key=datatypes.MEMCACHE_MODULELIST_KEY)
+                if curr_json_string is None:
+                    logging.debug('Creating new key in cache')
+                    client.add(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list)
                 else:
-                    self.response.write("Blob is missing")
-                    self.error(404)
+                    while True:
+                        logging.debug('Updating key in cache')
+                        curr_json_string = client.gets(key=datatypes.MEMCACHE_MODULELIST_KEY)
+                        if client.cas(key=datatypes.MEMCACHE_MODULELIST_KEY, value=json_module_list):
+                            break
+                self.response.write('Successful')
+                #else:
+                #    self.response.write("Blob is missing")
+                #    self.error(404)
             else:
                 self.response.write("No module list to retrieve")
                 self.error(404)
         else:
             self.redirect("/not_found.html")
 
-class GetModuleListHandler(blobstore_handlers.BlobstoreDownloadHandler):
+class GetModuleListHandler(webapp2.RequestHandler):
     def get(self):
         json_module_list = memcache.get(datatypes.MEMCACHE_MODULELIST_KEY)
         if json_module_list is None:
             logging.debug("Module list is not cached")
-            module_list = datatypes.ModuleList.all().order('-time_generated').get()
-            if module_list is not None and blobstore.get(module_list.data.key()) is not None:
-                logging.debug("Retrieved module list (size: %d bytes)" % module_list.data.size)
-                self.send_blob(module_list.data.key())
+            module_list = datatypes.ModuleList.query().order(-datatypes.ModuleList.time_generated).get()
+            if module_list is not None and module_list.data is not None:
+                logging.debug("Retrieved module list")
+                self.response.headers['Content-Type'] = 'application/json'
+                self.response.write(json.dumps(module_list.data))
                 taskqueue.add(url="/data/CacheModuleList", params={ 'key' : 'local' })
             else:
                 if module_list is None:
                     logging.debug("No module list to retrieve")
-                elif blobstore.get(module_list.data.key()) is None:
-                    logging.debug("Blob is missing")
+                elif module_list.data is None:
+                    logging.debug("Blob data is missing")
                 self.error(404)
         else:
             logging.debug("Writing module list from cache")
@@ -90,7 +88,7 @@ class GetModuleHandler(webapp2.RequestHandler):
     def get(self):
         module_code = urllib.unquote_plus(self.request.get('code', default_value=''))
         if module_code != '':
-            module = datatypes.Module.all().filter('code =', module_code).get()
+            module = datatypes.Module.query(datatypes.Module.code == module_code).get()
             prerequisites = []
             for prerequisite_group in module.prerequisite_groups:
                 prerequisites.append(prerequisite_group.prerequisites)
@@ -99,9 +97,10 @@ class GetModuleHandler(webapp2.RequestHandler):
                 "name" : module.name,
                 "description" : module.description,
                 "mc" : module.mc,
-                "preclusions" : module.preclusions,
                 "prerequisites" : prerequisites
             }
+            if hasattr(module, 'preclusions'):
+                json_module["preclusions"] = module.preclusions
             self.response.headers['Content-Type'] = 'application/json'
             self.response.write(json.dumps(json_module))
 
@@ -114,14 +113,15 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
             self.error(400)
             self.response.write("Invalid GUID")
         else:
-            skill_tree = datatypes.SkillTree.all().filter('guid =', guid).get()
+            skill_tree = datatypes.SkillTree.query(datatypes.SkillTree.guid == guid).get()
             if skill_tree is None:
                 self.response.headers['Content-Type'] = 'text/plain'
                 self.error(400)
                 self.response.write("No skill tree with that GUID exists")
             else:
                 try:
-                    skill_tree_user = skill_tree.student.user
+                    student = skill_tree.student_k.get()
+                    skill_tree_user = student.user
                     logging.debug("Authenticating user")
                     user = users.get_current_user()
                     if user is None:
@@ -139,18 +139,20 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                     pass
                 logging.debug("Retrieved skill tree")
                 json_assigned_modules = {}
-                for assigned_module in skill_tree.assigned_modules:
+                for assigned_module in skill_tree.assigned_modules.iter():
+                    module = assigned_module.module_k.get()
                     prerequisites = []
-                    for prerequisite_group in assigned_module.module.prerequisite_groups:
+                    for prerequisite_group in module.prerequisite_groups:
                         prerequisites.append(prerequisite_group.prerequisites)
                     json_module = {
-                        "code" : assigned_module.module.code,
-                        "name" : assigned_module.module.name,
-                        "description" : assigned_module.module.description,
-                        "mc" : assigned_module.module.mc,
-                        "preclusions" : assigned_module.module.preclusions,
+                        "code" : module.code,
+                        "name" : module.name,
+                        "description" : module.description,
+                        "mc" : module.mc,
                         "prerequisites" : prerequisites
                     }
+                    if hasattr(module, 'preclusions'):
+                        json_module["preclusions"] = module.preclusions
                     json_assigned_module = {
                         "module" : json_module,
                         "semester" : assigned_module.semester,
@@ -158,7 +160,7 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                     }
                     if hasattr(assigned_module, 'prerequisites'):
                         json_assigned_module["prerequisites"] = assigned_module.prerequisites
-                    json_assigned_modules[assigned_module.module.code] = json_assigned_module
+                    json_assigned_modules[module.code] = json_assigned_module
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.write(json.dumps({
                     "guid" : guid,
@@ -181,14 +183,15 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
             self.error(400)
             self.response.write("Invalid GUID")
         else:
-            skill_tree = datatypes.SkillTree.all().filter('guid =', guid).get()
+            skill_tree = datatypes.SkillTree.query(datatypes.SkillTree.guid == guid).get()
             if skill_tree is None:
                 self.response.headers['Content-Type'] = 'text/plain'
                 self.error(400)
                 self.response.write("No skill tree with that GUID exists")
             else:
                 try:
-                    skill_tree_user = skill_tree.student.user
+                    student = skill_tree.student_k.get()
+                    skill_tree_user = student.user
                     logging.debug("Authenticating user")
                     user = users.get_current_user()
                     if user is None:
@@ -212,15 +215,16 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                 for json_assigned_module in json_assigned_modules.itervalues():
                     logging.debug("Inserting/updating module %s" % json_assigned_module["module"])
                     logging.debug(json_assigned_module)
-                    module = datatypes.Module.all().filter('code =', json_assigned_module["module"]).get(keys_only=True)
+                    module_k = datatypes.Module.query(datatypes.Module.code == json_assigned_module["module"]).get(keys_only=True)
                     # Get any existing assigned module associated with the same module
-                    assigned_module = datatypes.AssignedModule.all().filter('module =', module).filter('skill_tree =', skill_tree).get()
+                    assigned_module = datatypes.AssignedModule.query(ndb.AND(datatypes.AssignedModule.module_k == module_k,
+                                                                             datatypes.AssignedModule.skill_tree_k == skill_tree.key)).get()
                     if assigned_module is None:
                         logging.debug("Does not exist, initializing new entity")
                         assigned_module = datatypes.AssignedModule(
-                            skill_tree = skill_tree,
-                            module = module,
-                            parent = skill_tree,
+                            skill_tree_k = skill_tree.key,
+                            module_k = module_k,
+                            parent = skill_tree.key,
                             semester = json_assigned_module["semester"],
                             semester_index = json_assigned_module["semesterIndex"],
                             is_exception = json_assigned_module["exception"]
@@ -235,9 +239,9 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                     logging.debug("Inserted successfully")
                 for code, remove_module in json_remove_modules.iteritems():
                     if remove_module:
-                        module = datatypes.Module.all().filter('code =', code).get(keys_only=True)
-                        assigned_module = datatypes.AssignedModule.all().filter('module =', module).get(keys_only=True)
-                        db.delete(assigned_module)
+                        module_k = datatypes.Module.query(datatypes.Module.code == code).get(keys_only=True)
+                        assigned_module_k = datatypes.AssignedModule.query(datatypes.AssignedModule.module_k == module_k).get(keys_only=True)
+                        assigned_module_k.delete()
                         logging.debug("%s deleted." % code)
                 self.response.headers['Content-Type'] = 'text/plain'
                 self.response.write("SUCCESS")
@@ -251,7 +255,7 @@ class SetNameHandler(webapp2.RequestHandler):
         value = urllib.unquote_plus(self.request.get('value', default_value=''))
         user = users.get_current_user()
         if name == 'nickname':
-            student = datatypes.Student.all().filter('user =', user).get()
+            student = datatypes.Student.query(datatypes.Student.user == user).get()
             logging.debug("Changing student name from %s to %s." % (student.name, value))
             student.name = value
             student.put()

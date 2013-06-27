@@ -66,7 +66,7 @@ def cache_modules(acad_year, semester, source, modules):
     logging.debug('File finalized')
     blob_key = files.blobstore.get_blob_key(file_name)
     cached_module_file = datatypes.CachedModuleRepo(
-        data=blobstore.BlobInfo.get(blob_key),
+        data_k=blob_key,
         date_retrieved=date.today(),
         acad_year=acad_year,
         semester=semester
@@ -82,20 +82,21 @@ def generate_module_list(modules):
             "code" : module["code"],
             "name" : module["name"]
         }
-    file_name = files.blobstore.create(mime_type="application/json")
     logging.debug('Generating simple module list for %d modules' % len(modules))
-    json_modules_string = json.dumps(json_modules, sort_keys=True)
     logging.debug('List generated')
-    logging.debug('Storing list in blobstore')
-    with files.open(file_name, 'a') as file:
-        file.write(json_modules_string)
-    logging.debug('List stored')
-    files.finalize(file_name)
-    logging.debug('List file finalized')
-    blob_key = files.blobstore.get_blob_key(file_name)
-    module_list = datatypes.ModuleList(data=blobstore.BlobInfo.get(blob_key))
+    #file_name = files.blobstore.create(mime_type="application/json")
+    #logging.debug('Storing list in blobstore')
+    #with files.open(file_name, 'a') as file:
+    #    file.write(json_modules_string)
+    #logging.debug('List stored')
+    #files.finalize(file_name)
+    #logging.debug('List file finalized')
+    #blob_key = files.blobstore.get_blob_key(file_name)
+    #module_list = datatypes.ModuleList(data=blobstore.BlobInfo.get(blob_key))
+    module_list = datatypes.ModuleList(data=json_modules)
     module_list.put()
     logging.debug('List file record added to database')
+    json_modules_string = json.dumps(json_modules, sort_keys=True)
     cache_module_list(json_modules_string) # Cache only after the blob file is inserted and recorded in the datastore
 
 # Stores the simplified module list in the memcache
@@ -121,7 +122,7 @@ def store_modules(acad_year, semester, modules):
         logging.debug("Storing module %s" % module_code)
         code_list = []
         stored_module = datatypes.Module(
-            key_name = "%s_%s_%d" % (module_code, acad_year, semester),
+            id = "%s_%s_%d" % (module_code, acad_year, semester),
             code = module_code,
             acad_year = acad_year,
             semester = semester,
@@ -137,22 +138,28 @@ def store_modules(acad_year, semester, modules):
         code_list.append(module_code)
         stored_module.represented_codes = code_list
         
-        stored_module.put()
-        logging.debug("datatypes.Module stored")
-        
         if "prerequisites" in module:
+            prerequisite_groups = []
             for group in module["prerequisites"]:
-                store_prerequisite_group(group, module=stored_module)
+                prereq_group = datatypes.ModulePrerequisiteGroup(
+                    prerequisites = group
+                )
+                prerequisite_groups.append(prereq_group)
+            stored_module.prerequisite_groups = prerequisite_groups
+        
+        stored_module.put()
+        logging.debug("Module stored")
+                #store_prerequisite_group(group, module_key=stored_module.key)
 
 #@db.transactional(xg=True, propagation=db.INDEPENDENT)
 #def store_module(stored_module):
 
 # Recursively stores nested prerequisite groups
 #@db.transactional(propagation=db.INDEPENDENT)
-def store_prerequisite_group(group, module):
+def store_prerequisite_group(group, module_key):
     logging.debug("Storing prerequsite group")
     prereq_group = datatypes.ModulePrerequisiteGroup(
-        module = module,
+        module = module_key,
         prerequisites = group
     )
     #if module is not None:
