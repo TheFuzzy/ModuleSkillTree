@@ -1,8 +1,10 @@
 // Global variable to store all global variables
 var skillTree = {
 	// Constants
+	MODULE_TOP_SPACING: 35,
+	MODULE_LEFT_SPACING: 20,
 	MODULE_HORIZ_SPACING : 20,
-	MODULE_VERT_SPACING : 50,
+	MODULE_VERT_SPACING : 84,
 	MODULE_WIDTH : 200,
 	MODULE_HEIGHT : 120,
 	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
@@ -167,8 +169,8 @@ function repositionModules(animate) {
 			var topOffset = parseInt(i);
 			var leftOffset = parseInt(j);
 			
-			topOffset = ((topOffset+1) * skillTree.MODULE_VERT_SPACING) + (topOffset * skillTree.MODULE_HEIGHT);
-			leftOffset = ((leftOffset+1) * skillTree.MODULE_HORIZ_SPACING) + (leftOffset * skillTree.MODULE_WIDTH);
+			topOffset = skillTree.MODULE_TOP_SPACING + (topOffset * skillTree.MODULE_VERT_SPACING) + (topOffset * skillTree.MODULE_HEIGHT);
+			leftOffset = skillTree.MODULE_LEFT_SPACING + (leftOffset * skillTree.MODULE_HORIZ_SPACING) + (leftOffset * skillTree.MODULE_WIDTH);
 			//console.log(assignedModule.module.code + ": left=" + leftOffset + ",top=" + topOffset);
 			// Check if a position was already set programmatically. If not, set a position outside the viewport.
 			if (animate && moduleBox[0].style.left == "") {

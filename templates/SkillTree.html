@@ -26,7 +26,7 @@ args:
 <body>
 <div id="main_container">
 	<div id="top_panel" class="row-fluid">
-		<h3 class="title" style="display:inline">NUS Module Skill Tree</h3>
+		<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
 		<div id="userBox" class="pull-right">
 			{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>{% endif %}
 			<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">

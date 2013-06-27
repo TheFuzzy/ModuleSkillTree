@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<!--Home Page Jinja Template
+args:
+		user : Google App Engine User
+-->
+<html lang="en" >
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+<!--Link all external css files here-->
+<!-- External fonts -->
+<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
+<link href='./css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
+<!-- CSS rule definitions -->
+<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="./css/main.css" type="text/css" rel="stylesheet" />
+<!--end of css files-->
+
+<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
+<title>Module Skill Tree</title>
+</head>
+<body>
+<div id="title_panel">
+	<div class="hero-unit">
+		<h1>NUS Module Skill Tree</h1>
+		<p>
+			{% if user is defined and user is not none %}
+				Welcome back!
+			{% else %}
+				Need to plan your time in NUS?
+			{% endif %}
+		</p>
+		<a href="/skilltree" class="btn btn-large btn-primary">
+			{% if user is defined and user is not none %}
+				Plan some more
+			{% else %}
+				Get started
+			{% endif %}
+		</a>
+	</div>
+</div>
+<!--Scripts after this line-->
+<script type="text/javascript" src="./scripts/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="./scripts/jquery-ui.min.js"></script>
+<script type="text/javascript">
+	// Fix conflicts between JqueryUI and Bootstrap.
+	$.widget.bridge('uibutton', $.ui.button);
+	$.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+<script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
+</body>
+</html>

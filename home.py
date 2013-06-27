@@ -15,10 +15,26 @@
 # limitations under the License.
 #
 import webapp2
+import jinja2
+import os
 
+from google.appengine.api import users
+import datatypes
+
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
+    extensions=['jinja2.ext.autoescape'])
+    
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write('Hello world!')
+        user = users.get_current_user()
+        template = JINJA_ENVIRONMENT.get_template('Home.html')
+        args = {}
+        
+        if user:
+            args['user'] = user
+        
+        self.response.write(template.render(args))
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)

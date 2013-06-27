@@ -13,6 +13,7 @@
 html, body {
     height: 100%;
     width: 100%;
+    margin: 0;
 }
 body {
     background-color: #fff;
@@ -44,6 +45,69 @@ body {
 }
 #main_container{
 }
+#top_panel{
+	background: #353535; /* Old browsers */
+	background: -moz-linear-gradient(top,  #353535 0%, #1c1c1c 28%, #131313 58%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#353535), color-stop(28%,#1c1c1c), color-stop(58%,#131313)); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  #353535 0%,#1c1c1c 28%,#131313 58%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  #353535 0%,#1c1c1c 28%,#131313 58%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  #353535 0%,#1c1c1c 28%,#131313 58%); /* IE10+ */
+	background: linear-gradient(to bottom,  #353535 0%,#1c1c1c 28%,#131313 58%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#353535', endColorstr='#131313',GradientType=0 ); /* IE6-9 */
+
+	color: #dedeff;
+	height: 30px;
+	padding: 15px 0;
+}
+#top_panel .title{
+	font-size: 2em;
+    margin-left: 50px;
+	line-height: 1;
+}
+#top_panel .title a {
+    color: inherit;
+    text-decoration: inherit;
+}
+#top_panel .popover {
+    color: black;
+}
+#userBox .nickname {
+    cursor: pointer;
+}
+#title_panel {
+    height: 100%;
+	
+    background: #45484d; /* Old browsers */
+    background: -moz-linear-gradient(top,  #45484d 0%, #000000 100%); /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#45484d), color-stop(100%,#000000)); /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(top,  #45484d 0%,#000000 100%); /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(top,  #45484d 0%,#000000 100%); /* Opera 11.10+ */
+    background: -ms-linear-gradient(top,  #45484d 0%,#000000 100%); /* IE10+ */
+    background: linear-gradient(to bottom,  #45484d 0%,#000000 100%); /* W3C */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#45484d', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+
+}
+#title_panel .hero-unit {
+    width: 600px;
+    height: 200px;
+    background: transparent;
+    
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    
+    text-shadow: -2px -2px 0 #101010;
+}
+#title_panel .hero-unit h1 {
+    color: #fff;
+}
+#title_panel .hero-unit p {
+    color: #ccc;
+}
+/* Notification panel definitions */
 #notification_panel{
     height: 0;
 }
@@ -87,24 +151,6 @@ body {
 }
 #notification.flash {
 	background-color: white;
-}
-#top_panel{
-	background-color: #353535;
-	background: linear-gradient(to bottom,  #353535 0%,#1c1c1c 28%,#131313 58%);
-	color: #dedeff;
-	height: 30px;
-	padding: 15px 0;
-}
-#top_panel .title{
-	font-size: 2em;
-    margin-left: 50px;
-	line-height: 1;
-}
-#top_panel .popover {
-    color: black;
-}
-#userBox .nickname {
-    cursor: pointer;
 }
 
 #bottom_panel_group{

@@ -42,6 +42,7 @@
 }
 
 .semester .semester_meta {
+    height: 20px;
     width: 100%;
     text-align: center;
     display: block;
