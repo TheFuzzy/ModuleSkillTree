@@ -39,7 +39,7 @@ class CacheModuleListHandler(webapp2.RequestHandler):
         if key == "local":
             module_list = datatypes.ModuleList.query().order(-datatypes.ModuleList.time_generated).get()
             if module_list is not None and module_list.data is not None:
-                json_module_list = json.dumps(module_list.data)
+                json_module_list = json.dumps(module_list.data, sort_keys=True)
                 client = memcache.Client()
                 logging.debug('Caching module list')
                 curr_json_string = client.get(key=datatypes.MEMCACHE_MODULELIST_KEY)
@@ -71,7 +71,7 @@ class GetModuleListHandler(webapp2.RequestHandler):
             if module_list is not None and module_list.data is not None:
                 logging.debug("Retrieved module list")
                 self.response.headers['Content-Type'] = 'application/json'
-                self.response.write(json.dumps(module_list.data))
+                self.response.write(json.dumps(module_list.data, sort_keys=True))
                 taskqueue.add(url="/data/CacheModuleList", params={ 'key' : 'local' })
             else:
                 if module_list is None:

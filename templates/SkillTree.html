@@ -51,20 +51,6 @@ args:
 		<div id="right_panel" class="span10">
 			<!--<div id="skillTreeView">-->
 				<div id="skillTree">
-					<div id="moduleInfo" style="display:none">
-						<div class="arrow"></div>	
-						<table cellspacing="0" cellpadding="0">
-							<tr>
-								<th class="moduleCode">Module Code</th>
-							</tr>
-							<tr>
-								<td class="moduleTitle">Module Title</td>
-							</tr>
-							<tr>
-								<td><span class="moduleDesc">Module Description</span></td>
-							</tr>
-						</table>
-					</div>
 					<div class="semester" id="semester1">
 						{% if skilltree is defined and skilltree is not none %}
 						<span style="display : none">{{ skilltree.name }}</span>
@@ -75,6 +61,14 @@ args:
 						</div>
 					</div>
 					<!--Modules will be inserted dynamically here-->
+				</div>
+				<div id="moduleInfo" style="display:none">
+					<div class="arrow-left"></div>
+					<h3 class="moduleCode"></h2>
+					<h4 class="moduleName"></h3>
+					<p class="moduleDesc"></p>
+					<p>MCs: <span class="moduleMC"></span></p>
+					<div class="arrow-right"></div>
 				</div>
 			<!--</div>-->
 		</div>

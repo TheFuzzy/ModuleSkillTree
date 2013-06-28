@@ -130,23 +130,34 @@ jsPlumb.ready(function() {
 	jsPlumb.connect({uuids:["window3BottomCenter", "window1BottomCenter"], editable:true});*/
 	//
 	// Defines a module box div. Can support many divs at once.
-	$.fn.moduleBox = function() {
-		this.addClass("moduleBox");
-		jsPlumb.draggable(this,
-		{
-			distance: 15,
-			scroll: true,
-			scrollSensitivity: 50,
-			stack: ".moduleBox",
-			containment: "parent"
-		});
-		this.each(function() {
+	$.fn.moduleBox = function(module) {
+		if (!$.isArray(this)) {
+			this.addClass("moduleBox");
+			jsPlumb.draggable(this,
+			{
+				distance: 15,
+				scroll: true,
+				scrollSensitivity: 50,
+				stack: ".moduleBox",
+				containment: "parent"
+			});
+			//this.each(function() {
 			id = $(this).attr('id');
 			sourceUUID = id + "BottomCenter";
 			targetUUID = id + "TopCenter";
 			jsPlumb.addEndpoint(id, sourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
 			jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
-		});
+			
+			if (typeof module !== 'undefined' && module != null) {
+				$(this).data({
+					moduleCode: module.code,
+					moduleName: module.name,
+					moduleDesc: module.description,
+					moduleMc: module.mc
+				});
+			}
+			//});
+		}
 		return this;
 	}
 	// Defines a prerequisite group box div. Can only support one DIV at a time.
@@ -225,19 +236,110 @@ $(function() {
 		*/
 		e.stopPropagation();
 	})
-	// Show arrow when mouse is over
-	.on("mouseover", ".moduleBox", function(e) {
+	// Show the module description when mouse is over
+	.on('mouseover', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
+		var moduleBox = $(this);
+		var skillTreeBox = $("#skillTree");
+		var moduleInfoBox = $("#moduleInfo");
+		var moduleCode = moduleBox.data("moduleCode");
+		var moduleName = moduleBox.data("moduleName");
+		var moduleDesc = moduleBox.data("moduleDesc");
+		var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
+		var moduleMc = moduleBox.data("moduleMc");
+		
+		var skillTreeLeft = skillTreeBox.offset().left;
+		var skillTreeTop = skillTreeBox.offset().top;
+		var skillTreeBoxWidth = skillTreeBox.outerWidth();
+		var skillTreeRight = $(window).width() - skillTreeLeft - skillTreeBoxWidth;
+		console.log("Skill tree left: " + skillTreeLeft);
+		console.log("Skill tree width: " + skillTreeBoxWidth);
+		console.log("Skill tree right: " + skillTreeRight);
+		//var moduleInfoBoxWidth = moduleInfoBox.css("width");
+		//moduleInfoBoxWidth = parseInt(moduleInfoBoxWidth.substring(0, moduleInfoBoxWidth.length-2));
 		/*
-		jsPlumb.select({ source: $(this).attr("id") }).showOverlays();
-		jsPlumb.select({ target: $(this).attr("id") }).showOverlays();
+		var moduleBoxLeft = moduleBox.offset().left;
+		var moduleBoxTop = moduleBox.offset().top;
+		var moduleBoxWidth = moduleBox.css("width");
+		var moduleBoxHeight = moduleBox.css("height");
+		moduleBoxWidth = parseInt(moduleBoxWidth.substring(0, moduleBoxWidth.length-2));
+		moduleBoxHeight = parseInt(moduleBoxHeight.substring(0, moduleBoxHeight.length-2));
 		*/
+		
+		var leftHalf = skillTreeLeft + skillTreeBoxWidth/2;
+		var isRight = event.pageX < leftHalf;
+		console.log("Left half: " + leftHalf);
+		console.log("Is mouse in left half: " + isRight);
+		
+		var moduleInfoBoxTop = skillTreeTop + 10;
+		var leftBound = skillTreeLeft + 10;
+		var rightBound =  skillTreeRight + 20;
+		
+		
+		if (isRight) {
+			moduleInfoBox.css({
+				top :   moduleInfoBoxTop + "px",
+				left :  "",
+				right : rightBound + "px"
+			});
+		} else {
+			moduleInfoBox.css({
+				top :   moduleInfoBoxTop + "px",
+				left :  leftBound + "px",
+				right : ""
+			});
+		}
+		moduleInfoBox.find(".moduleCode").text(moduleCode);
+		moduleInfoBox.find(".moduleName").text(moduleName);
+		moduleInfoBox.find(".moduleDesc").text(moduleDesc);
+		moduleInfoBox.find(".moduleMe").text(moduleMc);
+		
+		// TODO: positioning
+		
+		moduleInfoBox.fadeIn(100);
 	})
-	// Hide arrow when mouse is out
-	.on("mouseleave", ".moduleBox", function(e) {
+	// Scroll the tooltip description according to the mouse position in the module box.
+	.on("mousemove", ".moduleBox", function(event) {
 		/*
 		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
 		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
 		*/
+		//$("#moduleInfo").fadeOut({ queue: false });
+		var scrollBox = $("#moduleInfo .moduleDesc");
+		var scrollBoxDom = scrollBox[0];
+		var contentHeight = scrollBoxDom.scrollHeight;
+		var visibleHeight = scrollBoxDom.clientHeight;
+		if (contentHeight > visibleHeight) {
+			var moduleBox = $(this);
+			var skillTreeBox = $("#skillTree");
+			var scrollBox = $("#moduleInfo .moduleDesc");
+			var scrollBoxDom = scrollBox[0];
+			
+			//var moduleBoxLeft = moduleBox.offset().left;
+			var moduleBoxTop = moduleBox.offset().top;
+			//var moduleBoxWidth = moduleBox.outerWidth();
+			var moduleBoxHeight = moduleBox.outerHeight();
+			
+			var relativeMouseY = event.pageY - moduleBoxTop - 10;
+			var relativeScrollPercent = relativeMouseY / (moduleBoxHeight - 20);
+			
+			if (relativeScrollPercent < 0) relativeScrollPercent = 0;
+			else if (relativeScrollPercent > 1) relativeScrollPercent = 1;
+			
+			//console.log("relativeMouseY " + relativeMouseY);
+			//console.log("Scroll to " + relativeScrollPercent);
+			
+			var contentHeight = scrollBoxDom.scrollHeight;
+			var visibleHeight = scrollBoxDom.clientHeight;
+			scrollBox.scrollTop(relativeScrollPercent * (contentHeight-visibleHeight));
+		}
+	})
+	// Hide arrow when mouse is out
+	.on("mouseleave", ".moduleBox", function(event) {
+		/*
+		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
+		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
+		*/
+		$("#moduleInfo").fadeOut({ duration: 100, queue: false });
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
@@ -245,6 +347,7 @@ $(function() {
 		$(".moduleBox").removeClass("selected");
 		//$("#moduleInfo").fadeOut("slow");
 		jsPlumb.hide($(this).attr('id'));
+		$("#moduleInfo").fadeOut({ queue: false });
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstop", ".moduleBox", function(e) {

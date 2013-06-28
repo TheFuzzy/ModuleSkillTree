@@ -127,7 +127,7 @@ function loadFromServer(guid) {
 										' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
 									'</div>' +
 								'</div>');
-				moduleBox.appendTo('#skillTree').moduleBox();
+				moduleBox.appendTo('#skillTree').moduleBox(assignedModule.module);
 				// Hide the module code in the search list.
 				$('.module').filter(function() {
 					return $(this).text() == code;
@@ -447,11 +447,12 @@ function addModuleToTree(module) {
 							' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
 						'</div>' +
 					'</div>');
-	moduleBox.appendTo('#skillTree').moduleBox();
+	moduleBox.appendTo('#skillTree').moduleBox(module);
 	// Hide the module code in the search list.
 	$('.module').filter(function() {
 		return $(this).text() == module.code;
 	}).addClass('added');
+	
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
 	if (!assignSemester(assignedModule, 1)) {
 		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
