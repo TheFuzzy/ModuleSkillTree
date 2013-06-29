@@ -1,5 +1,5 @@
 import re
-def prereqModule(input, faculty):
+def prereqModule(module, input, faculty):
 	#this method needs more tweaking to handle more complex situation
 	#Possible improvement might be the use of a third party natural language processing library.
 	result = []
@@ -34,12 +34,14 @@ def prereqModule(input, faculty):
 		modInput = re.split('Co-requisite', input , re.IGNORECASE)[0]
 		module_regex = re.compile(r"\b[a-zA-Z]{2,3}[0-9]{4,4}[a-zA-Z]?\b|\band\b|&", re.IGNORECASE)
 		prereqModuleList = module_regex.findall(modInput)
+		
 		for value in prereqModuleList:
-		if value.lower() == "and" or value == "&":
-			result.append(mods)
-			mods = []
-		else:	
-			mods.append(value)
+			if value.lower() == "and" or value == "&":
+				result.append(mods)
+				mods = []
+			elif value.lower() != module.lower():	
+				mods.append(value)
+		result.append(mods)
 		
 	elif faculty == "SCHOOL OF COMPUTING":
 		module_regex = re.compile(r"\b[a-zA-Z]{2,3}[0-9]{4,4}[a-zA-Z]?\b|and|&", re.IGNORECASE)
@@ -55,10 +57,13 @@ def prereqModule(input, faculty):
 				if value == ";" or value == "&" or value == ",":
 					result.append(mods)
 					mods = []
-				else:	
+				elif value.lower() != module.lower():	
 					mods.append(value)
+					
+				result.append(mods)
 		else :
 			for value in prereqModuleList:		
+				if value.lower() != module.lower():
 					mods = []
 					mods.append(value)
 					result.append(mods)
@@ -84,12 +89,20 @@ def prereqModule(input, faculty):
 		prereqModuleList = module_regex.findall(input)
 
 	else :
+		module_regex = re.compile(r"\b[a-zA-Z]{2,3}[0-9]{4,4}[a-zA-Z]?\b|and|&", re.IGNORECASE)
+		prereqModuleList = module_regex.findall(input)
 		for value in prereqModuleList:
-		if value.lower() == "and" or value == "&":
-			result.append(mods)
-			mods = []
-		else:	
-			mods.append(value)
+			if value.lower() == "and" or value == "&":
+				result.append(mods)
+				mods = []
+			else:	
+				mods.append(value)
+	
+	for i in range(len(result)):
+		print i
+		print len(result[i])
+		if len(result[i]) == 0:
+			result.pop(i)
 	
 	return result
 			
