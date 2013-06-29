@@ -98,15 +98,19 @@ def prereqModule(module, input, faculty):
 			else:	
 				mods.append(value)
 	
-	for i in range(len(result)):
-		print i
-		print len(result[i])
-		if len(result[i]) == 0:
-			result.pop(i)
+	for item in result:
+		if len(item) == 0:
+			result.pop(result.index(item))
 	
 	return result
 			
-def precludeModule(input):
+def precludeModule(module, input):
 	module_regex = re.compile(r"\b[a-zA-Z]{2,3}[0-9]{4,4}[a-zA-Z]?\b", re.IGNORECASE)
 	precludeModuleList = module_regex.findall(input)
-	return precludeModuleList
+	result = []
+	for item in precludeModuleList:
+		if item == module:
+			precludeModuleList.pop(precludeModuleList.index(item))
+	
+	result.append(precludeModuleList)
+	return result
