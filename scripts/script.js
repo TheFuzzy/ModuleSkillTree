@@ -11,6 +11,7 @@ var skillTree = {
 	// Attributes
 	semesters : [[]],
 	modules : {},
+	moduleCodes : [],
 	assignedModules : {},
 	removeModules : {},
 	numOfPrereqGroups : 0 // Incrementer to prevent overlap of any prereq groups
@@ -109,6 +110,7 @@ function loadFromServer(guid) {
 					module : assignedModule.module,
 					semester : assignedModule.semester
 				}
+				if (skillTree.moduleCodes.indexOf(code) < 0) skillTree.moduleCodes.push(code);
 				if (typeof assignedModule.prerequisites !== 'undefined') {
 					skillTree.assignedModules[code].prerequisites = assignedModule.prerequisites;
 				}
@@ -199,6 +201,7 @@ function repositionModules(animate) {
 							duration: 1000,
 							progress: function () {
 								jsPlumb.repaint(this);
+								$("#skillTreeView").perfectScrollbar("update");
 							},
 							queue: false
 						}
@@ -449,9 +452,12 @@ function addModuleToTree(module) {
 					'</div>');
 	moduleBox.appendTo('#skillTree').moduleBox(module);
 	// Hide the module code in the search list.
-	$('.module').filter(function() {
+	$('.module').removeClass('hidden').filter(function() {
 		return $(this).text() == module.code;
 	}).addClass('added');
+	
+	// Remove the filter
+	$("#module_search").val("");
 	
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
 	if (!assignSemester(assignedModule, 1)) {
@@ -492,6 +498,7 @@ function addModuleToTree(module) {
 		// Ignore if the prerequisite group is empty.
 		var isInnerPrereqSatisfied = module.prerequisites[i].length == 0;
 		if (module.prerequisites[i][0] == '-') isInnerPrereqSatisfied = true;
+		var moduleExists = false;
 		if (!isInnerPrereqSatisfied) {
 			/*for (var j in skillTree.assignedModules) {
 				if (skillTree.assignedModules.hasOwnProperty(j)) {
@@ -513,22 +520,25 @@ function addModuleToTree(module) {
 				}
 			}*/
 			for (var j = 0; j < module.prerequisites[i].length; j++) {
-				var assMod = getAssignedModule(module.prerequisites[i][j]);
-				// Ensure that the assignedModule isn't actually a prerequisite group (impossible)
-				if (assMod != null && !isPrereqGroup(assMod)) {
-					// The prerequisite is satisfied for this group of prerequisites.
-					isInnerPrereqSatisfied = true;
-					console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
-					// Connect the module to its prerequisite.
-					moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
-					// Store the prerequisite in our newly inserted assigned module.
-					if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
-					assignedModule.prerequisites.push(module.prerequisites[i][j]);
+				if (typeof skillTree.modules[module.prerequisites[i][j]] !== 'undefined') {
+					moduleExists = true;
+					var assMod = getAssignedModule(module.prerequisites[i][j]);
+					// Ensure that the assignedModule isn't actually a prerequisite group (impossible)
+					if (assMod != null && !isPrereqGroup(assMod)) {
+						// The prerequisite is satisfied for this group of prerequisites.
+						isInnerPrereqSatisfied = true;
+						console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
+						// Connect the module to its prerequisite.
+						moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
+						// Store the prerequisite in our newly inserted assigned module.
+						if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+						assignedModule.prerequisites.push(module.prerequisites[i][j]);
+					}
 				}
 			}
 		}
 		// If the prerequisite isn't satisfied for a prerequisite group
-		if (!isInnerPrereqSatisfied) {
+		if (!isInnerPrereqSatisfied && moduleExists) {
 			// insert the first module in the group, and ensure that the currently inserted module is inserted after it.
 			// needs to be altered to insert all modules in the group as suggestions.
 			console.log("Inner prerequisite of " + module.code + " is not satisfied!");
@@ -667,17 +677,6 @@ function removeAssignedModule(assignedModule) {
 
 // Initialize the page when jQuery is loaded
 $(function(){
-	// Resize elements to fit the screen
-	$(window).resize(function() {
-		moduleListHeight = $("body").innerHeight()
-			- $("#top_panel").outerHeight()
-			- $("#notification_panel").outerHeight()
-			- ($("#left_panel").innerHeight() - $("#left_panel").height())
-			- $("#module_search").outerHeight() - 50
-			- $("#control_panel").outerHeight();
-		$("#module_list").css("height", moduleListHeight + "px");
-	});
-	$(window).resize(); // Trigger the resize event
 	// Initialise the nickname prompt
 	$('#userBox .nickname').editable({
 		type : 'text',
@@ -726,6 +725,12 @@ $(function(){
 		});
 		// If the modules were being filtered via a prerequisite group, clear the filter.
 		$('.module').removeClass('not_prerequisite');
+	})
+	.slimScroll({
+		position: 'right',
+		height: '100%',
+		distance: '5px',
+		railVisible: true
 	});
 	// Saves the skill tree.
 	$('#save_button').click(function() {
@@ -784,14 +789,24 @@ $(function(){
 		// NUSMods works if the modules are added using the following pattern:
 		// #{module_code_1}=&{module_code_2}=&{module_code_3}...
 		var url = "http://nusmods.com/#";
+		var isValid = true;
 		for (var i = 0; i < modules.length; i++) {
-			if (i == 0) {
-				url = url.concat(modules[i],"=");
+			if (modules[i].indexOf("GROUP") < 0) {
+				if (i == 0) {
+					url = url.concat(modules[i],"=");
+				} else {
+					url = url.concat("&", modules[i],"=");
+				}
 			} else {
-				url = url.concat("&", modules[i],"=");
+				isValid = false;
 			}
 		}
-		window.open(url);
+		if (!isValid) {
+				notify("Careful! You have an unfulfilled prerequisite group!", skillTree.NOTIFICATIONS.WARNING);
+				setTimeout(function(){ window.open(url) },2000);
+		} else {
+			window.open(url);
+		}
 	})
 	// Click handler for the skillTree itself.
 	.on('click', function(event) {
@@ -803,15 +818,26 @@ $(function(){
 			if (json.hasOwnProperty(moduleCode)) {
 				if (!skillTree.modules.hasOwnProperty(moduleCode)) {
 					skillTree.modules[moduleCode] = json[moduleCode];
+					if (skillTree.moduleCodes.indexOf(moduleCode) < 0) skillTree.moduleCodes.push(moduleCode);
 				}
 			}
 		}
-		for (var i in skillTree.modules) {
-			if (skillTree.modules.hasOwnProperty(i)) {
-				var div_id = skillTree.modules[i].code.replace(/\s*\/\s*/g, '_');
-				$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.modules[i].code + "</div>").appendTo("#module_list");
-			}	
+		skillTree.moduleCodes.sort();
+		for (var i = 0; i < skillTree.moduleCodes.length; i++) {
+			var div_id = skillTree.moduleCodes[i].replace(/\s*\/\s*/g, '_');
+			$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.moduleCodes[i] + "</div>").appendTo("#module_list");
 		}
 		console.log("Modules added!");
 	});
+	// Resize elements to fit the screen
+	$(window).resize(function() {
+		moduleListHeight = $("body").innerHeight()
+			- $("#top_panel").outerHeight()
+			- $("#notification_panel").outerHeight()
+			- ($("#left_panel").innerHeight() - $("#left_panel").height())
+			- $("#module_search").outerHeight() - 50
+			- $("#control_panel").outerHeight();
+		$("#module_list_view").css("height", moduleListHeight + "px");
+	});
+	$(window).resize(); // Trigger the resize event
 });

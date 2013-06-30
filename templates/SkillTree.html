@@ -15,7 +15,7 @@ args:
 <link href='./css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
 <!-- CSS rule definitions -->
 <link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
-<link href="./bootstrap/css/bootstrap-responsive.min.css" type="text/css" rel="stylesheet" />
+<link href="./css/perfect-scrollbar-0.4.1.min.css" type="text/css" rel="stylesheet" />
 <link href="./css/main.css" type="text/css" rel="stylesheet" />
 <link href="./css/skilltree.css" type="text/css" rel="stylesheet" />
 <!--end of css files-->
@@ -38,8 +38,10 @@ args:
 	<div id="bottom_panel_group" class="row-fluid">
 		<div id="left_panel" class="span2">
 			<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
-			<div id="module_list">
-				<!--Modules will be inserted dynamically here-->
+			<div id="module_list_view">
+				<div id="module_list">
+					<!--Modules will be inserted dynamically here-->
+				</div>
 			</div>
 			<div id="control_panel">
 				<form class="form-inline">
@@ -49,7 +51,7 @@ args:
 			</div>
 		</div>
 		<div id="right_panel" class="span10">
-			<!--<div id="skillTreeView">-->
+			<div id="skillTreeView">
 				<div id="skillTree">
 					<div class="semester" id="semester1">
 						{% if skilltree is defined and skilltree is not none %}
@@ -62,15 +64,15 @@ args:
 					</div>
 					<!--Modules will be inserted dynamically here-->
 				</div>
-				<div id="moduleInfo" style="display:none">
-					<div class="arrow-left"></div>
-					<h3 class="moduleCode"></h2>
-					<h4 class="moduleName"></h3>
-					<p class="moduleDesc"></p>
-					<p>MCs: <span class="moduleMC"></span></p>
-					<div class="arrow-right"></div>
-				</div>
-			<!--</div>-->
+			</div>
+			<div id="moduleInfo" style="display:none">
+				<div class="arrow-left"></div>
+				<h3 class="moduleCode"></h2>
+				<h4 class="moduleName"></h3>
+				<p class="moduleDesc"></p>
+				<p>MCs: <span class="moduleMc"></span></p>
+				<div class="arrow-right"></div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -84,6 +86,8 @@ args:
 </script>
 <script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="./bootstrap/js/bootstrap-editable.js"></script>
+<script type="text/javascript" src="./scripts/perfect-scrollbar-0.4.1.with-mousewheel.min.js"></script>
+<script type="text/javascript" src="./scripts/jquery.slimscroll.min.js"></script>
 <script type="text/javascript" src="./scripts/jquery.jsPlumb-1.4.1-all-min.js"></script>
 <script type="text/javascript" src="./scripts/skillTree.js"></script>
 <script type="text/javascript" src="./scripts/script.js"></script>

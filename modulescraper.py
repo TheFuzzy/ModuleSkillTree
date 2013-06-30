@@ -8,13 +8,14 @@ import urllib2
 from datetime import date, datetime
 
 import datatypes
+import ModuleParser
 
 class Sources:
     NUSMODS = 'nusmods'
     NUS_BULLETIN = 'nusbulletin'
     TEST = 'test'
 
-SOURCE = Sources.TEST
+SOURCE = Sources.NUSMODS
 
 def retrieve_modules(acad_year, semester):
     modules = None
@@ -185,7 +186,9 @@ def fill_prerequisite_groups(modules):
         for index, group in enumerate(module["prerequisites"]):
             code_list = group[:]
             for module_code in group:
-                code_list.extend(modules[module_code]["preclusions"])
+                # module code may not actually exist.
+                if module_code in modules:
+                    code_list.extend(modules[module_code]["preclusions"])
             updated_group = list(set(code_list))
             module["prerequisites"][index] = updated_group
     
@@ -236,19 +239,40 @@ def scrape_nusmods(acad_year, semester):
     url_string = NUSMODS_JSON_URL
     req = urllib2.Request(url_string)
     res = urllib2.urlopen(req)
-    nusmods_modules = json.loads(res.read())["cors"]
+    data = json.loads(res.read())
+    nusmods_modules = data["cors"]
+    faculties = data["departments"]
     modules = {}
     for nusmods_module in nusmods_modules.itervalues():
         description = "No description"
         if "description" in nusmods_module:
             description = nusmods_module["description"]
+        department = nusmods_module["department"]
+        faculty = "UNKNOWN"
+        for nusmods_faculty, departments in faculties.iteritems():
+            if department in departments:
+                faculty = nusmods_faculty
+                break
+        #if faculty in ["SCHOOL OF BUSINESS", "SCHOOL OF DESIGN AND ENVIRONMENT"]:
+        prerequisites = []
+        preclusions = []
+        # TODO: Parse the preclusions properly
+        if "prerequisite" in nusmods_module:
+            # prerequisites = ModuleParser.prereqModule(nusmods_module["label"], nusmods_module["prerequisite"], faculty)
+            prerequisites = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["prerequisite"])
+        if "preclusion" in nusmods_module:
+            preclusion_groups = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["preclusion"])
+            preclusions = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["preclusion"])[0]
+        
+        
         modules[nusmods_module["label"]] = {
             "code" : nusmods_module["label"],
             "name" : nusmods_module["title"],
             "description" : description,
-            "mc" : int(nusmods_module["mcs"])
-            }
-        # TODO: Parse the preclusions and pre-requisite group(s)
+            "mc" : int(nusmods_module["mcs"]),
+            "prerequisites" : prerequisites,
+            "preclusions" : preclusions
+        }
     return modules
 
 # Unit test scraper

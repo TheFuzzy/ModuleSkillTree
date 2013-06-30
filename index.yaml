@@ -12,5 +12,10 @@ indexes:
 
 - kind: Module
   properties:
+  - name: __key__
+    direction: desc
+
+- kind: Module
+  properties:
   - name: code
   - name: name

@@ -169,13 +169,16 @@ body {
 #module_search {
     width: 100%;
 }
-#module_list{
-	min-height: 200px;
+#module_list_view{
 	border: 1px solid #ccc;
 	border-radius: 4px;
 	padding: 2px;
 	font-size: 18px;
-	overflow: auto;
+	overflow: hidden;
+	min-height: 200px;
+}
+
+#module_list {
 }
 
 #module_list .module {

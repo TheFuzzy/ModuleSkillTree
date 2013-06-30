@@ -236,24 +236,27 @@ $(function() {
 		*/
 		e.stopPropagation();
 	})
+	.on("click", ".moduleBox .remove", function(e) {
+		$("#moduleInfo").stop().fadeOut(200);
+	})
 	// Show the module description when mouse is over
-	.on('mouseover', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
+	.on('mouseenter', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
 		var moduleBox = $(this);
-		var skillTreeBox = $("#skillTree");
+		var skillTreeBox = $("#skillTreeView");
 		var moduleInfoBox = $("#moduleInfo");
 		var moduleCode = moduleBox.data("moduleCode");
 		var moduleName = moduleBox.data("moduleName");
 		var moduleDesc = moduleBox.data("moduleDesc");
-		var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
+		//var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
 		var moduleMc = moduleBox.data("moduleMc");
 		
 		var skillTreeLeft = skillTreeBox.offset().left;
 		var skillTreeTop = skillTreeBox.offset().top;
 		var skillTreeBoxWidth = skillTreeBox.outerWidth();
 		var skillTreeRight = $(window).width() - skillTreeLeft - skillTreeBoxWidth;
-		console.log("Skill tree left: " + skillTreeLeft);
-		console.log("Skill tree width: " + skillTreeBoxWidth);
-		console.log("Skill tree right: " + skillTreeRight);
+		//console.log("Skill tree left: " + skillTreeLeft);
+		//console.log("Skill tree width: " + skillTreeBoxWidth);
+		//console.log("Skill tree right: " + skillTreeRight);
 		//var moduleInfoBoxWidth = moduleInfoBox.css("width");
 		//moduleInfoBoxWidth = parseInt(moduleInfoBoxWidth.substring(0, moduleInfoBoxWidth.length-2));
 		/*
@@ -267,8 +270,8 @@ $(function() {
 		
 		var leftHalf = skillTreeLeft + skillTreeBoxWidth/2;
 		var isRight = event.pageX < leftHalf;
-		console.log("Left half: " + leftHalf);
-		console.log("Is mouse in left half: " + isRight);
+		//console.log("Left half: " + leftHalf);
+		//console.log("Is mouse in left half: " + isRight);
 		
 		var moduleInfoBoxTop = skillTreeTop + 10;
 		var leftBound = skillTreeLeft + 10;
@@ -291,11 +294,11 @@ $(function() {
 		moduleInfoBox.find(".moduleCode").text(moduleCode);
 		moduleInfoBox.find(".moduleName").text(moduleName);
 		moduleInfoBox.find(".moduleDesc").text(moduleDesc);
-		moduleInfoBox.find(".moduleMe").text(moduleMc);
+		moduleInfoBox.find(".moduleMc").text(moduleMc);
 		
 		// TODO: positioning
 		
-		moduleInfoBox.fadeIn(100);
+		$("#moduleInfo").stop().fadeIn(200);
 	})
 	// Scroll the tooltip description according to the mouse position in the module box.
 	.on("mousemove", ".moduleBox", function(event) {
@@ -310,7 +313,7 @@ $(function() {
 		var visibleHeight = scrollBoxDom.clientHeight;
 		if (contentHeight > visibleHeight) {
 			var moduleBox = $(this);
-			var skillTreeBox = $("#skillTree");
+			var skillTreeBox = $("#skillTreeView");
 			var scrollBox = $("#moduleInfo .moduleDesc");
 			var scrollBoxDom = scrollBox[0];
 			
@@ -319,8 +322,10 @@ $(function() {
 			//var moduleBoxWidth = moduleBox.outerWidth();
 			var moduleBoxHeight = moduleBox.outerHeight();
 			
-			var relativeMouseY = event.pageY - moduleBoxTop - 10;
-			var relativeScrollPercent = relativeMouseY / (moduleBoxHeight - 20);
+			var innerMargin = 20;
+			
+			var relativeMouseY = event.pageY - moduleBoxTop - innerMargin;
+			var relativeScrollPercent = relativeMouseY / (moduleBoxHeight - innerMargin*2);
 			
 			if (relativeScrollPercent < 0) relativeScrollPercent = 0;
 			else if (relativeScrollPercent > 1) relativeScrollPercent = 1;
@@ -339,7 +344,7 @@ $(function() {
 		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
 		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
 		*/
-		$("#moduleInfo").fadeOut({ duration: 100, queue: false });
+		$("#moduleInfo").stop().fadeOut(200);
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
@@ -347,7 +352,7 @@ $(function() {
 		$(".moduleBox").removeClass("selected");
 		//$("#moduleInfo").fadeOut("slow");
 		jsPlumb.hide($(this).attr('id'));
-		$("#moduleInfo").fadeOut({ queue: false });
+		$("#moduleInfo").stop().fadeOut(200);
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstop", ".moduleBox", function(e) {
@@ -359,6 +364,7 @@ $(function() {
 	})
 	.on("click", function(e) {
 		$(".moduleBox").removeClass("selected");
+		$("#moduleInfo").stop().fadeOut(200);
 		//$("#moduleInfo").fadeOut("slow");
 	})
 	// Make the skillTree accept .moduleBox divs as drops
@@ -366,6 +372,8 @@ $(function() {
 			accept : ".moduleBox",
 			tolerance : "pointer"
 	});
+	// Scroll!
+	$("#skillTreeView").perfectScrollbar();
 	// Initialise any .semester divs on the page as semesters.
 	$(".semester").semester();
 	// Resize elements to fit page.
@@ -374,7 +382,8 @@ $(function() {
 			- $("#top_panel").outerHeight()
 			- $("#notification_panel").outerHeight()
 			- ($("#right_panel").innerHeight() - $("#right_panel").height());
-		$("#skillTree").css("height", skillTreeHeight + "px");
+		$("#skillTreeView").css("height", skillTreeHeight + "px");
+		$("#skillTreeView").perfectScrollbar("update");
 		//$("#skillTreeView").css("height", skillTreeHeight + "px");
 	});
 	$(window).resize();
