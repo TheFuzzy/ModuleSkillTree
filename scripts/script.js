@@ -691,30 +691,70 @@ $(function(){
 	});
 	// Hide the alert box when the close button is clicked.
 	$("#notification .close").click(hideNotification);
-	// Filters the module list based on the input of the search box
-	$('#module_search').on('input',function(){
-		searchText = $('#module_search').val().replace('_', '').toLowerCase();
-		
-		if (searchText){
-			$('.module').addClass('hidden');
-			var divs = [];
-			for (var code in skillTree.modules) {
-				if (skillTree.modules.hasOwnProperty(code)) {
-					var module = skillTree.modules[code];
-					var moduleName = module.name.toLowerCase();
-					var moduleCode = code.toLowerCase();
-					if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
-						var div_id = module.code.replace(/\s*\/\s*/gi, '_');
-						divs.push(div_id);
+	function search(text)
+	{
+		var searchText = text;
+		var divs = new Array();
+		for (var code in skillTree.modules) {
+			if (skillTree.modules.hasOwnProperty(code)) {
+				var module = skillTree.modules[code];
+				var moduleName = module.name.toLowerCase();
+				var moduleCode = code.toLowerCase();
+				if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
+					var div_id = module.code.replace(/\s*\/\s*/gi, '_');
+					divs.push(div_id);
+				}
+			}
+		}
+		return divs;
+	}
+	
+	function filter()
+	{
+		var searchText = $('#module_search').val().replace('_', '').toLowerCase();	
+		var fac = $('#faculty_filter').children(':selected').text();
+		$('.module').addClass('hidden');
+		if(fac === 'ALL FACULTIES')
+		{
+			if(searchText)
+			{
+				var divs = search(searchText);
+				for (var i = 0; i < divs.length; i++) {
+					$('#' + divs[i]).removeClass('hidden');
+				}
+			}
+			else
+			{
+				$('.module').removeClass('hidden');
+			}
+		}
+		else
+		{	
+			if(searchText)
+			{
+			 	var divs =search(searchText);
+			 	for (var i = 0; i < divs.length; i++) {
+					if($('#' + divs[i]).attr('data-faculty') === fac)
+					{
+						$('#' + divs[i]).removeClass('hidden');
 					}
 				}
 			}
-			for (var i = 0; i < divs.length; i++) {
-				$('#' + divs[i]).removeClass('hidden');
+			else
+			{
+				$.each($('#module_list div'),function(){
+					if($(this).attr('data-faculty') === fac)
+					{
+						$(this).removeClass('hidden');
+					} 
+				});
 			}
-		} else {
-			$('.module').removeClass('hidden');
 		}
+
+	}
+	// Filters the module list based on the input of the search box
+	$('#module_search').on('input',function(){
+		filter();
 	});
 	$('#module_list').on('dblclick','div',function(){
 		var module = getModule($(this).text());
@@ -729,7 +769,7 @@ $(function(){
 	.slimScroll({
 		position: 'right',
 		height: '100%',
-		distance: '5px',
+		distance: '2px',
 		railVisible: true
 	});
 	// Saves the skill tree.
@@ -825,9 +865,13 @@ $(function(){
 		skillTree.moduleCodes.sort();
 		for (var i = 0; i < skillTree.moduleCodes.length; i++) {
 			var div_id = skillTree.moduleCodes[i].replace(/\s*\/\s*/g, '_');
-			$("<div id=\"" + div_id + "\" class=\"module\">" + skillTree.moduleCodes[i] + "</div>").appendTo("#module_list");
+			$("<div id=\"" + div_id + "\" class=\"module\" data-faculty=\"" + skillTree.modules[skillTree.moduleCodes[i]].faculty + "\">" + skillTree.moduleCodes[i] + "</div>").appendTo("#module_list");
 		}
 		console.log("Modules added!");
+	});
+	//Faculty Filter
+	$('#faculty_filter').on('change', function(){	
+		filter();
 	});
 	// Resize elements to fit the screen
 	$(window).resize(function() {

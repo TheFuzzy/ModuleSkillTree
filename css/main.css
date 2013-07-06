@@ -225,3 +225,9 @@ div.pull-right input.btn.btn-small{
 	width: 80px;
 	margin-right: 20px;	
 }
+
+#faculty_filter {
+	font-size: 12px;
+	box-sizing: border-box;
+	width: 100%;
+}
