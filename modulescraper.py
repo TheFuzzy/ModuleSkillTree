@@ -12,10 +12,11 @@ import ModuleParser
 
 class Sources:
     NUSMODS = 'nusmods'
+    LOCAL_NUSMODS = 'local_nusmods'
     NUS_BULLETIN = 'nusbulletin'
     TEST = 'test'
 
-SOURCE = Sources.NUSMODS
+SOURCE = Sources.LOCAL_NUSMODS
 
 def retrieve_modules(acad_year, semester):
     modules = None
@@ -31,6 +32,8 @@ def retrieve_modules(acad_year, semester):
             modules = scrape_test(acad_year, semester)
         elif SOURCE == Sources.NUSMODS:
             modules = scrape_nusmods(acad_year, semester)
+        elif SOURCE == Sources.LOCAL_NUSMODS:
+            modules = scrape_local_nusmods(acad_year, semester)
         logging.debug("Modules restored")
     logging.debug("Filling prerequisite groups with missing preclusions")
     fill_prerequisite_groups(modules)
@@ -41,7 +44,7 @@ def retrieve_modules(acad_year, semester):
     #    logging.debug("Caching modules retrieved")
     #    cache_modules(acad_year, semester, SOURCE, modules)
     logging.debug("Groups filled")
-    generate_module_list(modules)
+    #generate_module_list(modules)
 
 def retrieve_modules_from_cache(acad_year, semester):
     modules = None
@@ -76,15 +79,23 @@ def cache_modules(acad_year, semester, source, modules):
     logging.debug('Cached module record added to database')
 
 # Generates a simplified module list containing only the code and name of each module, and stores it in the blobstore and memcache
-def generate_module_list(modules):
+def generate_module_list():
     json_modules = {}
-    for module_code, module in modules.iteritems():
+    #for module_code, module in modules.iteritems():
+    #    json_modules[module_code] = {
+    #        "code" : module["code"],
+    #        "name" : module["name"]
+    #    }
+    module_query = datatypes.Module.query(group_by=['code'])
+    for module_projection in module_query.iter(projection=['code']):
+        module_code = module_projection.code
+        module = datatypes.Module.query(datatypes.Module.code == module_code).order(-datatypes.Module.acad_year).get()
         json_modules[module_code] = {
-            "code" : module["code"],
-            "name" : module["name"]
+            "code" : module_code,
+            "name" : module.name,
+            "faculty" : module.faculty
         }
-    logging.debug('Generating simple module list for %d modules' % len(modules))
-    logging.debug('List generated')
+    logging.debug('Module list generated for %d modules' % len(json_modules))
     #file_name = files.blobstore.create(mime_type="application/json")
     #logging.debug('Storing list in blobstore')
     #with files.open(file_name, 'a') as file:
@@ -94,7 +105,7 @@ def generate_module_list(modules):
     #logging.debug('List file finalized')
     #blob_key = files.blobstore.get_blob_key(file_name)
     #module_list = datatypes.ModuleList(data=blobstore.BlobInfo.get(blob_key))
-    module_list = datatypes.ModuleList(data=json_modules)
+    module_list = datatypes.ModuleList(data=json_modules, id=datetime.now().strftime("moduleList_%H%M_%d%m%Y"))
     module_list.put()
     logging.debug('List file record added to database')
     json_modules_string = json.dumps(json_modules, sort_keys=True)
@@ -120,7 +131,7 @@ def cache_module_list(json_modules_string):
 #@db.transactional(xg=True)
 def store_modules(acad_year, semester, modules):
     for module_code, module in modules.iteritems():
-        logging.debug("Storing module %s" % module_code)
+        #logging.debug("Storing module %s" % module_code)
         code_list = []
         stored_module = datatypes.Module(
             id = "%s_%s_%d" % (module_code, acad_year, semester),
@@ -129,7 +140,10 @@ def store_modules(acad_year, semester, modules):
             semester = semester,
             name = module["name"],
             description = module["description"],
-            mc = module["mc"]
+            mc = module["mc"],
+            faculty = module["faculty"],
+            preclusions_string = module["preclusions_string"],
+            prerequisites_string = module["prerequisites_string"]
         )
         
         if "preclusions" in module:
@@ -147,9 +161,12 @@ def store_modules(acad_year, semester, modules):
                 )
                 prerequisite_groups.append(prereq_group)
             stored_module.prerequisite_groups = prerequisite_groups
+            
+        if "workload" in module:
+            stored_module.workload = module["workload"]
         
         stored_module.put()
-        logging.debug("Module stored")
+        #logging.debug("Module stored")
                 #store_prerequisite_group(group, module_key=stored_module.key)
 
 #@db.transactional(xg=True, propagation=db.INDEPENDENT)
@@ -184,10 +201,13 @@ def store_prerequisite_group(group, module_key):
 def fill_prerequisite_groups(modules):
     for module in modules.itervalues():
         for index, group in enumerate(module["prerequisites"]):
+            #logging.debug("Processing group %d in module %s" % (index, module["code"]))
+            #logging.debug("Initial group content: %s" % (str(group)))
             code_list = group[:]
             for module_code in group:
                 # module code may not actually exist.
                 if module_code in modules:
+                    #logging.debug("Module %s has the following preclusions: %s" % (module_code, str(modules[module_code]["preclusions"])))
                     code_list.extend(modules[module_code]["preclusions"])
             updated_group = list(set(code_list))
             module["prerequisites"][index] = updated_group
@@ -226,7 +246,11 @@ def fill_prerequisite_groups(modules):
 #       "name" : {name}
 #       "description" : {desc}
 #       "mc" : {mc}
+#       "faculty" : {faculty}
+#       "workload" : {workload}
+#       "preclusions_string" : {preclusions read as string directly}
 #       "preclusions" : [ {module codes as strings} ]
+#       "prerequisites_string" : {prerequisites read as string directly}
 #       "prerequisites" : { 2-D array of module codes as strings }
 #   },
 #   ...
@@ -240,6 +264,25 @@ def scrape_nusmods(acad_year, semester):
     req = urllib2.Request(url_string)
     res = urllib2.urlopen(req)
     data = json.loads(res.read())
+    return scrape_nusmods_data(data)
+    # function should terminate here.
+    
+# Scraper for an NUSMods local file
+def scrape_local_nusmods(acad_year, semester):
+    logging.debug("Retrieving local blob")
+    module_repo = datatypes.CachedModuleRepo.query(
+        datatypes.CachedModuleRepo.acad_year == acad_year,
+        datatypes.CachedModuleRepo.semester == semester
+    ).order(-datatypes.CachedModuleRepo.time_retrieved).get(projection=['data_k'])
+    logging.debug("Retrieved blob key: %s" % str(module_repo.data_k))
+    blob_info = blobstore.BlobInfo.get(module_repo.data_k)
+    blob_reader = blob_info.open()
+    data = json.loads(blob_reader.read())
+    return scrape_nusmods_data(data)
+    # function should terminate here.
+
+# Scraper for NUSMods-formatted data. Should only be caleld by scrape_nusmods and scrape_local_nusmods
+def scrape_nusmods_data(data):
     nusmods_modules = data["cors"]
     faculties = data["departments"]
     modules = {}
@@ -256,13 +299,17 @@ def scrape_nusmods(acad_year, semester):
         #if faculty in ["SCHOOL OF BUSINESS", "SCHOOL OF DESIGN AND ENVIRONMENT"]:
         prerequisites = []
         preclusions = []
+        preclusions_string = "None"
+        prerequisites_string = "None"
         # TODO: Parse the preclusions properly
         if "prerequisite" in nusmods_module:
             # prerequisites = ModuleParser.prereqModule(nusmods_module["label"], nusmods_module["prerequisite"], faculty)
+            prerequisites_string = nusmods_module["prerequisite"]
             prerequisites = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["prerequisite"])
         if "preclusion" in nusmods_module:
+            preclusions_string = nusmods_module["preclusion"]
             preclusion_groups = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["preclusion"])
-            preclusions = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["preclusion"])[0]
+            preclusions = preclusion_groups[0]
         
         
         modules[nusmods_module["label"]] = {
@@ -270,10 +317,16 @@ def scrape_nusmods(acad_year, semester):
             "name" : nusmods_module["title"],
             "description" : description,
             "mc" : int(nusmods_module["mcs"]),
-            "prerequisites" : prerequisites,
-            "preclusions" : preclusions
+            "faculty" : faculty,
+            "preclusions_string" : preclusions_string,
+            "preclusions" : preclusions,
+            "prerequisites_string" : prerequisites_string,
+            "prerequisites" : prerequisites
         }
+        if "workload" in nusmods_module:
+            modules[nusmods_module["label"]]["workload"] = nusmods_module["workload"]
     return modules
+
 
 # Unit test scraper
 def scrape_test(acad_year, semester):
@@ -283,6 +336,8 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 1000",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA1001",
             "preclusions" : ["AA1001"],
             "prerequisites" : []
         },
@@ -291,6 +346,8 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 1001",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA1000",
             "preclusions" : ["AA1000"],
             "prerequisites" : []
         },
@@ -299,6 +356,7 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 1010",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
             "preclusions" : [],
             "prerequisites" : []
         },
@@ -307,7 +365,10 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 2000",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA2001, AA2002, and AA2003",
             "preclusions" : [ "AA2001", "AA2002", "AA2003" ],
+            "prerequisites_string" : "(AA1000 or AA1001) and AA1010",
             "prerequisites" : [
                 [ "AA1000", "AA1001" ],
                 [ "AA1010" ]
@@ -318,7 +379,10 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 2001",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA2000, AA2002, and AA2003",
             "preclusions" : [ "AA2000", "AA2002", "AA2003" ],
+            "prerequisites_string" : "AA1001 and AA1010",
             "prerequisites" : [
                 [ "AA1001" ],
                 [ "AA1010" ]
@@ -329,7 +393,10 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 2002",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA2000, AA2001, and AA2003",
             "preclusions" : [ "AA2000", "AA2001", "AA2003" ],
+            "prerequisites_string" : "AA1000 and AA1010",
             "prerequisites" : [
                 [ "AA1000" ],
                 [ "AA1010" ]
@@ -340,7 +407,10 @@ def scrape_test(acad_year, semester):
             "name" : "Test Module 2003",
             "description" : "This is a test module",
             "mc" : 4,
+            "faculty" : "Test Faculty",
+            "preclusions_string" : "AA2000, AA2001, and AA2002",
             "preclusions" : [ "AA2000", "AA2001", "AA2002" ],
+            "prerequisites_string" : "AA1000 and AA1010",
             "prerequisites" : [
                 [ "AA1000" ],
                 [ "AA1010" ]

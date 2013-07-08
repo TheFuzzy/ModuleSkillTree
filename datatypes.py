@@ -55,28 +55,38 @@ class Module(ndb.Model):
     name = ndb.StringProperty(verbose_name="Name", required=True)
     description = ndb.TextProperty(verbose_name="Description", required=True)
     mc = ndb.IntegerProperty(verbose_name="MCs", required=True)
+    faculty = ndb.StringProperty(verbose_name="Faculty", required=True)
+    workload = ndb.TextProperty(verbose_name="Workload")
+    preclusions_string = ndb.TextProperty(verbose_name="Preclusions (String)", required=True)
     preclusions = ndb.StringProperty(verbose_name="Preclusions", repeated=True) # List of module codes as Strings
     represented_codes = ndb.StringProperty(verbose_name="Represented Codes", repeated=True) # List preclusions and the module code itself as Strings, used for searching
+    prerequisites_string = ndb.TextProperty(verbose_name="Prerequisites (String)", required=True)
     prerequisite_groups = ndb.LocalStructuredProperty(ModulePrerequisiteGroup, verbose_name="Prerequisite Groups", repeated=True)
-    
     #@property
     #def prerequisite_groups(self):
     #    return ModulePrerequisiteGroup.query(ModulePrerequisiteGroup.module == self.key)
     
 class AssignedModule(ndb.Model):
-    module_k = ndb.KeyProperty(kind=Module, verbose_name="Module Key", required=True)
     skill_tree_k = ndb.KeyProperty(kind=SkillTree, verbose_name="Skill Tree Key", required=True)
+    module_code = ndb.StringProperty(verbose_name="Module Code", required=True)
     semester = ndb.IntegerProperty(verbose_name="Semester", required=True) # Which semester the student wishes to take the module in the skill tree
     semester_index = ndb.IntegerProperty(verbose_name="Semester Index", required=True) # The location of the module within the semester 
     prerequisites = ndb.StringProperty(verbose_name="Prerequisites", repeated=True) # List of module codes as Strings, may amend to be keys instead
     is_exception = ndb.BooleanProperty(verbose_name="Is an exceptional case", required=True) # Whether the client should ignore pre-requisites as a "special case"
 
 class ModuleList(ndb.Model):
-    data = ndb.JsonProperty(verbose_name="Data", required=True, indexed=False) # Stripped list of modules as a simply Python dict.
+    data = ndb.JsonProperty(verbose_name="Data", required=True, indexed=False) # Stripped list of modules as a simple Python dict.
     time_generated = ndb.DateTimeProperty(verbose_name="Date Retrieved", auto_now_add=True)
 
 class CachedModuleRepo(ndb.Model):
     data_k = ndb.BlobKeyProperty(verbose_name="Blob Key", required=True)
-    date_retrieved = ndb.DateProperty(verbose_name="Date Retrieved", auto_now_add=True)
+    time_retrieved = ndb.DateTimeProperty(verbose_name="Time Retrieved", auto_now_add=True)
     acad_year = ndb.StringProperty(verbose_name="Academic Year", required=True)
     semester = ndb.IntegerProperty(verbose_name="Semester", required=True)
+
+class BugReport(ndb.Model):
+    student_k = ndb.KeyProperty(kind=Student, verbose_name="Student Key")
+    name = ndb.StringProperty(verbose_name="Name of Reportee", required=True)
+    module_code = ndb.StringProperty(verbose_name="Module Code", required=True)
+    reason = ndb.StringProperty(verbose_name="Reason", required=True)
+    time_reported = ndb.DateTimeProperty(verbose_name="Time Retrieved", auto_now_add=True)

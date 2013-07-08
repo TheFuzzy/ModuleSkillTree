@@ -97,10 +97,15 @@ class GetModuleHandler(webapp2.RequestHandler):
                 "name" : module.name,
                 "description" : module.description,
                 "mc" : module.mc,
-                "prerequisites" : prerequisites
+                "faculty" : module.faculty,
+                "prerequisites_string" : module.prerequisites_string,
+                "prerequisites" : prerequisites,
+                "preclusions_string" : module.preclusions_string
             }
             if hasattr(module, 'preclusions'):
                 json_module["preclusions"] = module.preclusions
+            if hasattr(module, 'workload'):
+                json_module["workload"] = module.workload
             self.response.headers['Content-Type'] = 'application/json'
             self.response.write(json.dumps(json_module))
 
@@ -140,7 +145,10 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                 logging.debug("Retrieved skill tree")
                 json_assigned_modules = {}
                 for assigned_module in skill_tree.assigned_modules.iter():
-                    module = assigned_module.module_k.get()
+                    module_code = assigned_module.module_code
+                    module = datatypes.Module.query(datatypes.Module.module_code == module_code)
+                                             .order(-datatypes.Module.acad_year)
+                                             .get()
                     prerequisites = []
                     for prerequisite_group in module.prerequisite_groups:
                         prerequisites.append(prerequisite_group.prerequisites)
@@ -215,15 +223,16 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                 for json_assigned_module in json_assigned_modules.itervalues():
                     logging.debug("Inserting/updating module %s" % json_assigned_module["module"])
                     logging.debug(json_assigned_module)
-                    module_k = datatypes.Module.query(datatypes.Module.code == json_assigned_module["module"]).get(keys_only=True)
+                    module_code = json_assigned_module["module"]
+                    #module_k = datatypes.Module.query(datatypes.Module.code == json_assigned_module["module"]).get(keys_only=True)
                     # Get any existing assigned module associated with the same module
-                    assigned_module = datatypes.AssignedModule.query(ndb.AND(datatypes.AssignedModule.module_k == module_k,
+                    assigned_module = datatypes.AssignedModule.query(ndb.AND(datatypes.AssignedModule.module_code == module_code,
                                                                              datatypes.AssignedModule.skill_tree_k == skill_tree.key)).get()
                     if assigned_module is None:
                         logging.debug("Does not exist, initializing new entity")
                         assigned_module = datatypes.AssignedModule(
                             skill_tree_k = skill_tree.key,
-                            module_k = module_k,
+                            module_code = module_code,
                             parent = skill_tree.key,
                             semester = json_assigned_module["semester"],
                             semester_index = json_assigned_module["semesterIndex"],

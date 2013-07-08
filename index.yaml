@@ -10,9 +10,28 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: CachedModuleRepo
+  properties:
+  - name: acad_year
+  - name: semester
+  - name: time_retrieved
+    direction: desc
+  - name: data_k
+
 - kind: Module
   properties:
   - name: __key__
+    direction: desc
+
+- kind: Module
+  properties:
+  - name: acad_year
+  - name: code
+
+- kind: Module
+  properties:
+  - name: code
+  - name: acad_year
     direction: desc
 
 - kind: Module

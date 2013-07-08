@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+{% autoescape true %}
+<html>
+    <meta charset="utf-8" />
+	<head>
+		<link href="../bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+		<link href="../css/jquery-ui.css" type="text/css" rel="stylesheet" />
+		<link href="../css/jquery-ui.css" type="text/css" rel="stylesheet" />
+		<script type="text/javascript" src="../scripts/jquery-1.9.1.min.js"></script>
+		<script type="text/javascript" src="../scripts/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="../scripts/jquery.iframe-post-form.js"></script>
+		<script type="text/javascript"> 
+			$(function(){
+				$('#progressBar').progressbar({
+					value: false
+				});
+				$("#uploadForm").iframePostForm({
+					post : function() {
+						$(this).hide(1000);
+						$("#progressBar").show(1000);
+					},
+					complete : function(response) {
+						$("#progressBar").stop().hide(1000);
+						$("#response").html(response).show(1000);
+					}
+				});
+			}); 	
+		</script>
+		<style>
+			#progressbar .ui-progressbar-value {
+				background-color: #cc0;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Upload NUSMods JSON repository</h1>
+		<form id="uploadForm" action="{{ upload_url }}" method="POST" enctype="multipart/form-data">
+			<label for="json_upload">JSON file:</label>
+			<input id="json_upload" type="file" name="file" />
+			<br />
+			<label for="acad_year_select">Academic year:</label>
+			<select id="acad_year_select" name="acad_year">
+				<option>2012/2013</option>
+				<option>2013/2014</option>
+			</select>
+			<label for="semester">Semester (numbers only)</label>
+			<input id="semester" name="semester" type="text" value="1" />
+			<br />
+			<input type="submit" value="Upload data" class="btn btn-primary" />
+		</form>
+		<div id="progressBar" style="display:none"></div>
+		<p id="response" style="display:none"></p>
+	</body>
+</html>
+{% endautoescape %}

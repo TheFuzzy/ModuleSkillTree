@@ -18,24 +18,27 @@ import webapp2
 import os
 import jinja2
 from google.appengine.api import files, taskqueue
-from google.appengine.ext.blobstore import BlobInfo
+from google.appengine.ext import blobstore
+from google.appengine.ext.webapp import blobstore_handlers
 
 from datetime import date, datetime
 import logging
 from django.utils import simplejson as json
 import urllib
 import urllib2
-from datatypes import Student, Module, AssignedModule, CachedModuleRepo
+import datatypes
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
-    extensions=['jinja2.ext.autoescape'])
+    extensions=['jinja2.ext.autoescape'], autoescape=True)
 
 class AdminHandler(webapp2.RequestHandler):
     def get(self):
         self.response.write('Hello world!')
         
 class IndexModules(webapp2.RequestHandler):
+    def get(self):
+        self.response.write('Unfinished')
     # MODULE_SEARCH_URL = 'https://ivle.nus.edu.sg/api/Lapi.svc/Modules_Search'
     # API_KEY = 'wvGXXnp25lmkyO5x8Q6I4'
     
@@ -130,6 +133,39 @@ class IndexModulesAsync(webapp2.RequestHandler):
             #else
                 #logging.info('Module operation added to memcache')
         self.response.write(template.render({ 'label' : 'Loading...','async_op' : 'IndexModules', }))
+        
+class UploadJsonHandler(blobstore_handlers.BlobstoreUploadHandler):
+    def post(self):
+        logging.debug("File uploaded.")
+        self.response.headers['Content-Type'] = 'text/plain'
+        try:
+            upload_files = self.get_uploads('file')
+            acad_year = self.request.get("acad_year")
+            semester = int(self.request.get("semester"))
+            blob_info = upload_files[0]
+            module_repo = datatypes.CachedModuleRepo(
+                data_k = blob_info.key(),
+                acad_year = acad_year,
+                semester = semester
+            )
+            module_repo.put()
+            logging.debug("Module repository registered.")
+            self.response.write("Repository uploaded!")
+        except ValueError:
+            self.error(400)
+            logging.debug("ValueError occured")
+            self.response.write("ValueError occured!")
+        #except:
+        #    self.error(400)
+        #    logging.debug("Unknown error occured")
+        #    self.response.write("Error occured!")
+            
+class UploadPageHandler(webapp2.RequestHandler):
+    def get(self):
+        template = JINJA_ENVIRONMENT.get_template('UploadPage.html')
+        upload_url = blobstore.create_upload_url('/admin/UploadJson')
+        logging.debug("Upload URL: %s" % upload_url)
+        self.response.write(template.render({ "upload_url" : upload_url }))
 
 # class IndexModulesFinished(webapp2.RequestHandler):
     # def post(self):
@@ -149,6 +185,8 @@ class IndexModulesAsync(webapp2.RequestHandler):
 app = webapp2.WSGIApplication([
     ('/admin/', AdminHandler),
     ('/admin/IndexModules', IndexModules),
-    ('/admin/IndexModulesAsync', IndexModulesAsync)
+    ('/admin/IndexModulesAsync', IndexModulesAsync),
+    ('/admin/UploadJson', UploadJsonHandler),
+    ('/admin/UploadPage', UploadPageHandler)
     #('/admin/IndexModulesFinished', IndexModulesFinished)
 ], debug=True)

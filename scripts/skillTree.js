@@ -38,7 +38,7 @@ jsPlumb.ready(function() {
 		endpoint:"Blank",
 		/*paintStyle:{ fillStyle:"#225588",radius:7 },*/
 		isSource:true,
-		connector:[ "Flowchart", { stub:10, gap:0, cornerRadius:5 } ],
+		connector:[ "Straight", { stub:10, gap:0, cornerRadius:5 } ],
 		maxConnections:-1,					/*
 		hoverPaintStyle:endpointHoverStyle,*/
 		connectorStyle:connectorPaintStyle,
