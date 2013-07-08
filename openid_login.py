@@ -17,18 +17,51 @@
 import webapp2
 from google.appengine.api import users
 
-class OpenId_LoginHandler(webapp2.RequestHandler):
+JINJA_ENVIRONMENT = jinja2.Environment(
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
+    extensions=['jinja2.ext.autoescape'])
+
+class Providers:
+    GOOGLE = "google" # Will be ignored anyway
+    YAHOO = "yahoo="
+    MYOPENID = "myopenid"
+    NUS = "nus"
+    URLS = {
+        Providers.GOOGLE : "www.google.com/accounts/o8/id",
+        Providers.YAHOO : "yahoo.com",
+        Providers.NUS : "openid.nus.edu.sg",
+        Providers.MYOPENID : "myopenid.com"
+    }
+
+class OpenIdLoginHandler(webapp2.RequestHandler):
     def get(self):
+        mode = self.request.get('mode', default_value=None)
         user = users.get_current_user()
-
+        
         if user:
-            self.response.headers['Content-Type'] = 'text/plain'
-            self.response.write('Hello, ' + user.nickname() + '\n')
-            self.response.write(users.create_logout_url('/'))
+            # TODO: You are already logged in!
+            #self.response.headers['Content-Type'] = 'text/plain'
+            #self.response.write('Hello, ' + user.nickname() + '\n')
+            #self.response.write(users.create_logout_url('/'))
+            logging.info("Logged in user %s somehow reached OpenID login page." % user.nickname())
+            self.redirect("/")
         else:
-            self.redirect(users.create_login_url(self.request.uri))
-
+            provider = urllib.unquote_plus(self.request.get('provider', default_value=''))
+            redirect_uri = urllib.unquote_plus(self.request.get('redirect', default_value='/'))
+            if provider != '':
+                if provider == Providers.GOOGLE:
+                    login_url = users.create_login_url(dest_url=redirect_uri)
+                else:
+                    login_url = users.create_login_url(dest_url=redirect_uri, federated_identity=Providers.URLS[provider])
+                self.redirect(login_url)
+            else:
+                # TODO: Render login page
+                args = { 'mode' : mode }
+                template = JINJA_ENVIRONMENT.get_template('OpenID.html')
+                self.response.write(template.render(args))
+                
 
 app = webapp2.WSGIApplication([
-    ('/_ah/login_required', OpenId_LoginHandler)
+    ('/_ah/login_required', OpenIdLoginHandler)
+    #('/_ah/login_required', OpenId_LoginHandler)
 ], debug=True)

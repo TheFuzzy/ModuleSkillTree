@@ -43,6 +43,14 @@ body {
 .mst-icon-close:before {
 	content: "\63";
 }
+div.center {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+}
 #main_container{
 }
 #top_panel{
@@ -91,14 +99,6 @@ body {
     width: 600px;
     height: 200px;
     background: transparent;
-    
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    margin: auto;
-    
     text-shadow: -2px -2px 0 #101010;
 }
 #title_panel .hero-unit h1 {
@@ -106,6 +106,39 @@ body {
 }
 #title_panel .hero-unit p {
     color: #ccc;
+}
+#openid_panel {
+	background-color: #FFF;
+}
+#openid_panel input[type=radio] {
+	padding: 0;
+	margin: 0;
+	height: 16px;
+	width: 16px;
+	float: left;
+	position: absolute;
+	left: 0;
+	opacity: 0;
+}
+#openid_panel label {
+	display: inline-block;
+}
+#openid_panel input:checked + label {
+	color: red;
+}
+#openid_panel input[type=submit] {
+	display: block;
+}
+#openid_panel>div {
+	width: 500px;
+	height: 400px;
+	border: 1px solid black;
+}
+.openid_provider {
+	display: inline-block;
+	width: 200px;
+	height: 100px;
+	background-color: grey;
 }
 /* Notification panel definitions */
 #notification_panel{
