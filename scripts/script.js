@@ -135,8 +135,10 @@ function loadFromServer(guid) {
 					return $(this).text() == code;
 				}).addClass('added');
 				
-				moduleBox.css('left', -500 + 'px');
-				moduleBox.css('top', 50 + 'px');
+				//var position = calculatePosition(assignedModule.semester-1, assignedModule.semesterIndex);
+				
+				//moduleBox.css('left', position.left + 'px');
+				//moduleBox.css('top', position.top + 'px');
 			}
 		}
 		for (var code in skillTree.assignedModules) {
@@ -147,15 +149,22 @@ function loadFromServer(guid) {
 				}
 			}
 		}
-		repositionModules();
+		repositionModules(false);
 	});
 }
 
+function calculatePosition(row, col) {
+	position = {
+		left : skillTree.MODULE_LEFT_SPACING + (col * skillTree.MODULE_HORIZ_SPACING) + (col * skillTree.MODULE_WIDTH),
+		top : skillTree.MODULE_TOP_SPACING + (row * skillTree.MODULE_VERT_SPACING) + (row * skillTree.MODULE_HEIGHT)
+	}
+	return position;
+}
 
 // Helper class to reposition all .moduleBox divs to proper positions, based only on the values in the global variable.
 // animate=false will prevent any animations from running.
 function repositionModules(animate) {
-	animate = typeof animate !== 'undefined' ? a : true;
+	animate = typeof animate !== 'undefined' ? animate : true;
 	var numSemesters = skillTree.semesters.length;
 	for (var i = 0; i < numSemesters; i++) {
 		var semester = skillTree.semesters[i];
@@ -167,12 +176,10 @@ function repositionModules(animate) {
 			else moduleBox = $('#' + assignedModule.module.code + 'box');
 			moduleBox.stop(true);
 			
+			var position = calculatePosition(i, j);
+			var topOffset = position.top;
+			var leftOffset = position.left;
 			
-			var topOffset = parseInt(i);
-			var leftOffset = parseInt(j);
-			
-			topOffset = skillTree.MODULE_TOP_SPACING + (topOffset * skillTree.MODULE_VERT_SPACING) + (topOffset * skillTree.MODULE_HEIGHT);
-			leftOffset = skillTree.MODULE_LEFT_SPACING + (leftOffset * skillTree.MODULE_HORIZ_SPACING) + (leftOffset * skillTree.MODULE_WIDTH);
 			//console.log(assignedModule.module.code + ": left=" + leftOffset + ",top=" + topOffset);
 			// Check if a position was already set programmatically. If not, set a position outside the viewport.
 			if (animate && moduleBox[0].style.left == "") {
@@ -366,14 +373,16 @@ function ensureModuleDetails(module, options) {
 // semesterNum - int
 function ensureSemester(semesterNum) {
 	if ((semesterNum > 0) && (!skillTree.semesters[semesterNum-1])) {
-		skillTree.semesters[semesterNum-1] = [];
-		var semesterDiv = $('<div id="semester' + semesterNum + '">' +
-								'<div class="semester_meta">' +
-									'<span>Semester ' + semesterNum + '</span>' +
-									'<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>' +
-								'</div>' +
-							'</div>');
-		semesterDiv.appendTo("#skillTree").semester();
+		for (var i = skillTree.semesters.length; i < semesterNum; i++) {
+			skillTree.semesters[i] = [];
+			var semesterDiv = $('<div id="semester' + (i+1) + '">' +
+									'<div class="semester_meta">' +
+										'<span>Semester ' + (i+1) + '</span>' +
+										'<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>' +
+									'</div>' +
+								'</div>');
+			semesterDiv.appendTo("#skillTree").semester();
+		}
 	}
 }
 // Trims off any excess empty semesters at the end of the skill tree.
