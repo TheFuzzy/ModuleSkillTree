@@ -252,6 +252,68 @@ function countModules(modules) {
 function isFullyLoaded(module) {
 	return (module !== null) && ("description" in module);
 }
+// Returns the module DIVs based on the search text given.
+function search(text)
+{
+	var searchText = text;
+	var divs = new Array();
+	for (var code in skillTree.modules) {
+		if (skillTree.modules.hasOwnProperty(code)) {
+			var module = skillTree.modules[code];
+			var moduleName = module.name.toLowerCase();
+			var moduleCode = code.toLowerCase();
+			if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
+				var div_id = module.code.replace(/\s*\/\s*/gi, '_');
+				divs.push(div_id);
+			}
+		}
+	}
+	return divs;
+}
+// Filters and hides modules in the list according to the input value and faculty selection.
+function filter()
+{
+	var searchText = $('#module_search').val().replace('_', '').toLowerCase();	
+	var fac = $('#faculty_filter').children(':selected').text();
+	$('.module').addClass('hidden');
+	if(fac === 'ALL FACULTIES')
+	{
+		if(searchText)
+		{
+			var divs = search(searchText);
+			for (var i = 0; i < divs.length; i++) {
+				$('#' + divs[i]).removeClass('hidden');
+			}
+		}
+		else
+		{
+			$('.module').removeClass('hidden');
+		}
+	}
+	else
+	{	
+		if(searchText)
+		{
+			var divs =search(searchText);
+			for (var i = 0; i < divs.length; i++) {
+				if($('#' + divs[i]).attr('data-faculty') === fac)
+				{
+					$('#' + divs[i]).removeClass('hidden');
+				}
+			}
+		}
+		else
+		{
+			$.each($('#module_list div'),function(){
+				if($(this).attr('data-faculty') === fac)
+				{
+					$(this).removeClass('hidden');
+				} 
+			});
+		}
+	}
+
+}
 
 function ensureModuleDetails(module, options) {
 	options = typeof options !== 'undefined' ? options : {}
@@ -374,7 +436,7 @@ function assignSemester(assignedModule, semesterNum) {
 		semesterNum = 1;
 	}
 	//Process other modules that have it as a prerequisite if module is being shifted forwards.
-	if (semesterNum > assignedModule.semester) {
+	if (typeof assignedModule.semester === 'undefined' || semesterNum > assignedModule.semester) {
 		// Iterate through all the assigned modules
 		if (!isPrereqGroup(assignedModule)) {
 			for (var i in skillTree.assignedModules) {
@@ -396,7 +458,9 @@ function assignSemester(assignedModule, semesterNum) {
 			}
 		} else {
 			var postreqMod = getAssignedModule(assignedModule.module);
-			semesterNum = assignSemester(postreqMod, semesterNum+1) - 1;
+			if (postreqMod.semester <= semesterNum) {
+				semesterNum = assignSemester(postreqMod, semesterNum+1) - 1;
+			}
 		}
 	}
 	// Ensure that the semester exists before trying to assign to it.
@@ -452,12 +516,13 @@ function addModuleToTree(module) {
 					'</div>');
 	moduleBox.appendTo('#skillTree').moduleBox(module);
 	// Hide the module code in the search list.
-	$('.module').removeClass('hidden').filter(function() {
+	$('.module').filter(function() {
 		return $(this).text() == module.code;
 	}).addClass('added');
 	
 	// Remove the filter
 	$("#module_search").val("");
+	filter();
 	
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
 	if (!assignSemester(assignedModule, 1)) {
@@ -691,67 +756,7 @@ $(function(){
 	});
 	// Hide the alert box when the close button is clicked.
 	$("#notification .close").click(hideNotification);
-	function search(text)
-	{
-		var searchText = text;
-		var divs = new Array();
-		for (var code in skillTree.modules) {
-			if (skillTree.modules.hasOwnProperty(code)) {
-				var module = skillTree.modules[code];
-				var moduleName = module.name.toLowerCase();
-				var moduleCode = code.toLowerCase();
-				if (moduleCode.indexOf(searchText) > -1 || moduleName.indexOf(searchText) > -1) {
-					var div_id = module.code.replace(/\s*\/\s*/gi, '_');
-					divs.push(div_id);
-				}
-			}
-		}
-		return divs;
-	}
 	
-	function filter()
-	{
-		var searchText = $('#module_search').val().replace('_', '').toLowerCase();	
-		var fac = $('#faculty_filter').children(':selected').text();
-		$('.module').addClass('hidden');
-		if(fac === 'ALL FACULTIES')
-		{
-			if(searchText)
-			{
-				var divs = search(searchText);
-				for (var i = 0; i < divs.length; i++) {
-					$('#' + divs[i]).removeClass('hidden');
-				}
-			}
-			else
-			{
-				$('.module').removeClass('hidden');
-			}
-		}
-		else
-		{	
-			if(searchText)
-			{
-			 	var divs =search(searchText);
-			 	for (var i = 0; i < divs.length; i++) {
-					if($('#' + divs[i]).attr('data-faculty') === fac)
-					{
-						$('#' + divs[i]).removeClass('hidden');
-					}
-				}
-			}
-			else
-			{
-				$.each($('#module_list div'),function(){
-					if($(this).attr('data-faculty') === fac)
-					{
-						$(this).removeClass('hidden');
-					} 
-				});
-			}
-		}
-
-	}
 	// Filters the module list based on the input of the search box
 	$('#module_search').on('input',function(){
 		filter();
@@ -879,8 +884,10 @@ $(function(){
 			- $("#top_panel").outerHeight()
 			- $("#notification_panel").outerHeight()
 			- ($("#left_panel").innerHeight() - $("#left_panel").height())
-			- $("#module_search").outerHeight() - 50
-			- $("#control_panel").outerHeight();
+			- $("#module_search").outerHeight()
+			- $("#faculty_filter").outerHeight()
+			- $("#control_panel").outerHeight()
+			- 100;
 		$("#module_list_view").css("height", moduleListHeight + "px");
 	});
 	$(window).resize(); // Trigger the resize event

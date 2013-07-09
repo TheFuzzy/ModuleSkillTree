@@ -35,6 +35,8 @@ def retrieve_modules(acad_year, semester):
         elif SOURCE == Sources.LOCAL_NUSMODS:
             modules = scrape_local_nusmods(acad_year, semester)
         logging.debug("Modules restored")
+    logging.debug("Getting rid of modules with multiple module codes")
+    decouple_multiple_module_codes(modules)
     logging.debug("Filling prerequisite groups with missing preclusions")
     fill_prerequisite_groups(modules)
     logging.debug("Storing modules in datastore")
@@ -196,6 +198,20 @@ def store_prerequisite_group(group, module_key):
     
     #if parent is None:
     #    logging.debug("Prerequisite groups stored")
+
+# Ensures that there are no modules with multiple codes
+def decouple_multiple_module_codes(modules):
+    for code, module in modules.iteritems():
+        moduleCodes = module["code"].split(" / ")
+        for moduleCode in moduleCodes:
+            if moduleCode != code:
+                if moduleCode not in module["preclusions"]:
+                    module["preclusions"].append(moduleCode)
+                if moduleCode in modules and code not in modules[moduleCode]["preclusions"]:
+                    modules[moduleCode]["preclusions"].append(code)
+        if module["code"] != code:
+            module["code"] = code
+
 # Ensures that there are no missing preclusions from any prerequisite group.
 #db.transactional(xg=True)
 def fill_prerequisite_groups(modules):
@@ -230,6 +246,7 @@ def fill_prerequisite_groups(modules):
 #        group.prerequisites = prerequisites
 #        group.put()
 
+
 #@db.transactional(xg=True)        
 #def fill_prerequisite_group(group):
     
@@ -242,7 +259,7 @@ def fill_prerequisite_groups(modules):
 # Follow this data format:
 # {
 #   "{module code}" : {
-#       "code" : {module code}
+#       "code" : {module code} (can contain multiple codes delimited by " / "
 #       "name" : {name}
 #       "description" : {desc}
 #       "mc" : {mc}
@@ -286,7 +303,7 @@ def scrape_nusmods_data(data):
     nusmods_modules = data["cors"]
     faculties = data["departments"]
     modules = {}
-    for nusmods_module in nusmods_modules.itervalues():
+    for module_code, nusmods_module in nusmods_modules.iteritems():
         description = "No description"
         if "description" in nusmods_module:
             description = nusmods_module["description"]
@@ -305,14 +322,14 @@ def scrape_nusmods_data(data):
         if "prerequisite" in nusmods_module:
             # prerequisites = ModuleParser.prereqModule(nusmods_module["label"], nusmods_module["prerequisite"], faculty)
             prerequisites_string = nusmods_module["prerequisite"]
-            prerequisites = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["prerequisite"])
+            prerequisites = ModuleParser.precludeModule(module_code, nusmods_module["prerequisite"])
         if "preclusion" in nusmods_module:
             preclusions_string = nusmods_module["preclusion"]
-            preclusion_groups = ModuleParser.precludeModule(nusmods_module["label"], nusmods_module["preclusion"])
+            preclusion_groups = ModuleParser.precludeModule(module_code, nusmods_module["preclusion"])
             preclusions = preclusion_groups[0]
         
         
-        modules[nusmods_module["label"]] = {
+        modules[module_code] = {
             "code" : nusmods_module["label"],
             "name" : nusmods_module["title"],
             "description" : description,
@@ -324,7 +341,7 @@ def scrape_nusmods_data(data):
             "prerequisites" : prerequisites
         }
         if "workload" in nusmods_module:
-            modules[nusmods_module["label"]]["workload"] = nusmods_module["workload"]
+            modules[module_code]["workload"] = nusmods_module["workload"]
     return modules
 
 
