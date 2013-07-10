@@ -34,7 +34,8 @@ class SkillTree(ndb.Model):
             name = kwargs.get("name"),
             guid = guid,
             first_year = kwargs.get("first_year"),
-            first_semester = kwargs.get("first_semester")
+            first_semester = kwargs.get("first_semester"),
+            id = "sk" + guid
         )
         return self
     
@@ -52,6 +53,7 @@ class Module(ndb.Model):
     code = ndb.StringProperty(verbose_name="Code", required=True)
     acad_year = ndb.StringProperty(verbose_name="Academic Year", required=True)
     semester = ndb.IntegerProperty(verbose_name="Semester", required=True)
+    semester_code = ndb.ComputedProperty(lambda self: "%s_%s" % (self.acad_year, self.semester))
     name = ndb.StringProperty(verbose_name="Name", required=True)
     description = ndb.TextProperty(verbose_name="Description", required=True)
     mc = ndb.IntegerProperty(verbose_name="MCs", required=True)

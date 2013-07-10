@@ -19,6 +19,8 @@ import jinja2
 import os
 
 from google.appengine.api import users
+import logging
+import urllib
 import datatypes
 
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -30,8 +32,16 @@ class SkillTreeHandler(webapp2.RequestHandler):
         user = users.get_current_user()
         template = JINJA_ENVIRONMENT.get_template('SkillTree.html')
         args = {}
+        skill_tree = None
+        
+        guid = urllib.unquote_plus(self.request.get('id', default_value=''))
         
         args['loginurl'] = users.create_login_url(self.request.uri)
+        
+        if guid != '':
+            logging.debug("GUID %s retrieved from URL" % guid)
+            skill_tree = datatypes.SkillTree.query('guid' == guid).get()
+        
         if user:
             # Gets the associated student if it exists, otherwise, create a new one
             student = datatypes.Student.query(datatypes.Student.user == user).get()
@@ -44,22 +54,45 @@ class SkillTreeHandler(webapp2.RequestHandler):
                 )
                 student.put()
             
-            skill_tree = student.skill_trees.get()
             if skill_tree is None:
-                skill_tree = datatypes.SkillTree.with_guid(
-                    parent = student.key,
-                    student_k = student.key,
-                    name = "Main Skill Tree",
-                    first_year = "2013/2014",
-                    first_semester = 1
-                )
-                skill_tree.put()
-            
+                skill_tree = student.skill_trees.get()
+                if skill_tree is None:
+                    skill_tree = datatypes.SkillTree.with_guid(
+                        parent = student.key,
+                        student_k = student.key,
+                        name = "Main Skill Tree",
+                        first_year = "2013/2014",
+                        first_semester = 1
+                    )
+                    skill_tree.put()
+                args['isownskilltree'] = True
+            else:
+                own_skill_tree = student.skill_trees.get()
+                if own_skill_tree is None:
+                    own_skill_tree = datatypes.SkillTree.with_guid(
+                        parent = student.key,
+                        student_k = student.key,
+                        name = "Main Skill Tree",
+                        first_year = "2013/2014",
+                        first_semester = 1
+                    )
+                    own_skill_tree.put()
+                args['isownskilltree'] = skill_tree.guid == own_skill_tree.guid
+                if args['isownskilltree'] is not None:
+                    args['ownskilltree'] = own_skill_tree
             
             args['student'] = student
             args['loginurl'] = users.create_logout_url('/')
             args['skilltree'] = skill_tree
         
+        elif skill_tree is not None:
+            args['skilltree'] = skill_tree
+        else:
+            self.redirect(args['loginurl'])
+        
+        self.response.headers["Cache-Control"]="no-cache, no-store, must-revalidate"
+        self.response.headers["Pragma"]="no-cache"
+        self.response.headers["Expires"]="0"
         self.response.write(template.render(args))
 
 

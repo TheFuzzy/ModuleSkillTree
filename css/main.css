@@ -218,6 +218,7 @@ div.center {
     padding: 5px;
 	border: 1px solid #ccc;
 	background-color: #eee;
+    cursor: default;
 	
 	-webkit-border-radius: 5px;
 	   -moz-border-radius: 5px;
@@ -244,7 +245,7 @@ div.center {
 }
 div.pull-right label.control-label, 
 div.pull-right input.input-small,
-div.pull-right input.btn.btn-small{
+div.pull-right input.btn.btn-small {
 	display: inline;
 	padding: 5px;
 	vertical-align: middle;
@@ -263,4 +264,45 @@ div.pull-right input.btn.btn-small{
 	font-size: 12px;
 	box-sizing: border-box;
 	width: 100%;
+}
+
+#overlayBG {
+	opacity:    0.5; 
+	background: #000; 
+	width:      100%;
+	height:     100%; 
+	z-index:    200;
+	top:        0; 
+	left:       0; 
+	position:   fixed;
+}
+
+#hiddenOverlay {
+	background: #transparent; 
+	width:      100%;
+	height:     100%; 
+	z-index:    200;
+	top:        0; 
+	left:       0; 
+	position:   fixed;
+}
+
+#progress {
+	color: #fff;
+	font-size: 30pt;
+	text-align: center;
+	width: 3em;
+	height:1em;
+	line-height:1;
+}
+
+#backgroundProgress.active {
+	background: -moz-linear-gradient(left,  rgba(50,255,50,0.5) 0%, rgba(50,255,50,0.5) 99%, rgba(50,255,50,0) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(50,255,50,0.5)), color-stop(99%,rgba(50,255,50,0.5)), color-stop(100%,rgba(50,255,50,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(left,  rgba(50,255,50,0.5) 0%,rgba(50,255,50,0.5) 99%,rgba(50,255,50,0) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(left,  rgba(50,255,50,0.5) 0%,rgba(50,255,50,0.5) 99%,rgba(50,255,50,0) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(left,  rgba(50,255,50,0.5) 0%,rgba(50,255,50,0.5) 99%,rgba(50,255,50,0) 100%); /* IE10+ */
+	background: linear-gradient(to right,  rgba(50,255,50,0.5) 0%,rgba(50,255,50,0.5) 99%,rgba(50,255,50,0) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8032ff32', endColorstr='#0032ff32',GradientType=1 ); /* IE6-9 */
+	background-repeat: no-repeat;
 }

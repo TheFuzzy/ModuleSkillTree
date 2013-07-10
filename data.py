@@ -35,7 +35,7 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 class Data():
     @staticmethod
     def get_latest_module(module_code):
-        return datatypes.Module.query(datatypes.Module.code == module_code).order(-datatypes.Module.acad_year).get()
+        return datatypes.Module.query(datatypes.Module.code == module_code).order(-datatypes.Module.semester_code).get()
     
     @staticmethod
     def get_latest_list():
@@ -174,10 +174,15 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                         "name" : module.name,
                         "description" : module.description,
                         "mc" : module.mc,
-                        "prerequisites" : prerequisites
+                        "faculty" : module.faculty,
+                        "prerequisites_string" : module.prerequisites_string,
+                        "prerequisites" : prerequisites,
+                        "preclusions_string" : module.preclusions_string
                     }
                     if hasattr(module, 'preclusions'):
                         json_module["preclusions"] = module.preclusions
+                    if hasattr(module, 'workload'):
+                        json_module["workload"] = module.workload
                     json_assigned_module = {
                         "module" : json_module,
                         "semester" : assigned_module.semester,
@@ -185,13 +190,14 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                     }
                     if hasattr(assigned_module, 'prerequisites'):
                         json_assigned_module["prerequisites"] = assigned_module.prerequisites
+                        #for iterator in range(15):
+                        #    json_assigned_module["prerequisites"].append(json_assigned_module["prerequisites"][:]) 
                     json_assigned_modules[module.code] = json_assigned_module
                 self.response.headers['Content-Type'] = 'application/json'
                 self.response.write(json.dumps({
                     "guid" : guid,
                     "assignedModules" : json_assigned_modules
                 }))
-
 
 class SaveSkillTreeHandler(webapp2.RequestHandler):
     def post(self):

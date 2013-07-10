@@ -14,8 +14,6 @@ args:
 <link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
 <link href="./css/main.css" type="text/css" rel="stylesheet" />
 <!--end of css files-->
-
-<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
 <title>Module Skill Tree</title>
 </head>
 <body>
@@ -23,14 +21,14 @@ args:
 	<div class="hero-unit center">
 		<h1>NUS Module Skill Tree</h1>
 		<p>
-			{% if user is defined and user is not none %}
-				Welcome back!
+			{% if student is defined and student is not none %}
+				Welcome back, {{ student.name }}!
 			{% else %}
 				Need to plan your time in NUS?
 			{% endif %}
 		</p>
 		<a href="/skilltree" class="btn btn-large btn-primary">
-			{% if user is defined and user is not none %}
+			{% if student is defined and student is not none %}
 				Plan some more
 			{% else %}
 				Get started

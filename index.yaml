@@ -37,4 +37,18 @@ indexes:
 - kind: Module
   properties:
   - name: code
+  - name: acad_year
+    direction: desc
+  - name: semester
+    direction: desc
+
+- kind: Module
+  properties:
+  - name: code
   - name: name
+
+- kind: Module
+  properties:
+  - name: code
+  - name: semester_code
+    direction: desc

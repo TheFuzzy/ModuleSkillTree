@@ -153,7 +153,10 @@ jsPlumb.ready(function() {
 					moduleCode: module.code,
 					moduleName: module.name,
 					moduleDesc: module.description,
-					moduleMc: module.mc
+					moduleMc: module.mc,
+					modulePrecludes: module.preclusions_string,
+					modulePrereqs: module.prerequisites_string,
+					moduleFaculty: module.faculty
 				});
 			}
 			//});
@@ -221,6 +224,10 @@ jsPlumb.ready(function() {
 		}
 		return this;
 	}
+	
+	$.extend($.fn.disableSelection = function() {
+		return this.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
+	});
 });
 $(function() {
 	// Show information in the moduleInfo div when a moduleBox is clicked.
@@ -249,6 +256,8 @@ $(function() {
 		var moduleDesc = moduleBox.data("moduleDesc");
 		//var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
 		var moduleMc = moduleBox.data("moduleMc");
+		var modulePrecludes = moduleBox.data("modulePrecludes");
+		var modulePrereqs = moduleBox.data("modulePrereqs");
 		
 		var skillTreeLeft = skillTreeBox.offset().left;
 		var skillTreeTop = skillTreeBox.offset().top;
@@ -295,6 +304,8 @@ $(function() {
 		moduleInfoBox.find(".moduleName").text(moduleName);
 		moduleInfoBox.find(".moduleDesc").text(moduleDesc);
 		moduleInfoBox.find(".moduleMc").text(moduleMc);
+		moduleInfoBox.find(".modulePrecludes").text(modulePrecludes);
+		moduleInfoBox.find(".modulePrereqs").text(modulePrereqs);
 		
 		// TODO: positioning
 		

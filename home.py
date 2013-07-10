@@ -32,7 +32,9 @@ class MainHandler(webapp2.RequestHandler):
         args = {}
         
         if user:
-            args['user'] = user
+            student = datatypes.Student.query(datatypes.Student.user == user).get()
+            if student is not None:
+                args['student'] = student
         
         self.response.write(template.render(args))
 

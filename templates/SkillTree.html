@@ -8,94 +8,110 @@ args:
 -->
 <html lang="en" >
 <head>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
-<!--Link all external css files here-->
-<!-- External fonts -->
-<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
-<link href='./css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
-<!-- CSS rule definitions -->
-<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
-<link href="./css/perfect-scrollbar-0.4.1.min.css" type="text/css" rel="stylesheet" />
-<link href="./css/main.css" type="text/css" rel="stylesheet" />
-<link href="./css/skilltree.css" type="text/css" rel="stylesheet" />
-<!--end of css files-->
+	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+	<meta http-equiv="Pragma" content="no-cache" />
+	<meta http-equiv="Expires" content="0" />
+	<!--Link all external css files here-->
+	<!-- External fonts -->
+	<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
+	<link href='./css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
+	<!-- CSS rule definitions -->
+	<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+	<link href="./css/perfect-scrollbar-0.4.1.min.css" type="text/css" rel="stylesheet" />
+	<link href="./css/main.css" type="text/css" rel="stylesheet" />
+	<link href="./css/skilltree.css" type="text/css" rel="stylesheet" />
+	<!--end of css files-->
 
-<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
-<title>Module Skill Tree</title>
+	<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
+	<title>Module Skill Tree</title>
 </head>
 <body>
-<div id="main_container">
-	<div id="top_panel" class="row-fluid">
-		<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
-		<div id="userBox" class="pull-right">
-			{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>{% endif %}
-			<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
-		</div>
-	</div>
-	<div id="notification_panel">
-		<div id="notification"><span class="mst-icon-success"></span><span class="mst-icon-warning"></span><span class="mst-icon-error"></span> <span class="content"></span><button class="close">&times;</button></div>
-	</div>
-	<div id="bottom_panel_group" class="row-fluid">
-		<div id="left_panel" class="span2">
-			<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
-			<select id="faculty_filter" class = "">
-				<option>ALL FACULTIES</option>
-				<option>ARTS & SOCIAL SCIENCES</option>
-				<option>DENTISTRY</option>
-				<option>ENGINEERING</option>
-				<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
-				<option>LAW</option>
-				<option>NON-FACULTY-BASED DEPARTMENTS</option>
-				<option>SCHOOL OF BUSINESS</option>
-				<option>SCHOOL OF COMPUTING</option>
-				<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
-				<option>SCIENCE</option>
-				<option>UNIVERSITY ADMINISTRATION</option>
-				<option>UNIVERSITY SCHOLARS PROGRAMME</option>
-				<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
-				<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
-			</select>
-			<div id="module_list_view">
-				<div id="module_list">
-					<!--Modules will be inserted dynamically here-->
-				</div>
-			</div>
-			<div id="control_panel">
-				<form class="form-inline">
-					<input id="save_button" class="btn btn-primary" type="button" value="Save">
-					<input id="reset_button" class="btn pull-right" type="button" value="Reset">
-				</form>
+<div id="backgroundProgress" style="background-size: 0%">
+	<div id="main_container">
+		<div id="top_panel" class="row-fluid">
+			<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
+			<div id="userBox" class="pull-right">
+				{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>
+				{% else %}<span class="welcome-text">Welcome, friend!</span>{% endif %}
+				<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
 			</div>
 		</div>
-		<div id="right_panel" class="span10">
-			<div id="skillTreeView">
-				<div id="skillTree">
-					<div class="semester" id="semester1">
-						{% if skilltree is defined and skilltree is not none %}
-						<span style="display : none">{{ skilltree.name }}</span>
-						{% endif %}
-						<div class="semester_meta">
-							<span>Semester 1</span>
-							<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>
-						</div>
+		<div id="notification_panel">
+			<div id="notification"><span class="mst-icon-success"></span><span class="mst-icon-warning"></span><span class="mst-icon-error"></span> <span class="content"></span><button class="close">&times;</button></div>
+		</div>
+		<div id="bottom_panel_group" class="row-fluid">
+			<div id="left_panel" class="span2">
+				<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
+				<select id="faculty_filter" class = "">
+					<option>ALL FACULTIES</option>
+					<option>ARTS & SOCIAL SCIENCES</option>
+					<option>DENTISTRY</option>
+					<option>ENGINEERING</option>
+					<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
+					<option>LAW</option>
+					<option>NON-FACULTY-BASED DEPARTMENTS</option>
+					<option>SCHOOL OF BUSINESS</option>
+					<option>SCHOOL OF COMPUTING</option>
+					<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
+					<option>SCIENCE</option>
+					<option>UNIVERSITY ADMINISTRATION</option>
+					<option>UNIVERSITY SCHOLARS PROGRAMME</option>
+					<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
+					<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
+				</select>
+				<div id="module_list_view">
+					<div id="module_list">
+						<!--Modules will be inserted dynamically here-->
 					</div>
-					<!--Modules will be inserted dynamically here-->
+				</div>
+				<div id="control_panel">
+					<form class="form-inline">
+						<div class="button_group">
+							<input id="save_button" class="btn btn-primary" type="button" disabled="disabled" value="Save">
+							<input id="share_button" class="btn btn-primary" type="button" value="Share">
+						</div>
+					</form>
 				</div>
 			</div>
-			<div id="moduleInfo" style="display:none">
-				<div class="arrow-left"></div>
-				<h3 class="moduleCode"></h2>
-				<h4 class="moduleName"></h3>
-				<p class="moduleDesc"></p>
-				<p>MCs: <span class="moduleMc"></span></p>
-				<div class="arrow-right"></div>
+			<div id="right_panel" class="span10">
+				<div id="skillTreeView">
+					<div id="skillTree">
+						<div class="semester" id="semester1">
+							{% if skilltree is defined and skilltree is not none %}
+							<span style="display : none">{{ skilltree.name }}</span>
+							{% endif %}
+							<div class="semester_meta">
+								<span>Semester 1</span>
+								<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>
+							</div>
+						</div>
+						<!--Modules will be inserted dynamically here-->
+					</div>
+				</div>
+				<div id="moduleInfo" style="display:none">
+					<div class="arrow-left"></div>
+					<h3 class="moduleCode"></h2>
+					<h4 class="moduleName"></h3>
+					<p class="moduleDesc"></p>
+					<p>MCs: <span class="moduleMc"></span></p>
+					<p>Preclusions: <span class="modulePrecludes"></span></p>
+					<p>Pre-requisites: <span class="modulePrereqs"></span></p>
+					<div class="arrow-right"></div>
+				</div>
 			</div>
 		</div>
 	</div>
 </div>
+<div id="hiddenOverlay"></div>
+<!--
+<div id="overlayBG" style="display: none">
+	<div id="progress" class="center">100%</div>
+</div>-->
 <!--Scripts after this line-->
 <script type="text/javascript" src="./scripts/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="./scripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="./scripts/jquery.ajax-progress.js"></script>
 <script type="text/javascript">
 	// Fix conflicts between JqueryUI and Bootstrap.
 	$.widget.bridge('uibutton', $.ui.button);

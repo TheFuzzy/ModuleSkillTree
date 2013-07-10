@@ -213,7 +213,7 @@
 }
 */
 #moduleInfo {
-    z-index: 25;
+    z-index: 100;
     width: 300px;
     padding: 10px 20px;
     background-color: #111;
@@ -280,11 +280,11 @@
 }
 
 ._jsPlumb_connector {
-    z-index: 5;
+    z-index: 4;
 }
 
 ._jsPlumb_connector .highlight{
-    z-index: 5;
+    z-index: 4;
 	opacity: 1;
 }
 
