@@ -224,7 +224,11 @@ def fill_prerequisite_groups(modules):
                 # module code may not actually exist.
                 if module_code in modules:
                     #logging.debug("Module %s has the following preclusions: %s" % (module_code, str(modules[module_code]["preclusions"])))
-                    code_list.extend(modules[module_code]["preclusions"])
+                    prereq_module = modules[module_code]
+                    # If the module preclusion contains the world "level" as in "A-level", it may be a bridging module.
+                    # Bridging modules are known to list advanced modules as preclusions, so they must be ignored.
+                    if prereq_module["preclusions"].lower().find("level") < 0:
+                        code_list.extend(modules[module_code]["preclusions"])
             updated_group = list(set(code_list))
             module["prerequisites"][index] = updated_group
     

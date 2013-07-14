@@ -192,6 +192,101 @@ jsPlumb.ready(function() {
 			jsPlumb.remove(this);
 		}
 	}
+	// Selects a module box
+	$.fn.selectModuleBox = function() {
+		if (this.hasClass("moduleBox")) {
+			var moduleBox = this;
+			
+			$(".moduleBox").removeClass("selected").removeClass("highlighted");
+			moduleBox.addClass("selected");
+			
+			var skillTreeBox = $("#skillTreeView");
+			var moduleInfoBox = $("#moduleInfo");
+			var moduleCode = moduleBox.data("moduleCode");
+			var moduleName = moduleBox.data("moduleName");
+			var moduleDesc = moduleBox.data("moduleDesc");
+			//var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
+			var moduleMc = moduleBox.data("moduleMc");
+			var modulePrecludes = moduleBox.data("modulePrecludes");
+			var modulePrereqs = moduleBox.data("modulePrereqs");
+			
+			var skillTreeLeft = skillTreeBox.offset().left;
+			var skillTreeTop = skillTreeBox.offset().top;
+			var skillTreeBoxWidth = skillTreeBox.outerWidth();
+			var skillTreeRight = $(window).width() - skillTreeLeft - skillTreeBoxWidth;
+			//console.log("Skill tree left: " + skillTreeLeft);
+			//console.log("Skill tree width: " + skillTreeBoxWidth);
+			//console.log("Skill tree right: " + skillTreeRight);
+			//var moduleInfoBoxWidth = moduleInfoBox.css("width");
+			//moduleInfoBoxWidth = parseInt(moduleInfoBoxWidth.substring(0, moduleInfoBoxWidth.length-2));
+			/*
+			var moduleBoxLeft = moduleBox.offset().left;
+			var moduleBoxTop = moduleBox.offset().top;
+			var moduleBoxWidth = moduleBox.css("width");
+			var moduleBoxHeight = moduleBox.css("height");
+			moduleBoxWidth = parseInt(moduleBoxWidth.substring(0, moduleBoxWidth.length-2));
+			moduleBoxHeight = parseInt(moduleBoxHeight.substring(0, moduleBoxHeight.length-2));
+			*/
+			
+			var leftHalf = skillTreeLeft + skillTreeBoxWidth/2;
+			//var isRight = event.pageX < leftHalf;
+			var isRight = true;
+			//console.log("Left half: " + leftHalf);
+			//console.log("Is mouse in left half: " + isRight);
+			
+			var moduleInfoBoxTop = skillTreeTop + 10;
+			var leftBound = skillTreeLeft + 10;
+			var rightBound =  skillTreeRight + 20;
+			
+			
+			if (isRight) {
+				moduleInfoBox.css({
+					top :   moduleInfoBoxTop + "px",
+					left :  "",
+					right : rightBound + "px"
+				});
+			} else {
+				moduleInfoBox.css({
+					top :   moduleInfoBoxTop + "px",
+					left :  leftBound + "px",
+					right : ""
+				});
+			}
+			moduleInfoBox.find(".moduleCode").text(moduleCode);
+			moduleInfoBox.find(".moduleName").text(moduleName);
+			moduleInfoBox.find(".moduleDesc").text(moduleDesc);
+			moduleInfoBox.find(".moduleMc").text(moduleMc);
+			moduleInfoBox.find(".modulePrecludes").text(modulePrecludes);
+			moduleInfoBox.find(".modulePrereqs").text(modulePrereqs);
+			
+			// TODO: positioning
+			
+			$("#moduleInfo").stop().fadeIn(200);
+			
+			$("#skillTree").addClass("highlight-mode");
+			
+			var connections = jsPlumb.getAllConnections()[jsPlumb.getDefaultScope()];
+			for (var i = 0; i < connections.length; i++) {
+				connections[i].setVisible(false);
+			}
+			
+			var sourceConnections = jsPlumb.getConnections({ source: this.attr('id'), flat: true });
+			for (var i = 0; i < sourceConnections.length; i++) {
+				sourceConnections[i].setVisible(true);
+				sourceConnections[i].target.addClass("highlighted");
+			}
+			
+			var targetConnections = jsPlumb.getConnections({ target: this.attr('id'), flat: true });
+			for (var i = 0; i < targetConnections.length; i++) {
+				targetConnections[i].setVisible(true);
+				targetConnections[i].source.addClass("highlighted");
+			}
+			
+			this.addClass("highlighted");
+			
+			//jsPlumb.show(this.attr('id'));
+		}
+	}
 	// Defines a .semester div
 	$.fn.semester = function() {
 		this.addClass("semester");
@@ -229,11 +324,21 @@ jsPlumb.ready(function() {
 		return this.attr('unselectable', 'on').css('user-select', 'none').on('selectstart', false);
 	});
 });
+function deselectAllModuleBoxes() {
+	$(".moduleBox").removeClass("selected").removeClass("highlighted");
+	$("#moduleInfo").stop().fadeOut(200);
+	
+	var connections = jsPlumb.getAllConnections()[jsPlumb.getDefaultScope()];
+	for (var i = 0; i < connections.length; i++) {
+		connections[i].setVisible(true);
+	}
+	
+	$("#skillTree").removeClass("highlight-mode");
+}
 $(function() {
 	// Show information in the moduleInfo div when a moduleBox is clicked.
 	$("#skillTree").on("click", ".moduleBox", function(e) {
-		$(".moduleBox").removeClass("selected");
-		$(this).addClass("selected");
+		$(this).selectModuleBox();
 		/*
 		properties = [".moduleCode", ".moduleTitle"];
 		for (i in properties) {
@@ -241,83 +346,20 @@ $(function() {
 		}
 		$("#moduleInfo").fadeIn("slow");
 		*/
+		
 		e.stopPropagation();
 	})
 	.on("click", ".moduleBox .remove", function(e) {
 		$("#moduleInfo").stop().fadeOut(200);
 	})
 	// Show the module description when mouse is over
-	.on('mouseenter', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
-		var moduleBox = $(this);
-		var skillTreeBox = $("#skillTreeView");
-		var moduleInfoBox = $("#moduleInfo");
-		var moduleCode = moduleBox.data("moduleCode");
-		var moduleName = moduleBox.data("moduleName");
-		var moduleDesc = moduleBox.data("moduleDesc");
-		//var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
-		var moduleMc = moduleBox.data("moduleMc");
-		var modulePrecludes = moduleBox.data("modulePrecludes");
-		var modulePrereqs = moduleBox.data("modulePrereqs");
+	//.on('mouseenter', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
 		
-		var skillTreeLeft = skillTreeBox.offset().left;
-		var skillTreeTop = skillTreeBox.offset().top;
-		var skillTreeBoxWidth = skillTreeBox.outerWidth();
-		var skillTreeRight = $(window).width() - skillTreeLeft - skillTreeBoxWidth;
-		//console.log("Skill tree left: " + skillTreeLeft);
-		//console.log("Skill tree width: " + skillTreeBoxWidth);
-		//console.log("Skill tree right: " + skillTreeRight);
-		//var moduleInfoBoxWidth = moduleInfoBox.css("width");
-		//moduleInfoBoxWidth = parseInt(moduleInfoBoxWidth.substring(0, moduleInfoBoxWidth.length-2));
-		/*
-		var moduleBoxLeft = moduleBox.offset().left;
-		var moduleBoxTop = moduleBox.offset().top;
-		var moduleBoxWidth = moduleBox.css("width");
-		var moduleBoxHeight = moduleBox.css("height");
-		moduleBoxWidth = parseInt(moduleBoxWidth.substring(0, moduleBoxWidth.length-2));
-		moduleBoxHeight = parseInt(moduleBoxHeight.substring(0, moduleBoxHeight.length-2));
-		*/
-		
-		var leftHalf = skillTreeLeft + skillTreeBoxWidth/2;
-		var isRight = event.pageX < leftHalf;
-		//console.log("Left half: " + leftHalf);
-		//console.log("Is mouse in left half: " + isRight);
-		
-		var moduleInfoBoxTop = skillTreeTop + 10;
-		var leftBound = skillTreeLeft + 10;
-		var rightBound =  skillTreeRight + 20;
-		
-		
-		if (isRight) {
-			moduleInfoBox.css({
-				top :   moduleInfoBoxTop + "px",
-				left :  "",
-				right : rightBound + "px"
-			});
-		} else {
-			moduleInfoBox.css({
-				top :   moduleInfoBoxTop + "px",
-				left :  leftBound + "px",
-				right : ""
-			});
-		}
-		moduleInfoBox.find(".moduleCode").text(moduleCode);
-		moduleInfoBox.find(".moduleName").text(moduleName);
-		moduleInfoBox.find(".moduleDesc").text(moduleDesc);
-		moduleInfoBox.find(".moduleMc").text(moduleMc);
-		moduleInfoBox.find(".modulePrecludes").text(modulePrecludes);
-		moduleInfoBox.find(".modulePrereqs").text(modulePrereqs);
-		
-		// TODO: positioning
-		
-		$("#moduleInfo").stop().fadeIn(200);
-	})
+	//})
 	// Scroll the tooltip description according to the mouse position in the module box.
-	.on("mousemove", ".moduleBox", function(event) {
-		/*
-		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
-		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
-		*/
+	/*.on("mousemove", ".moduleBox", function(event) {
 		//$("#moduleInfo").fadeOut({ queue: false });
+		
 		var scrollBox = $("#moduleInfo .moduleDesc");
 		var scrollBoxDom = scrollBox[0];
 		var contentHeight = scrollBoxDom.scrollHeight;
@@ -348,22 +390,22 @@ $(function() {
 			var visibleHeight = scrollBoxDom.clientHeight;
 			scrollBox.scrollTop(relativeScrollPercent * (contentHeight-visibleHeight));
 		}
-	})
+		
+	})*/
 	// Hide arrow when mouse is out
-	.on("mouseleave", ".moduleBox", function(event) {
+	//.on("mouseleave", ".moduleBox", function(event) {
 		/*
 		jsPlumb.select({ source: $(this).attr("id") }).hideOverlays();
 		jsPlumb.select({ target: $(this).attr("id") }).hideOverlays();
 		*/
-		$("#moduleInfo").stop().fadeOut(200);
-	})
+	//	$("#moduleInfo").stop().fadeOut(200);
+	//})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstart", ".moduleBox", function(e) {
-		$(this).stop(false)
-		$(".moduleBox").removeClass("selected");
+		$(this).stop(false);
 		//$("#moduleInfo").fadeOut("slow");
 		jsPlumb.hide($(this).attr('id'));
-		$("#moduleInfo").stop().fadeOut(200);
+		deselectAllModuleBoxes();
 	})
 	// Hide the moduleInfo box when a .moduleBox is being dragged, or when a click is registered outside of one.
 	.on("dragstop", ".moduleBox", function(e) {
@@ -374,8 +416,7 @@ $(function() {
 		*/
 	})
 	.on("click", function(e) {
-		$(".moduleBox").removeClass("selected");
-		$("#moduleInfo").stop().fadeOut(200);
+		deselectAllModuleBoxes();
 		//$("#moduleInfo").fadeOut("slow");
 	})
 	// Make the skillTree accept .moduleBox divs as drops
@@ -383,6 +424,14 @@ $(function() {
 			accept : ".moduleBox",
 			tolerance : "pointer"
 	});
+	// Initialize the accordion within the #moduleInfo panel
+	$("#moduleAccordion").accordion({
+		header: "h5",
+		heightStyle: "fill",
+		collapsible: true,
+		active: false
+	});
+	
 	// Scroll!
 	$("#skillTreeView").perfectScrollbar();
 	// Initialise any .semester divs on the page as semesters.

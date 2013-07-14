@@ -40,7 +40,7 @@ class SkillTreeHandler(webapp2.RequestHandler):
         
         if guid != '':
             logging.debug("GUID %s retrieved from URL" % guid)
-            skill_tree = datatypes.SkillTree.query('guid' == guid).get()
+            skill_tree = datatypes.SkillTree.query(datatypes.SkillTree.guid == guid).get()
         
         if user:
             # Gets the associated student if it exists, otherwise, create a new one

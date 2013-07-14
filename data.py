@@ -143,24 +143,24 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                 self.error(400)
                 self.response.write("No skill tree with that GUID exists")
             else:
-                try:
-                    student = skill_tree.student_k.get()
-                    skill_tree_user = student.user
-                    logging.debug("Authenticating user")
-                    user = users.get_current_user()
-                    if user is None:
-                        self.response.headers['Content-Type'] = 'text/plain'
-                        self.error(400)
-                        self.response.write("Not logged in.")
-                        return
-                    elif skill_tree_user != user:
-                        self.response.headers['Content-Type'] = 'text/plain'
-                        self.error(400)
-                        self.response.write("Wrong user!")
-                        return
-                # No student associated with the skill tree, so it's fine.
-                except AttributeError:
-                    pass
+                # try:
+                    # student = skill_tree.student_k.get()
+                    # skill_tree_user = student.user
+                    # logging.debug("Authenticating user")
+                    # user = users.get_current_user()
+                    # if user is None:
+                        # self.response.headers['Content-Type'] = 'text/plain'
+                        # self.error(400)
+                        # self.response.write("Not logged in.")
+                        # return
+                    # elif skill_tree_user != user:
+                        # self.response.headers['Content-Type'] = 'text/plain'
+                        # self.error(400)
+                        # self.response.write("Wrong user!")
+                        # return
+                #No student associated with the skill tree, so it's fine.
+                # except AttributeError:
+                    # pass
                 logging.debug("Retrieved skill tree")
                 json_assigned_modules = {}
                 for assigned_module in skill_tree.assigned_modules.iter():

@@ -576,6 +576,8 @@ function addModuleToTree(module) {
 	
 	setModified(true);
 	
+	deselectAllModuleBoxes();
+	
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
 	if (!assignSemester(assignedModule, 1)) {
 		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
