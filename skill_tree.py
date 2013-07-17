@@ -53,6 +53,7 @@ class SkillTreeHandler(webapp2.RequestHandler):
                     name = user.nickname()
                 )
                 student.put()
+                args['isNewUser'] = True
             
             if skill_tree is None:
                 skill_tree = student.skill_trees.get()
@@ -78,15 +79,25 @@ class SkillTreeHandler(webapp2.RequestHandler):
                     )
                     own_skill_tree.put()
                 args['isownskilltree'] = skill_tree.guid == own_skill_tree.guid
-                if args['isownskilltree'] is not None:
-                    args['ownskilltree'] = own_skill_tree
+                if not args['isownskilltree']:
+                    args['ownskilltree'] = own_skill_tree                            
+                    if hasattr(skill_tree, 'student_k'):
+                        skill_tree_owner = skill_tree.student_k.get()
+                        args['skilltreeowner'] = skill_tree_owner.name
+                    else:
+                        args['skilltreeowner'] = 'Anonymous'
             
             args['student'] = student
             args['loginurl'] = users.create_logout_url('/')
             args['skilltree'] = skill_tree
         
         elif skill_tree is not None:
-            args['skilltree'] = skill_tree
+            args['skilltree'] = skill_tree            
+            if hasattr(skill_tree, 'student_k'):
+                skill_tree_owner = skill_tree.student_k.get()
+                args['skilltreeowner'] = skill_tree_owner.name
+            else:
+                args['skilltreeowner'] = 'Anonymous'
         else:
             self.redirect(args['loginurl'])
         

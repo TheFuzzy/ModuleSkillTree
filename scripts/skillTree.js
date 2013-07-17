@@ -75,72 +75,21 @@ jsPlumb.ready(function() {
 		connectorHoverStyle:connectorHoverStyle,
 		dragOptions:{},
 	}
-	/*,			
-	init = function(connection) {
-		connection.getOverlay("label").setLabel(connection.sourceId.substring(6) + "-" + connection.targetId.substring(6));
-		connection.bind("editCompleted", function(o) {
-			if (typeof console != "undefined")
-				console.log("connection edited. path is now ", o.path);
-		});
-	};*/			
-
-	/*var allSourceEndpoints = [], allTargetEndpoints = [];
-	_addEndpoints = function(toId, sourceAnchors, targetAnchors) {
-		for (var i = 0; i < sourceAnchors.length; i++) {
-			var sourceUUID = toId + sourceAnchors[i];
-			allSourceEndpoints.push(jsPlumb.addEndpoint(toId, sourceEndpoint, { anchor:sourceAnchors[i], uuid:sourceUUID }));						
-		}
-		for (var j = 0; j < targetAnchors.length; j++) {
-			var targetUUID = toId + targetAnchors[j];
-			allTargetEndpoints.push(jsPlumb.addEndpoint(toId, targetEndpoint, { anchor:targetAnchors[j], uuid:targetUUID }));						
-		}
-	};
-
-	_addEndpoints("CS1010box", ["BottomCenter"], ["TopCenter"]);
-	_addEndpoints("CS1101Sbox", ["BottomCenter"], ["TopCenter"]);
-	_addEndpoints("CS1020box", ["BottomCenter"], ["TopCenter"]);
-	_addEndpoints("CS2010box", ["BottomCenter"], ["TopCenter"]);*/
-	//_addEndpoints("box4", ["LeftMiddle", "RightMiddle"], ["TopCenter", "BottomCenter"]);
-				
-	// listen for new connections; initialise them the same way we initialise the connections at startup.
-	/*jsPlumb.bind("jsPlumbConnection", function(connInfo, originalEvent) { 
-		init(connInfo.connection);
-	});*/		
-				
-	// make all the window divs draggable
-	/*	
-	jsPlumb.draggable($(".moduleBox"),
-		{
-			containment: "parent"
-		}
-	);
-	*/
-	// THIS DEMO ONLY USES getSelector FOR CONVENIENCE. Use your library's appropriate selector method!
-	//jsPlumb.draggable(jsPlumb.getSelector(".window"));
-
-
-	// connect a few up
-	/*jsPlumb.connect({uuids:["CS1010boxBottomCenter", "CS1020boxTopCenter"]});
-	jsPlumb.connect({uuids:["CS1101SboxBottomCenter", "CS1020boxTopCenter"]});
-	jsPlumb.connect({uuids:["CS1020boxBottomCenter", "CS2010boxTopCenter"]});
-	/*jsPlumb.connect({uuids:["window2LeftMiddle", "window4LeftMiddle"], editable:true});
-	jsPlumb.connect({uuids:["window4TopCenter", "window4RightMiddle"], editable:true});
-	jsPlumb.connect({uuids:["window3RightMiddle", "window2RightMiddle"], editable:true});
-	jsPlumb.connect({uuids:["window4BottomCenter", "window1TopCenter"], editable:true});
-	jsPlumb.connect({uuids:["window3BottomCenter", "window1BottomCenter"], editable:true});*/
-	//
 	// Defines a module box div. Can support many divs at once.
-	$.fn.moduleBox = function(module) {
+	$.fn.moduleBox = function(module, isDraggable) {
+		isDraggable = typeof isDraggable !== 'undefined' ? isDraggable : true;
 		if (!$.isArray(this)) {
 			this.addClass("moduleBox");
-			jsPlumb.draggable(this,
-			{
-				distance: 15,
-				scroll: true,
-				scrollSensitivity: 50,
-				stack: ".moduleBox",
-				containment: "parent"
-			});
+			if (isDraggable) {
+				jsPlumb.draggable(this,
+				{
+					distance: 15,
+					scroll: true,
+					scrollSensitivity: 50,
+					stack: ".moduleBox",
+					containment: "parent"
+				});
+			}
 			//this.each(function() {
 			id = $(this).attr('id');
 			sourceUUID = id + "BottomCenter";
@@ -335,6 +284,18 @@ function deselectAllModuleBoxes() {
 	
 	$("#skillTree").removeClass("highlight-mode");
 }
+// Once enabled, it cannot be disabled.
+function enableEditMode() {
+	jsPlumb.draggable($('.moduleBox'),
+	{
+		distance: 15,
+		scroll: true,
+		scrollSensitivity: 50,
+		stack: ".moduleBox",
+		containment: "parent"
+	});
+	$("#skillTree").addClass("editMode");
+}
 $(function() {
 	// Show information in the moduleInfo div when a moduleBox is clicked.
 	$("#skillTree").on("click", ".moduleBox", function(e) {
@@ -350,7 +311,8 @@ $(function() {
 		e.stopPropagation();
 	})
 	.on("click", ".moduleBox .remove", function(e) {
-		$("#moduleInfo").stop().fadeOut(200);
+		deselectAllModuleBoxes();
+		e.stopPropagation();
 	})
 	// Show the module description when mouse is over
 	//.on('mouseenter', '.moduleBox:not(.prereqGroup,.ui-draggable-dragging)', function(event) {
@@ -421,7 +383,7 @@ $(function() {
 	})
 	// Make the skillTree accept .moduleBox divs as drops
 	.droppable({
-			accept : ".moduleBox",
+			accept : ".moduleBox, .module",
 			tolerance : "pointer"
 	});
 	// Initialize the accordion within the #moduleInfo panel

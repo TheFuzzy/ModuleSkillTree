@@ -9,31 +9,35 @@ from datetime import date, datetime
 
 import datatypes
 import ModuleParser
+import modulecrawler
 
 class Sources:
     NUSMODS = 'nusmods'
     LOCAL_NUSMODS = 'local_nusmods'
+    CORS = 'cors'
     NUS_BULLETIN = 'nusbulletin'
     TEST = 'test'
 
 SOURCE = Sources.LOCAL_NUSMODS
 
-def retrieve_modules(acad_year, semester):
+def retrieve_modules(acad_year, semester, src=SOURCE):
     modules = None
     must_cache_modules = False
-    if is_cached(acad_year, semester, SOURCE):
+    if is_cached(acad_year, semester, src):
         logging.debug("Modules in %s, %d are cached." % (acad_year, semester))
-        modules = get_cached_modules(acad_year, semester, SOURCE)
+        modules = get_cached_modules(acad_year, semester, src)
     else:
         #must_cache_modules = True
         logging.debug("Modules in %s, %d are not cached." % (acad_year, semester))
-        logging.debug("Scraping from source: %s" % SOURCE)
-        if SOURCE == Sources.TEST:
+        logging.debug("Scraping from source: %s" % src)
+        if src == Sources.TEST:
             modules = scrape_test(acad_year, semester)
-        elif SOURCE == Sources.NUSMODS:
+        elif src == Sources.NUSMODS:
             modules = scrape_nusmods(acad_year, semester)
-        elif SOURCE == Sources.LOCAL_NUSMODS:
+        elif src == Sources.LOCAL_NUSMODS:
             modules = scrape_local_nusmods(acad_year, semester)
+        elif src == Sources.CORS:
+            modules = scrape_cors(acad_year, semester)
         logging.debug("Modules restored")
     logging.debug("Getting rid of modules with multiple module codes")
     decouple_multiple_module_codes(modules)
@@ -44,7 +48,7 @@ def retrieve_modules(acad_year, semester):
     logging.debug("Modules completely stored")
     #if must_cache_modules:
     #    logging.debug("Caching modules retrieved")
-    #    cache_modules(acad_year, semester, SOURCE, modules)
+    #    cache_modules(acad_year, semester, src, modules)
     logging.debug("Groups filled")
     #generate_module_list(modules)
 
@@ -91,7 +95,7 @@ def generate_module_list():
     module_query = datatypes.Module.query(group_by=['code'])
     for module_projection in module_query.iter(projection=['code']):
         module_code = module_projection.code
-        module = datatypes.Module.query(datatypes.Module.code == module_code).order(-datatypes.Module.acad_year).get()
+        module = datatypes.Module.query(datatypes.Module.code == module_code).order(-datatypes.Module.semester_code).get()
         json_modules[module_code] = {
             "code" : module_code,
             "name" : module.name,
@@ -201,16 +205,30 @@ def store_prerequisite_group(group, module_key):
 
 # Ensures that there are no modules with multiple codes
 def decouple_multiple_module_codes(modules):
+    alt_modules = {}
     for code, module in modules.iteritems():
         moduleCodes = module["code"].split(" / ")
         for moduleCode in moduleCodes:
             if moduleCode != code:
                 if moduleCode not in module["preclusions"]:
                     module["preclusions"].append(moduleCode)
-                if moduleCode in modules and code not in modules[moduleCode]["preclusions"]:
+                # if alternate code doesn't exist, duplicate the original module and alter some keys only
+                if not is_primary_module_code(moduleCode, modules):
+                    alt_modules[moduleCode] = module.copy()
+                    alt_modules[moduleCode]["code"] = moduleCode
+                    alt_modules[moduleCode]["preclusions"].append(code)
+                elif moduleCode in modules and code not in modules[moduleCode]["preclusions"]:
                     modules[moduleCode]["preclusions"].append(code)
         if module["code"] != code:
             module["code"] = code
+    for alt_code, alt_module in alt_modules.iteritems():
+        modules[alt_code] = alt_module
+
+def is_primary_module_code(code, modules):
+    for module_code in modules:
+        if module_code.startswith(code):
+            return True
+    return False
 
 # Ensures that there are no missing preclusions from any prerequisite group.
 #db.transactional(xg=True)
@@ -227,7 +245,7 @@ def fill_prerequisite_groups(modules):
                     prereq_module = modules[module_code]
                     # If the module preclusion contains the world "level" as in "A-level", it may be a bridging module.
                     # Bridging modules are known to list advanced modules as preclusions, so they must be ignored.
-                    if prereq_module["preclusions"].lower().find("level") < 0:
+                    if prereq_module["preclusions_string"].lower().find("level") < 0:
                         code_list.extend(modules[module_code]["preclusions"])
             updated_group = list(set(code_list))
             module["prerequisites"][index] = updated_group
@@ -348,6 +366,15 @@ def scrape_nusmods_data(data):
             modules[module_code]["workload"] = nusmods_module["workload"]
     return modules
 
+def scrape_cors(acad_year, semester):
+    modules = modulecrawler.crawl_modules()
+    for module_code, module in modules.iteritems():
+        if module["preclusions_string"] != "None":
+            module["preclusions"] = ModuleParser.precludeModule(module_code, module["preclusions_string"])[0]
+        if module["prerequisites_string"] != "None":
+            module["prerequisites"] = ModuleParser.precludeModule(module_code, module["prerequisites_string"])
+        logging.debug("Generated preclusion and pre-requisite lists for %s" % module_code)
+    return modules
 
 # Unit test scraper
 def scrape_test(acad_year, semester):

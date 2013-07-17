@@ -8,6 +8,7 @@ var skillTree = {
 	MODULE_WIDTH : 200,
 	MODULE_HEIGHT : 120,
 	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
+	SHARE_LINKS : { TWITTER : "https://twitter.com/share", FACEBOOK : "https://www.facebook.com/sharer/sharer.php", GPLUS: "https://plus.google.com/share" },
 	// Attributes
 	semesters : [[]],
 	modules : {},
@@ -15,7 +16,8 @@ var skillTree = {
 	assignedModules : {},
 	removeModules : {},
 	numOfPrereqGroups : 0, // Incrementer to prevent overlap of any prereq groups
-	isModified: false
+	isModified: false,
+	seachTimeout: null
 };
 // Test function
 function testJSON(data) {
@@ -23,6 +25,10 @@ function testJSON(data) {
 		type : "POST",
 		data : { data : JSON.stringify(data) }
 	})
+}
+// Helper function to create delayed function calls
+function timeoutCall(fn, data, timeout) {
+	setTimeout(function() {fn.call(null, data);}, timeout);
 }
 // Alert the user
 function notify(message, type) {
@@ -53,7 +59,27 @@ function stateIsInvalid() {
 	}
 	return false;
 }
+// Share skill tree.
+function shareLink() {
+	var dialog = $("#shareModal");
+	var pageUrl = window.location.href.split('?')[0];
+	var linkUrl = pageUrl + "?id=" + skillTree.guid;
+	// Generate a link for Twitter
+	var twitterUrl = skillTree.SHARE_LINKS.TWITTER + '?url=' + encodeURIComponent(linkUrl) + "&text=" + encodeURIComponent("Check out my NUS skill tree!");
+	// Generate a link for Facebook
+	var facebookUrl = skillTree.SHARE_LINKS.FACEBOOK + '?u=' + encodeURIComponent(linkUrl);
+	// Generate a link for Google+
+	var gplusUrl = skillTree.SHARE_LINKS.GPLUS + '?url=' + encodeURIComponent(linkUrl);
+	
+	$("#shareUrl").val(linkUrl);
+	dialog.find(".twitter-btn").attr("href", twitterUrl);
+	dialog.find(".facebook-btn").attr("href", facebookUrl);
+	dialog.find(".gplus-btn").attr("href", gplusUrl);
+	
+	dialog.modal("show");
+}
 // Save skill tree.
+// If callback is supplied, it will be called.
 function saveToServer(callback) {
 	var error = stateIsInvalid();
 	if (error) {
@@ -61,8 +87,7 @@ function saveToServer(callback) {
 	} else if (skillTree.isModified) {
 		var skillTreeData = {};
 		skillTreeData.assignedModules = {};
-		skillTreeData.removeModules = skillTree.removeModules;
-		
+		if (!skillTree.overwrite) skillTreeData.removeModules = skillTree.removeModules;
 		for (var code in skillTree.assignedModules) {
 			if (skillTree.assignedModules.hasOwnProperty(code)) {
 				var assignedModule = getAssignedModule(code);
@@ -78,12 +103,15 @@ function saveToServer(callback) {
 				}
 			}
 		}
-		$.ajax("/data/SaveSkillTree", {
+		var args = {
+			guid : skillTree.guid,
+			data : JSON.stringify(skillTreeData)
+		}
+		if (skillTree.overwrite) args["overwrite"] = true;
+		$.ajaxQueue({
+			url : "/data/SaveSkillTree",
 			type : "POST",
-			data : {
-				guid : skillTree.guid,
-				data : JSON.stringify(skillTreeData)
-			}
+			data : args
 		}).done(function() {
 			notify("Saved!", skillTree.NOTIFICATIONS.SUCCESS);
 			skillTree.removeModules = {};
@@ -93,18 +121,39 @@ function saveToServer(callback) {
 				}
 			}
 			setModified(false);
+			delete skillTree.overwrite;
+			if (typeof callback !== 'undefined') callback();
+		}).fail(function(jqXHR, textStatus, errorThrown) {
+			if (jqXHR.responseText) {
+				notify(jqXHR.responseText, skillTree.NOTIFICATIONS.ERROR);
+			} else {
+				notify("Server error: " + errorThrown, skillTree.NOTIFICATIONS.ERROR);
+			}
 		});
 	}
 }
 // Load skill tree. Should be called by embedded javascript in the HTML itself.
-function loadFromServer(guid) {
-	backgroundProgressBox = $("#backgroundProgress").addClass("active").css("background-size", "0%");
-	hiddenOverlayBox = $("#hiddenOverlay").show();
-	skillTree.guid = guid;
+function loadFromServer(guid, ownGuid) {
+	var editMode = true;
+	if (typeof ownGuid !== 'undefined') {
+		if (typeof ownGuid === 'string') {
+			skillTree.overwrite = true;
+			skillTree.guid = ownGuid;
+			editMode = false;
+		} else {
+			skillTree.guid = guid;
+			editMode = ownGuid;
+		}
+	} else {
+		skillTree.guid = guid;
+	}
+	var backgroundProgressBox = $("#backgroundProgress").addClass("active").css("background-size", "0%");
+	var hiddenOverlayBox = $("#hiddenOverlay").show();
 	console.log("Loading skill tree with GUID " + guid);
 	//$("#overlayBG").show();
 	//$("#progress").text("0%");
-	$.ajax("/data/GetSkillTree", {
+	$.ajaxQueue({
+		url : "/data/GetSkillTree",
 		type : "POST",
 		data : { guid : guid },
 		progress: function(e) {
@@ -149,10 +198,10 @@ function loadFromServer(guid) {
 										' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
 									'</div>' +
 								'</div>');
-				moduleBox.appendTo('#skillTree').moduleBox(assignedModule.module);
+				moduleBox.appendTo('#skillTree').moduleBox(assignedModule.module, editMode);
 				// Hide the module code in the search list.
 				$('.module').filter(function() {
-					return $(this).text() == code;
+					return $(this).data("code") == code;
 				}).addClass('added');
 				
 				//var position = calculatePosition(assignedModule.semester-1, assignedModule.semesterIndex);
@@ -317,21 +366,23 @@ function search(text)
 // Filters and hides modules in the list according to the input value and faculty selection.
 function filter()
 {
+	// Clear any delayed search
+	clearTimeout(skillTree.searchTimeout);
 	var searchText = $('#module_search').val().replace('_', '').toLowerCase();	
 	var fac = $('#faculty_filter').children(':selected').text();
-	$('.module').addClass('hidden');
+	$('.module').massAddClass('hidden');
 	if(fac === 'ALL FACULTIES')
 	{
 		if(searchText)
 		{
 			var divs = search(searchText);
 			for (var i = 0; i < divs.length; i++) {
-				$('#' + divs[i]).removeClass('hidden');
+				$('#' + divs[i]).massRemoveClass('hidden');
 			}
 		}
 		else
 		{
-			$('.module').removeClass('hidden');
+			$('.module').massRemoveClass('hidden');
 		}
 	}
 	else
@@ -342,7 +393,7 @@ function filter()
 			for (var i = 0; i < divs.length; i++) {
 				if($('#' + divs[i]).attr('data-faculty') === fac)
 				{
-					$('#' + divs[i]).removeClass('hidden');
+					$('#' + divs[i]).massRemoveClass('hidden');
 				}
 			}
 		}
@@ -351,7 +402,7 @@ function filter()
 			$.each($('#module_list div'),function(){
 				if($(this).attr('data-faculty') === fac)
 				{
-					$(this).removeClass('hidden');
+					$(this).massRemoveClass('hidden');
 				} 
 			});
 		}
@@ -567,7 +618,7 @@ function addModuleToTree(module) {
 	moduleBox.appendTo('#skillTree').moduleBox(module);
 	// Hide the module code in the search list.
 	$('.module').filter(function() {
-		return $(this).text() == module.code;
+		return $(this).data("code") == module.code;
 	}).addClass('added');
 	
 	// Remove the filter
@@ -782,7 +833,7 @@ function removeAssignedModule(assignedModule) {
 		}
 		
 		$('.module').filter(function() {
-			return $(this).text() == assignedModule.module.code;
+			return $(this).data("code") == assignedModule.module.code;
 		}).removeClass('added');
 		
 		setModified(true);
@@ -798,6 +849,28 @@ function removeAssignedModule(assignedModule) {
 
 // Initialize the page when jQuery is loaded
 $(function(){
+	$.extend($.fn.massAddClass = function(klass) {
+		this.addClass(klass);
+		return this;
+		// lines below are disabled
+		var timeout = 0;
+		jQDiv = this;
+		this.each(function() {
+			timeout += 10;
+			timeoutCall(function(data) { data.jQDiv.addClass(data.klass); }, { jQDiv : jQDiv, klass : klass }, timeout);
+		});
+	});
+	$.extend($.fn.massRemoveClass = function(klass) {
+		this.removeClass(klass);
+		return this;
+		// lines below are disabled
+		var timeout = 0;
+		jQDiv = this;
+		this.each(function() {
+			timeout += 10;
+			timeoutCall(function(data) { data.jQDiv.removeClass(data.klass); }, { jQDiv : jQDiv, klass : klass }, timeout);
+		});
+	});
 	// Initialise the nickname prompt
 	$('#userBox .nickname').editable({
 		type : 'text',
@@ -815,11 +888,12 @@ $(function(){
 	
 	// Filters the module list based on the input of the search box
 	$('#module_search').val('').on('input',function(){
-		filter();
+		clearTimeout(skillTree.searchTimeout);
+		skillTree.searchTimeout = setTimeout(filter, 1000);
 	});
 	// Inserts a module when it is double clicked in the list.
 	$('#module_list').on('dblclick','div',function(event){
-		var module = getModule($(this).text());
+		var module = getModule($(this).data("code"));
 		// Retrieve the complete module from the server, and then add it to the tree.
 		if (!module.isLoading) {
 			ensureModuleDetails(module, {
@@ -917,7 +991,10 @@ $(function(){
 		$('.module').removeClass('not_prerequisite');
 	});
 	// Load the modules from json.
-	$.getJSON("/data/GetModuleList", function(json) {
+	$.ajaxQueue({
+		url : "/data/GetModuleList",
+		type : "GET"
+	}).done(function(json) {
 		for (var moduleCode in json) {
 			if (json.hasOwnProperty(moduleCode)) {
 				if (!skillTree.modules.hasOwnProperty(moduleCode)) {
@@ -930,9 +1007,11 @@ $(function(){
 		for (var i = 0; i < skillTree.moduleCodes.length; i++) {
 			var module_code = skillTree.moduleCodes[i];
 			var div_id = module_code.replace(/\s*\/\s*/g, '_');
-			$("<div id=\"" + div_id + "\" class=\"module\" data-faculty=\"" + skillTree.modules[module_code].faculty +  "\" data-code=\"" + module_code + "\">" +
+			var moduleBox = $("<div id=\"" + div_id + "\" class=\"module\" data-faculty=\"" + skillTree.modules[module_code].faculty +  "\" data-code=\"" + module_code + "\">" +
 					skillTree.moduleCodes[i] +
-				"</div>").appendTo("#module_list").disableSelection();
+				"</div>");
+			//timeoutCall(function(moduleBoxArg) { moduleBoxArg.appendTo("#module_list").disableSelection(); }, moduleBox, 5*i);
+			moduleBox.appendTo("#module_list").disableSelection();
 		}
 		console.log("Modules added!");
 	});
@@ -942,12 +1021,33 @@ $(function(){
 	});
 	// Disable the save button on load
 	$("#save_button").attr("disabled", "disabled");
+	
+	$("#shareUrl").add("#shareModal .copy-btn").click(function() { $("#shareUrl").select(); } );
+	$("#share_button").click(function() {
+		if (skillTree.isModified) {
+			saveToServer(shareLink);
+		} else {
+			shareLink();
+		}
+	});
+	// Initialize the edit skill tree button (for viewers)
+	$("#edit_button").popover().click(function() {
+		$("#view_panel").fadeOut(400).promise().done(function() {
+			$("#edit_panel").fadeIn(400);
+			enableEditMode();
+			setModified(true);
+		});
+	});
+	// Show the disclaimer modal (if there's one)
+	$("#disclaimerModal").modal("show");
+	
+	
 	// Resize elements to fit the screen
 	$(window).resize(function() {
 		moduleListHeight = $("body").innerHeight()
 			- $("#top_panel").outerHeight()
 			- $("#notification_panel").outerHeight()
-			- ($("#left_panel").innerHeight() - $("#left_panel").height())
+			- ($("#edit_panel").innerHeight() - $("#edit_panel").height())
 			- $("#module_search").outerHeight()
 			- $("#faculty_filter").outerHeight()
 			- $("#control_panel").outerHeight()

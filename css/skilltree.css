@@ -149,7 +149,8 @@
 }
 
 .moduleBox .controlPanel {
-    float: right;
+    display: none;
+	float: right;
     position: absolute;
     right: 20px;
     top: 10px;
@@ -158,6 +159,10 @@
 	   -moz-transition:opacity 0.5s;
 		 -o-transition:opacity 0.5s;
 			transition:opacity 0.5s;
+}
+
+#skillTree.editMode .moduleBox .controlPanel {
+    display: block;
 }
 
 .moduleBox .controlPanel button {
@@ -218,7 +223,7 @@
 }
 */
 #moduleInfo {
-    z-index: 100;
+    z-index: 200;
     width: 300px;
 	height: 400px;
     padding: 10px 20px;
@@ -289,7 +294,7 @@
 */
 
 .ps-scrollbar-y, .ps-scrollbar-x {
-	z-index: 24;
+	z-index: 200;
 }
 
 ._jsPlumb_endpoint {

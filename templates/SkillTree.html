@@ -15,12 +15,12 @@ args:
 	<!--Link all external css files here-->
 	<!-- External fonts -->
 	<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
-	<link href='./css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
+	<link href='/css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
 	<!-- CSS rule definitions -->
-	<link href="./bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
-	<link href="./css/perfect-scrollbar-0.4.1.min.css" type="text/css" rel="stylesheet" />
-	<link href="./css/main.css" type="text/css" rel="stylesheet" />
-	<link href="./css/skilltree.css" type="text/css" rel="stylesheet" />
+	<link href="/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+	<link href="/css/perfect-scrollbar-0.4.1.min.css" type="text/css" rel="stylesheet" />
+	<link href="/css/main.css" type="text/css" rel="stylesheet" />
+	<link href="/css/skilltree.css" type="text/css" rel="stylesheet" />
 	<!--end of css files-->
 
 	<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
@@ -42,41 +42,53 @@ args:
 		</div>
 		<div id="bottom_panel_group" class="row-fluid">
 			<div id="left_panel" class="span2">
-				<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
-				<select id="faculty_filter" class = "">
-					<option>ALL FACULTIES</option>
-					<option>ARTS & SOCIAL SCIENCES</option>
-					<option>DENTISTRY</option>
-					<option>ENGINEERING</option>
-					<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
-					<option>LAW</option>
-					<option>NON-FACULTY-BASED DEPARTMENTS</option>
-					<option>SCHOOL OF BUSINESS</option>
-					<option>SCHOOL OF COMPUTING</option>
-					<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
-					<option>SCIENCE</option>
-					<option>UNIVERSITY ADMINISTRATION</option>
-					<option>UNIVERSITY SCHOLARS PROGRAMME</option>
-					<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
-					<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
-				</select>
-				<div id="module_list_view">
-					<div id="module_list">
-						<!--Modules will be inserted dynamically here-->
+				<div id="edit_panel"{% if (student is not defined) or (ownskilltree is defined and not isownskilltree) %} style="display:none;"{% endif %}>
+					<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
+					<select id="faculty_filter" class = "">
+						<option>ALL FACULTIES</option>
+						<option>ARTS & SOCIAL SCIENCES</option>
+						<option>DENTISTRY</option>
+						<option>ENGINEERING</option>
+						<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
+						<option>LAW</option>
+						<option>NON-FACULTY-BASED DEPARTMENTS</option>
+						<option>SCHOOL OF BUSINESS</option>
+						<option>SCHOOL OF COMPUTING</option>
+						<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
+						<option>SCIENCE</option>
+						<option>UNIVERSITY ADMINISTRATION</option>
+						<option>UNIVERSITY SCHOLARS PROGRAMME</option>
+						<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
+						<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
+					</select>
+					<div id="module_list_view">
+						<div id="module_list">
+							<!--Modules will be inserted dynamically here-->
+						</div>
+					</div>
+					<div id="control_panel">
+						<form class="form-inline">
+							<div class="button_group">
+								<input id="save_button" class="btn btn-primary" type="button" disabled="disabled" value="Save"/>
+								<input id="share_button" class="btn btn-primary" type="button" value="Share"/>
+							</div>
+						</form>
 					</div>
 				</div>
-				<div id="control_panel">
-					<form class="form-inline">
-						<div class="button_group">
-							<input id="save_button" class="btn btn-primary" type="button" disabled="disabled" value="Save">
-							<input id="share_button" class="btn btn-primary" type="button" value="Share">
-						</div>
-					</form>
+				<div id="view_panel"{% if isownskilltree is defined and isownskilltree %} style="display:none;"{% endif %}>
+					<h4>Now Viewing:</h4>
+					<p>{{ skilltreeowner }}'s skill tree</p>
+					{% if student is defined %}<a href="/skilltree" class="btn btn-primary btn-block">View Your Own</a>
+					<input id="edit_button" type="button" class="btn btn-warning btn-block" value="Edit This Tree" data-trigger="hover" data-content="Warning, your own skill tree will be overwritten if you do this!" />
+					{% else %}
+					<input type="button" class="btn btn-primary" value="Sign in" onclick="window.location='{{ loginurl }}'" />
+					<p>to edit this skill tree, or make your own!</p>
+					{% endif %}
 				</div>
 			</div>
 			<div id="right_panel" class="span10">
 				<div id="skillTreeView">
-					<div id="skillTree">
+					<div id="skillTree" class="{% if isownskilltree is defined and isownskilltree %}editMode{% endif %}">
 						<div class="semester" id="semester1">
 							{% if skilltree is defined and skilltree is not none %}
 							<span style="display : none">{{ skilltree.name }}</span>
@@ -109,33 +121,59 @@ args:
 	</div>
 </div>
 <div id="hiddenOverlay"></div>
+{% if isNewUser is defined %}
+<div id="disclaimerModal" class="modal hide fade" role="dialog">
+	<div class="modal-header">
+		<h3>Disclamer</h3>
+	</div>
+	<div class="modal-body">
+		<p>Warning: This application is still under development, and while we try our best to ensure that module information is accurate, we claim no responsibility if it isn't. Oh, and we'll be wiping data from time to time as development progresses. Cheers!</p>
+	</div>
+	<div class="modal-footer">
+		<button type="button" class="btn btn-primary" data-dismiss="modal">Got it!</button>
+	</div>
+</div>
+{% endif %}
+<div id="shareModal" class="modal hide fade" role="dialog">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Share Your Skill Tree</h3>
+	</div>
+	<div class="modal-body">
+		<div><label for="shareUrl">Your Skill Tree Link:</label><input id="shareUrl" class="input-block-level" type="text" value="" readonly="readonly" /></div>
+		<span class="btn-group"><a class="btn twitter-btn mst-icon-twitter" target="_blank" title="Post on Twitter"></a><a class="btn facebook-btn mst-icon-facebook" target="_blank" title="Share on Facebook"></a><a class="btn gplus-btn mst-icon-gplus" target="_blank" title="Share on Google+"></a></span>
+		<a class="btn copy-btn pull-right">Copy Link</a>
+	</div>
+</div>
 <!--
 <div id="overlayBG" style="display: none">
 	<div id="progress" class="center">100%</div>
 </div>-->
 <!--Scripts after this line-->
-<script type="text/javascript" src="./scripts/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="./scripts/jquery-ui.min.js"></script>
-<script type="text/javascript" src="./scripts/jquery.ajax-progress.js"></script>
+<script type="text/javascript" src="/scripts/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/scripts/jquery-ui.min.js"></script>
+<script type="text/javascript" src="/scripts/jquery.ajaxQueue.js"></script>
+<script type="text/javascript" src="/scripts/jquery.ajax-progress.js"></script>
 <script type="text/javascript">
 	// Fix conflicts between JqueryUI and Bootstrap.
 	$.widget.bridge('uibutton', $.ui.button);
 	$.widget.bridge('uitooltip', $.ui.tooltip);
 </script>
-<script type="text/javascript" src="./bootstrap/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="./bootstrap/js/bootstrap-editable.js"></script>
-<script type="text/javascript" src="./scripts/perfect-scrollbar-0.4.1.with-mousewheel.min.js"></script>
-<script type="text/javascript" src="./scripts/jquery.slimscroll.min.js"></script>
-<script type="text/javascript" src="./scripts/jquery.jsPlumb-1.4.1-all-min.js"></script>
-<script type="text/javascript" src="./scripts/skillTree.js"></script>
-<script type="text/javascript" src="./scripts/script.js"></script>
+<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/bootstrap/js/bootstrap-editable.js"></script>
+<script type="text/javascript" src="/scripts/perfect-scrollbar-0.4.1.with-mousewheel.min.js"></script>
+<script type="text/javascript" src="/scripts/jquery.slimscroll.min.js"></script>
+<script type="text/javascript" src="/scripts/jquery.jsPlumb-1.4.1-all-min.js"></script>
+<script type="text/javascript" src="/scripts/skillTree.js"></script>
+<script type="text/javascript" src="/scripts/script.js"></script>
 <script type="text/javascript">
 $(function() {
 	//$('#userBox .nickname').popover('show');
 {% if isNewUser is defined %}
+	// TODO: PRINT NEW USER MESSAGE
 {% endif %}
 {% if skilltree is defined and skilltree is not none %}
-	loadFromServer('{{ skilltree.guid }}');
+	loadFromServer('{{ skilltree.guid }}'{% if student is not defined %}, false{% elif ownskilltree is defined and not isownskilltree %}, '{{ ownskilltree.guid }}'{% endif %});
 {% endif %}
 })
 </script>

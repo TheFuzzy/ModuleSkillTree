@@ -1,5 +1,5 @@
 application: module-skill-tree
-version: 0-1
+version: 0-2
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -8,7 +8,7 @@ handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
-
+  
 # Home page
 - url: /
   script: home.app
@@ -44,6 +44,11 @@ handlers:
 # Twitter Bootstrap
 - url: /bootstrap
   static_dir: bootstrap
+
+# Under Construction
+#- url: /.*
+#  static_files: under_construction.html
+#  upload: under_construction\.html
   
 # OpenID login page
 - url: /_ah/login_required

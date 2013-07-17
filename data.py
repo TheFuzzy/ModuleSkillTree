@@ -239,9 +239,14 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                 except AttributeError:
                     pass
                 logging.debug("Retrieved skill tree")
+                overwrite = urllib.unquote_plus(self.request.get('overwrite', default_value='false'))
+                logging.debug(overwrite)
+                if overwrite == 'true':
+                    for assigned_module in skill_tree.assigned_modules.iter(keys_only=True):
+                        assigned_module.delete()
+                    logging.debug("Skill tree cleared")
                 data = json.loads(data_string)
                 json_assigned_modules = data["assignedModules"]
-                json_remove_modules = data["removeModules"]
                 logging.debug("Parsed JSON data")
                 for json_assigned_module in json_assigned_modules.itervalues():
                     logging.debug("Inserting/updating module %s" % json_assigned_module["module"])
@@ -269,12 +274,14 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                         assigned_module.prerequisites = json_assigned_module["prerequisites"]
                     assigned_module.put()
                     logging.debug("Inserted successfully")
-                for code, remove_module in json_remove_modules.iteritems():
-                    if remove_module:
-                        #module_k = datatypes.Module.query(datatypes.Module.code == code).get(keys_only=True)
-                        assigned_module_k = datatypes.AssignedModule.query(datatypes.AssignedModule.module_code == code).get(keys_only=True)
-                        assigned_module_k.delete()
-                        logging.debug("%s deleted." % code)
+                if hasattr(data, "removeModules"):
+                    json_remove_modules = data["removeModules"]
+                    for code, remove_module in json_remove_modules.iteritems():
+                        if remove_module:
+                            #module_k = datatypes.Module.query(datatypes.Module.code == code).get(keys_only=True)
+                            assigned_module_k = datatypes.AssignedModule.query(datatypes.AssignedModule.module_code == code).get(keys_only=True)
+                            assigned_module_k.delete()
+                            logging.debug("%s deleted." % code)
                 self.response.headers['Content-Type'] = 'text/plain'
                 self.response.write("SUCCESS")
     #def addOrUpdateModule(self, module, json_assigned_module):

@@ -18,7 +18,16 @@ html, body {
 body {
     background-color: #fff;
 }
-.mst-icon-settings, .mst-icon-warning, .mst-icon-error, .mst-icon-success, .mst-icon-close {
+.mst-icon,
+.mst-icon-settings,
+.mst-icon-warning,
+.mst-icon-error,
+.mst-icon-success,
+.mst-icon-close,
+.mst-icon-twitter,
+.mst-icon-facebook,
+.mst-icon-gplus,
+.mst-icon-copy {
     font-family: 'NUSMST-icons';
     speak: none;
     font-style: normal;
@@ -42,6 +51,18 @@ body {
 }
 .mst-icon-close:before {
 	content: "\63";
+}
+.mst-icon-gplus:before {
+	content: "\67";
+}
+.mst-icon-twitter:before {
+	content: "\74";
+}
+.mst-icon-facebook:before {
+	content: "\66";
+}
+.mst-icon-copy:before {
+	content: "\24";
 }
 div.center {
     position: absolute;
@@ -191,7 +212,14 @@ div.center {
 }
 
 #left_panel{
+	height: 100%;
+}
+#edit_panel {
 	padding: 25px 50px;
+	padding-right:0;
+}
+#view_panel {
+	padding: 25px 20px;
 	padding-right:0;
 }
 #right_panel{
@@ -305,4 +333,15 @@ div.pull-right input.btn.btn-small{
 	background: linear-gradient(to right,  rgba(50,255,50,0.5) 0%,rgba(50,255,50,0.5) 99%,rgba(50,255,50,0) 100%); /* W3C */
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#8032ff32', endColorstr='#0032ff32',GradientType=1 ); /* IE6-9 */
 	background-repeat: no-repeat;
+}
+
+#shareModal input[readonly] {
+	cursor: pointer;
+}
+
+#shareModal .twitter-btn,
+#shareModal .facebook-btn,
+#shareModal .gplus-btn {
+	font-size: 20px;
+	padding: 4px 8px;
 }
