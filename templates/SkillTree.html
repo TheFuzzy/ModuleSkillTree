@@ -87,18 +87,24 @@ args:
 				</div>
 			</div>
 			<div id="right_panel" class="span10">
-				<div id="skillTreeView">
-					<div id="skillTree" class="{% if isownskilltree is defined and isownskilltree %}editMode{% endif %}">
+				<div id="skillTreeView" class="{% if isownskilltree is defined and isownskilltree %}editMode{% endif %}">
+					<div id="skillTree">
+						{% if skilltree is defined and skilltree is not none %}
+						<span style="display : none">{{ skilltree.name }}</span>
+						{% endif %}
+						<!--Modules will be inserted dynamically here-->
+					</div>
+					<div id="semesters">
 						<div class="semester" id="semester1">
-							{% if skilltree is defined and skilltree is not none %}
-							<span style="display : none">{{ skilltree.name }}</span>
-							{% endif %}
-							<div class="semester_meta">
-								<span>Semester 1</span>
-								<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>
+							<h1>1</h1>
+							<div class="input-block"></div>
+							<div class="btn-group">
+								<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>
+								<ul class="dropdown-menu">
+									<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>
+								</ul>
 							</div>
 						</div>
-						<!--Modules will be inserted dynamically here-->
 					</div>
 				</div>
 				<div id="moduleInfo" style="display:none">

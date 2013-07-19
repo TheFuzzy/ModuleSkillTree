@@ -173,7 +173,7 @@ div.center {
 	-moz-box-sizing: border-box;
 	     box-sizing: border-box;
     background-color: #000000;
-    z-index: 100;
+    z-index: 305;
 	display: none;
 }
 #notification .mst-icon-settings, #notification .mst-icon-warning, #notification .mst-icon-error, #notification .mst-icon-success, #notification .mst-icon-close {

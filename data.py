@@ -186,7 +186,8 @@ class GetSkillTreeHandler(webapp2.RequestHandler):
                     json_assigned_module = {
                         "module" : json_module,
                         "semester" : assigned_module.semester,
-                        "semesterIndex" : assigned_module.semester_index
+                        "semesterIndex" : assigned_module.semester_index,
+                        "exception" : assigned_module.is_exception
                     }
                     if hasattr(assigned_module, 'prerequisites'):
                         json_assigned_module["prerequisites"] = assigned_module.prerequisites

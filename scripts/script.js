@@ -4,7 +4,7 @@ var skillTree = {
 	MODULE_TOP_SPACING: 35,
 	MODULE_LEFT_SPACING: 20,
 	MODULE_HORIZ_SPACING : 20,
-	MODULE_VERT_SPACING : 84,
+	MODULE_VERT_SPACING : 80,
 	MODULE_WIDTH : 200,
 	MODULE_HEIGHT : 120,
 	NOTIFICATIONS : { SUCCESS : "success", WARNING : "warning", ERROR : "error" },
@@ -29,6 +29,32 @@ function testJSON(data) {
 // Helper function to create delayed function calls
 function timeoutCall(fn, data, timeout) {
 	setTimeout(function() {fn.call(null, data);}, timeout);
+}
+// Generates a jQuery DOM object representing the given module.
+function createModuleBox(module, isException) {
+	var id = module.code + 'box';
+	var settingsHTML = '';
+	isException = typeof isException === 'undefined' ? false : isException;
+	var isChecked = isException ? ' checked' : '';
+	var buttonsHTML = '<button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>';
+	// Generate an exception checkbox if there are any prerequisites.
+	if (typeof module.prerequisites !== 'undefined' && module.prerequisites.length > 0 && module.prerequisites[0].length > 0) {
+		settingsHTML = '<div class="moduleSettings">' +
+							'<button class="btn exception_button' + isChecked + '"><div class="indicator"></div>Ignore Pre-requisites</button>' +
+						'</div>';
+		buttonsHTML = '<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button> ' + buttonsHTML;
+	}
+	var jqDiv = $('<div id="'+id+'">' +
+				'<div class="moduleInfo">' +
+					'<div class="moduleCode">'+module.code+'</div>' +
+					'<div class="moduleTitle">'+module.name+'</div>' +
+				'</div>' +
+				settingsHTML +
+				'<div class="controlPanel">' +
+					buttonsHTML +
+				'</div>' +
+			'</div>');
+	return jqDiv;
 }
 // Alert the user
 function notify(message, type) {
@@ -96,7 +122,7 @@ function saveToServer(callback) {
 					module : code,
 					semester : assignedModule.semester,
 					semesterIndex : semesterIndex,
-					exception : false
+					exception : assignedModule.exception
 				}
 				if (typeof assignedModule.prerequisites !== 'undefined') {
 					skillTreeData.assignedModules[code].prerequisites = assignedModule.prerequisites;
@@ -177,7 +203,8 @@ function loadFromServer(guid, ownGuid) {
 				skillTree.modules[code] = assignedModule.module;
 				skillTree.assignedModules[code] = {
 					module : assignedModule.module,
-					semester : assignedModule.semester
+					semester : assignedModule.semester,
+					exception : assignedModule.exception
 				}
 				if (skillTree.moduleCodes.indexOf(code) < 0) skillTree.moduleCodes.push(code);
 				if (typeof assignedModule.prerequisites !== 'undefined') {
@@ -188,16 +215,7 @@ function loadFromServer(guid, ownGuid) {
 				ensureSemester(assignedModule.semester);
 				skillTree.semesters[assignedModule.semester-1][assignedModule.semesterIndex] = code;
 				var newDivId = code + 'box';
-				var moduleBox = $('<div id="'+newDivId+'">' +
-									'<div class="moduleInfo">' +
-										'<div class="moduleCode">'+code+'</div>' +
-										'<div class="moduleTitle">'+skillTree.modules[code].name+'</div>' +
-									'</div>' +
-									'<div class="controlPanel">' +
-										'<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button>' +
-										' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
-									'</div>' +
-								'</div>');
+				var moduleBox = createModuleBox(skillTree.modules[code], assignedModule.exception);
 				moduleBox.appendTo('#skillTree').moduleBox(assignedModule.module, editMode);
 				// Hide the module code in the search list.
 				$('.module').filter(function() {
@@ -294,7 +312,7 @@ function repositionModules(animate) {
 							duration: 1000,
 							progress: function () {
 								jsPlumb.repaint(this);
-								skillTreeBox.perfectScrollbar("update");
+								repaintSkillTree();
 							},
 							queue: false
 						}
@@ -304,8 +322,10 @@ function repositionModules(animate) {
 		}
 	}
 	// Repaint the flowchart lines, in case the whole process wasn't animated.
-	if (!animate) jsPlumb.repaintEverything();
-	
+	if (!animate) {
+		jsPlumb.repaintEverything();
+		repaintSkillTree();
+	}
 }
 // Gets the module instance from the global variable, given the module code
 // code - String
@@ -465,13 +485,17 @@ function ensureSemester(semesterNum) {
 	if ((semesterNum > 0) && (!skillTree.semesters[semesterNum-1])) {
 		for (var i = skillTree.semesters.length; i < semesterNum; i++) {
 			skillTree.semesters[i] = [];
-			var semesterDiv = $('<div id="semester' + (i+1) + '">' +
-									'<div class="semester_meta">' +
-										'<span>Semester ' + (i+1) + '</span>' +
-										'<input class="btn btn-small btn-link pull-right" type="button" value="NUSMods"/>' +
+			var semesterDiv = $('<div class="semester" id="semester' + (i+1) + '">' +
+									'<h1>' + (i+1) + '</h1>' +
+									'<div class="input-block"></div>' +
+									'<div class="btn-group">' +
+										'<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>' +
+										'<ul class="dropdown-menu">' +
+											'<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>' +
+										'</ul>' +
 									'</div>' +
 								'</div>');
-			semesterDiv.appendTo("#skillTree").semester();
+			semesterDiv.appendTo("#semesters").semester();
 		}
 	}
 }
@@ -490,6 +514,70 @@ function trimSemesters() {
 		}
 		skillTree.semesters.splice(i+1, numOfEmptySemesters);
 	}
+}
+// Allow exceptions for a module
+function setException(assignedModule, isException) {
+	if (isException) {
+		while (typeof assignedModule.prereqGroups !== 'undefined') {
+			var prereqGroup = getAssignedModule(assignedModule.prereqGroups[0]);
+			removeAssignedModule(prereqGroup);
+		}
+	} else {
+		var module = assignedModule.module;
+		for (var i = 0; i < module.prerequisites.length; i++) {
+			// Ignore if the prerequisite group is empty.
+			var isInnerPrereqSatisfied = module.prerequisites[i].length == 0;
+			if (module.prerequisites[i][0] == '-') isInnerPrereqSatisfied = true;
+			var moduleExists = false;
+			if (!isInnerPrereqSatisfied) {
+				for (var j = 0; j < module.prerequisites[i].length; j++) {
+					if (typeof skillTree.modules[module.prerequisites[i][j]] !== 'undefined') {
+						moduleExists = true;
+						if (typeof assignedModule.prerequisites !== 'undefined' && assignedModule.prerequisites.indexOf(module.prerequisites[i][j]) > -1) {
+							isInnerPrereqSatisfied = true;
+						} else {
+							var assMod = getAssignedModule(module.prerequisites[i][j]);
+							// Ensure that the assignedModule isn't actually a prerequisite group (impossible)
+							if (assMod != null && !isPrereqGroup(assMod)) {
+								// The prerequisite is satisfied for this group of prerequisites.
+								isInnerPrereqSatisfied = true;
+								console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
+								// Connect the module to its prerequisite.
+								moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
+								// Store the prerequisite in our newly inserted assigned module.
+								if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+								assignedModule.prerequisites.push(module.prerequisites[i][j]);
+							}
+						}
+					}
+				}
+			}
+			// If the prerequisite isn't satisfied for a prerequisite group
+			if (!isInnerPrereqSatisfied && moduleExists) {
+				// insert the first module in the group, and ensure that the currently inserted module is inserted after it.
+				// needs to be altered to insert all modules in the group as suggestions.
+				console.log("Inner prerequisite of " + module.code + " is not satisfied!");
+				//
+				
+				if (module.prerequisites[i].length == 1) {
+					ensureModuleDetails(getModule(module.prerequisites[i][0]), {
+						callback  : addModuleToTree,
+						useModule : true
+					});
+					if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+					assignedModule.prerequisites.push(module.prerequisites[i][0]);
+				} else {
+					var prereqGroup = addPrereqGroupToTree(module.code, module.prerequisites[i]);
+					if (typeof assignedModule.prereqGroups === 'undefined') assignedModule.prereqGroups = [];
+					assignedModule.prereqGroups.push(prereqGroup);
+					// Inform the user that at least one prerequisite group needs to be satisfied.
+					notify(module.code + " is missing a pre-requisite. Please click the highlighted box to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
+				}
+			}
+		}
+	}
+	assignedModule.exception = isException;
+	repositionModules();
 }
 // Recursively shift modules. Returns the semester the module is assigned to (or left at).
 function assignSemester(assignedModule, semesterNum) {
@@ -599,22 +687,13 @@ function addModuleToTree(module) {
 	}
 	// Initialise an assigned module with no semester.
 	var assignedModule = skillTree.assignedModules[module.code] = {
-		module : module
+		module : module,
+		exception: false
 	}
 	// Count the number of prerequisites that need to be satisfied, if any.
 	var numOfUnsatisfiedPrereqs = 0;
 	// Generate and insert a .moduleBox for the module.
-	var newDivId = module.code + 'box';
-	var moduleBox = $('<div id="'+newDivId+'">' +
-						'<div class="moduleInfo">' +
-							'<div class="moduleCode">'+module.code+'</div>' +
-							'<div class="moduleTitle">'+module.name+'</div>' +
-						'</div>' +
-						'<div class="controlPanel">' +
-							'<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button>' +
-							' <button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>' +
-						'</div>' +
-					'</div>');
+	var moduleBox = createModuleBox(module);
 	moduleBox.appendTo('#skillTree').moduleBox(module);
 	// Hide the module code in the search list.
 	$('.module').filter(function() {
@@ -796,8 +875,12 @@ function removeAssignedModule(assignedModule) {
 						if ((otherAssMod.module.code != assignedModule.module.code) && (modIndex > -1)) {
 							//console.log("Joining " + module.code + " to " + assMod.module.code);
 							if (otherAssMod.module.prerequisites[j].length == 1) {
-								notify(assignedModule.module.code + " is the sole prerequisite of " + otherAssMod.module.code, skillTree.NOTIFICATIONS.ERROR);
-								return;
+								if (otherAssMod.exception) {
+									delete otherAssMod.prerequisites;
+								} else {
+									notify(assignedModule.module.code + " is the sole prerequisite of " + otherAssMod.module.code, skillTree.NOTIFICATIONS.ERROR);
+									return;
+								}
 							} else {
 								var prereqGroup = addPrereqGroupToTree(otherAssMod.module.code, otherAssMod.module.prerequisites[j]);
 								if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
@@ -915,7 +998,7 @@ $(function(){
 		saveToServer();
 	});	
 	// Assign modules a different semester if a .moduleBox is dropped onto a different semester.
-	$("#skillTree").on('drop', '.semester', function(event, ui)  {
+	$("#skillTreeView").on('drop', '.semester', function(event, ui)  {
 		var div_id = ui.draggable.attr('id');
 		var module_code = div_id.substring(0, div_id.length-3);
 		var semester_num = $(this).attr('id');
@@ -958,9 +1041,36 @@ $(function(){
 		var moduleCode = div_id.substring(0, div_id.length-3);
 		var assignedModule = getAssignedModule(moduleCode);
 		removeAssignedModule(assignedModule);
+		event.stopPropagation();
+	})
+	// Reveals a module's settings when the settings button is clicked
+	.on('click', '.moduleBox .settings', function(event) {
+		var moduleBox = $(this).closest('.moduleBox');
+		var moduleInfoBox = moduleBox.children('.moduleInfo');
+		var moduleSettingsBox = moduleBox.children('.moduleSettings');
+		if (!moduleInfoBox.is(":visible")) {
+			moduleSettingsBox.stop().fadeOut(500).promise().done(function() {moduleInfoBox.fadeIn(500)});
+		} else {
+			moduleInfoBox.stop().fadeOut(500).promise().done(function() {moduleSettingsBox.fadeIn(500)});
+		}
+		event.stopPropagation();
+	})
+	// Make an exception when the checkbox is checked.
+	.on('click', '.moduleBox .exception_button', function(event) {
+		var moduleBox = $(this).closest('.moduleBox');
+		var moduleInfoBox = moduleBox.children('.moduleInfo');
+		var moduleSettingsBox = moduleBox.children('.moduleSettings');
+		var isChecked = $(this).hasClass('checked');
+		var div_id = moduleBox.attr('id');
+		var module_code = div_id.substring(0, div_id.length-3);
+		var assignedModule = getAssignedModule(module_code);
+		$(this).toggleClass("checked");
+		setException(assignedModule, isChecked);
+		//moduleSettingsBox.stop().fadeOut(500).promise().done(function() {moduleInfoBox.fadeIn(500)});
+		event.stopPropagation();
 	})
 	// Submit the semester to NUSMods for timetable planning.
-	.on('click', '.semester .btn', function(event) {
+	.on('click', '.semester .link_nusmods', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
 		var semester_num = div_id.substr(div_id.length-1);
 		var modules = skillTree.semesters[semester_num-1];
@@ -985,6 +1095,7 @@ $(function(){
 		} else {
 			window.open(url);
 		}
+		event.preventDefault();
 	})
 	// Click handler for the skillTree itself.
 	.on('click', function(event) {

@@ -1,5 +1,5 @@
 application: module-skill-tree
-version: 0-2
+version: 0-3
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -49,7 +49,11 @@ handlers:
 #- url: /.*
 #  static_files: under_construction.html
 #  upload: under_construction\.html
-  
+
+# Login page
+- url: /login
+  script: openid_login.app
+
 # OpenID login page
 - url: /_ah/login_required
   script: openid_login.app

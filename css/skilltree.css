@@ -39,13 +39,8 @@
 */
 
 .semester {
-    z-index: 3;
-    height: 200px;
-    border: 2px solid #555;
-    /*border-radius*/
-	-webkit-border-radius:6px;
-	   -moz-border-radius:6px;
-			border-radius:6px;
+    height: 190px;
+    border-bottom: 10px solid #555;
     position: relative;
     color: #fff;
 }
@@ -66,21 +61,70 @@
 }
 
 .semester.drop-hover {
-    border: 2px solid #fb5;
-    color: #fff;
+    border-color: #fb5;
 }
 
 .semester.drop-hover .semester_meta {
     background-color: #fb5;
 }
 
+.semester h1 {
+    position: absolute;
+    left: 10px;
+    bottom: 0;
+    font-size: 70px;
+    line-height: 1em;
+    display: inline;
+    color: #bbb;
+    cursor: default;
+}
+
+.semester .input-block {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.semester .btn-group {
+    position: absolute;
+    display: none;
+    left: 5px;
+    top: 5px;
+    opacity: 0;
+	z-index: 200;
+	-webkit-transition:opacity 0.5s;
+	   -moz-transition:opacity 0.5s;
+		 -o-transition:opacity 0.5s;
+			transition:opacity 0.5s;
+}
+
+.semester .btn-group .btn {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    /*border-radius*/
+	-webkit-border-radius:10px;
+	   -moz-border-radius:10px;
+			border-radius:10px;
+}
+
+.semester:hover .btn-group {
+    opacity: 1;
+}
+
+#skillTreeView.editMode .semester .btn-group {
+    display: block;
+}
+
 .moduleBox {
     z-index: 20;
     height: 120px;
     width: 200px;
-    padding: 10px 10px;
+    padding: 10px 0;
     -moz-box-sizing: border-box;
-    box-sizing: border-box;
+         box-sizing: border-box;
     background-color: #ddd;
     /*linear-gradient*/
 	background:-webkit-gradient(linear,left top,left bottom,color-stop(#f7f7f7,0),color-stop(#e2e2e2,1));
@@ -148,6 +192,33 @@
 	text-align: center;
 }
 
+.moduleBox .moduleSettings {
+	display: none;
+	margin: 30px 0px;
+	text-align: center;
+}
+
+.moduleBox .moduleSettings p {
+    line-height: 1;
+    display: inline;
+}
+
+.moduleBox .btn.checked {
+}
+
+.moduleBox .btn .indicator {
+    height: 1em;
+    width: 5px;
+    margin-right: 7px;
+    margin-left: -3px;
+    display: inline-block;
+    background-color: #020;
+}
+
+.moduleBox .btn.checked .indicator {
+    background-color: #0d0;
+}
+
 .moduleBox .controlPanel {
     display: none;
 	float: right;
@@ -161,7 +232,7 @@
 			transition:opacity 0.5s;
 }
 
-#skillTree.editMode .moduleBox .controlPanel {
+#skillTreeView.editMode .moduleBox .controlPanel {
     display: block;
 }
 
@@ -183,10 +254,6 @@
 
 .moduleBox:hover .controlPanel {
     opacity: 1;
-}
-/* Settings button is unused for now. */
-.moduleBox .controlPanel .settings {
-	display: none;
 }
 
 .moduleBox.invalid {
@@ -223,7 +290,7 @@
 }
 */
 #moduleInfo {
-    z-index: 200;
+    z-index: 300;
     width: 300px;
 	height: 400px;
     padding: 10px 20px;
@@ -293,8 +360,9 @@
 }
 */
 
-.ps-scrollbar-y, .ps-scrollbar-x {
-	z-index: 200;
+.ps-container .ps-scrollbar-y, .ps-container .ps-scrollbar-x {
+	z-index: 301;
+	background-color: #000;
 }
 
 ._jsPlumb_endpoint {

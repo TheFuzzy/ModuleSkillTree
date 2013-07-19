@@ -97,6 +97,8 @@ jsPlumb.ready(function() {
 			jsPlumb.addEndpoint(id, sourceEndpoint, { anchor:"BottomCenter", uuid:sourceUUID });
 			jsPlumb.addEndpoint(id, targetEndpoint, { anchor:"TopCenter", uuid:targetUUID });
 			
+			// $(this).find('.checkbox_exception').button({ label : 'Test' });
+			
 			if (typeof module !== 'undefined' && module != null) {
 				$(this).data({
 					moduleCode: module.code,
@@ -240,7 +242,7 @@ jsPlumb.ready(function() {
 	$.fn.semester = function() {
 		this.addClass("semester");
 		this.droppable({
-			accept : ".moduleBox",
+			accept : ".moduleBox, .module",
 			tolerance : "pointer",
 			hoverClass: "drop-hover",
 			greedy: true
@@ -278,8 +280,10 @@ function deselectAllModuleBoxes() {
 	$("#moduleInfo").stop().fadeOut(200);
 	
 	var connections = jsPlumb.getAllConnections()[jsPlumb.getDefaultScope()];
-	for (var i = 0; i < connections.length; i++) {
-		connections[i].setVisible(true);
+	if (typeof connections !== 'undefined'){
+		for (var i = 0; i < connections.length; i++) {
+			connections[i].setVisible(true);
+		}
 	}
 	
 	$("#skillTree").removeClass("highlight-mode");
@@ -294,11 +298,22 @@ function enableEditMode() {
 		stack: ".moduleBox",
 		containment: "parent"
 	});
-	$("#skillTree").addClass("editMode");
+	$("#skillTreeView").addClass("editMode");
+}
+function repaintSkillTree() {
+	var skillTreeBox = $("#skillTree");
+	var skillTreeViewBox = $("#skillTreeView");
+	var semestersBox = $("#semesters");
+	if (skillTreeBox[0].scrollWidth >= semestersBox[0].scrollWidth) {
+		$(".semester").css('min-width', skillTreeBox[0].scrollWidth + 'px');
+	} else {
+		$(".semester").css('min-width', '');
+	}
+	$("#skillTreeView").perfectScrollbar("update");
 }
 $(function() {
 	// Show information in the moduleInfo div when a moduleBox is clicked.
-	$("#skillTree").on("click", ".moduleBox", function(e) {
+	$("#skillTreeView").on("click", ".moduleBox", function(e) {
 		$(this).selectModuleBox();
 		/*
 		properties = [".moduleCode", ".moduleTitle"];
@@ -386,6 +401,13 @@ $(function() {
 			accept : ".moduleBox, .module",
 			tolerance : "pointer"
 	});
+	/*
+	$(document).bind('mousemove.perfect-scroll', function (e) {
+		var scrollbarX = $(".ps-scrollbar-x");
+		if (scrollbarX.hasClass('in-scrolling')) {
+			$(".semester").css('left', $("#skillTreeView").scrollLeft());
+		}
+	});*/
 	// Initialize the accordion within the #moduleInfo panel
 	$("#moduleAccordion").accordion({
 		header: "h5",
