@@ -130,30 +130,37 @@ div.center {
 }
 #openid_panel {
 	background-color: #FFF;
+	width: 100%;
+	height: 100%;
+	min-width: 500px;
+	min-height: 250px;
 }
-#openid_panel input[type=radio] {
-	padding: 0;
-	margin: 0;
-	height: 16px;
-	width: 16px;
-	float: left;
-	position: absolute;
-	left: 0;
-	opacity: 0;
+#openid_panel h4 {
+	text-align: center;
 }
-#openid_panel label {
-	display: inline-block;
+#openid_panel .providers {
+	margin: 0 auto;
+	width: 400px;
 }
-#openid_panel input:checked + label {
-	color: red;
+#openid_panel .btn {
+	width: 100px;
+	height: 100px;
 }
-#openid_panel input[type=submit] {
-	display: block;
+#openid_panel .btn img {
+	width: 100%;
 }
 #openid_panel>div {
-	width: 500px;
-	height: 400px;
-	border: 1px solid black;
+	width: 450px;
+	height: 200px;
+}
+#openid_panel:not(.embed)>div {
+	position: relative;
+	border: 1px solid #aaa;
+	-webkit-border-radius: 5px;
+	   -moz-border-radius: 5px;
+	        border-radius: 5px;
+	outline: 0px none;
+	box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3)
 }
 .openid_provider {
 	display: inline-block;
@@ -225,14 +232,17 @@ div.center {
 #right_panel{
     height: 100%;
 	padding: 25px;
-	box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
 }
 #module_search {
     width: 100%;
 }
 #module_list_view{
 	border: 1px solid #ccc;
-	border-radius: 4px;
+	-webkit-border-radius: 4px;
+	   -moz-border-radius: 4px;
+	        border-radius: 4px;
 	padding: 2px;
 	font-size: 18px;
 	overflow: hidden;
@@ -344,4 +354,8 @@ div.pull-right input.btn.btn-small{
 #shareModal .gplus-btn {
 	font-size: 20px;
 	padding: 4px 8px;
+}
+
+.tooltip {
+	font-size: 12px;
 }

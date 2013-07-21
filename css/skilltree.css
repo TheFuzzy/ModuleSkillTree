@@ -20,6 +20,11 @@
 #skillTree {
     position: relative;
 }
+
+#semesters {
+    position: relative;
+
+}
 /*
 #skillTreee {
     height: 100%;
@@ -104,6 +109,7 @@
     width: 40px;
     height: 40px;
     font-size: 20px;
+	padding: 0;
     /*border-radius*/
 	-webkit-border-radius:10px;
 	   -moz-border-radius:10px;
@@ -292,7 +298,7 @@
 #moduleInfo {
     z-index: 300;
     width: 300px;
-	height: 400px;
+	height: 420px;
     padding: 10px 20px;
     background-color: #111;
 	background: rgba(17, 17, 17, 0.6);
@@ -344,21 +350,26 @@
 	display: none;
 }
 
-#moduleInfo h5 {
+#moduleInfo #moduleAccordion {
+	height: 220px;
+}
+
+#moduleInfo #moduleAccordion h5 {
 	cursor: pointer;
-	border: 1px solid #222;
+    padding: 2px 5px;
+    background-color: #444;
     /*border-radius*/
-	-webkit-border-radius:10px;
-	   -moz-border-radius:10px;
-			border-radius:10px;
+	-webkit-border-radius:5px;
+	   -moz-border-radius:5px;
+			border-radius:5px;
 }
-/*
-#moduleInfo .moduleDesc {
-	max-height: 200px;
+
+/*#moduleInfo .moduleDesc {
+	max-height: 150px;
 	line-height: 1.5;
-	overflow:hidden;
-}
-*/
+	overflow: auto;
+}*/
+
 
 .ps-container .ps-scrollbar-y, .ps-container .ps-scrollbar-x {
 	z-index: 301;

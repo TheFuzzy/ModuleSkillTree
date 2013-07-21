@@ -27,15 +27,24 @@ args:
 				Need to plan your time in NUS?
 			{% endif %}
 		</p>
-		<a href="/skilltree" class="btn btn-large btn-primary">
+		<a href="/skilltree" class="btn btn-large btn-primary{% if student is undefined %} sign_in_button{% endif %}">
 			{% if student is defined and student is not none %}
-				Plan some more
+				Edit skill tree
 			{% else %}
 				Get started
 			{% endif %}
 		</a>
 	</div>
 </div>
+{% if student is undefined %}
+<div id="loginModal" class="modal hide fade" role="dialog">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Login</h3>
+	</div>
+	<div class="modal-body"></div>
+</div>
+{% endif %}
 <!--Scripts after this line-->
 <script type="text/javascript" src="/scripts/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="/scripts/jquery-ui.min.js"></script>
@@ -45,5 +54,6 @@ args:
 	$.widget.bridge('uitooltip', $.ui.tooltip);
 </script>
 <script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="/scripts/login.js"></script>
 </body>
 </html>

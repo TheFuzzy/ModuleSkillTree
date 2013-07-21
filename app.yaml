@@ -1,5 +1,5 @@
 application: module-skill-tree
-version: 0-3
+version: 0-4
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -56,6 +56,8 @@ handlers:
 
 # OpenID login page
 - url: /_ah/login_required
+  script: openid_login.app
+- url: /_ah/login
   script: openid_login.app
 
 # Administration pages

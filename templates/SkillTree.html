@@ -34,7 +34,7 @@ args:
 			<div id="userBox" class="pull-right">
 				{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>
 				{% else %}<span class="welcome-text">Welcome, friend!</span>{% endif %}
-				<input class="btn btn-small btn-primary" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
+				<input class="btn btn-small btn-primary{% if student is undefined %} sign_in_button{% endif %}" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
 			</div>
 		</div>
 		<div id="notification_panel">
@@ -81,7 +81,7 @@ args:
 					{% if student is defined %}<a href="/skilltree" class="btn btn-primary btn-block">View Your Own</a>
 					<input id="edit_button" type="button" class="btn btn-warning btn-block" value="Edit This Tree" data-trigger="hover" data-content="Warning, your own skill tree will be overwritten if you do this!" />
 					{% else %}
-					<input type="button" class="btn btn-primary" value="Sign in" onclick="window.location='{{ loginurl }}'" />
+					<input type="button" class="btn btn-primary sign_in_button" value="Sign in" onclick="window.location='{{ loginurl }}'" />
 					<p>to edit this skill tree, or make your own!</p>
 					{% endif %}
 				</div>
@@ -101,6 +101,9 @@ args:
 							<div class="btn-group">
 								<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>
 								<ul class="dropdown-menu">
+									<li><a class="link_addbefore" tabindex="-1" href="#">Add a semester before this one</a></li>
+									<li><a class="link_addafter" tabindex="-1" href="#">Add a semester after this one</a></li>
+									<li><a class="link_remove" tabindex="-1" href="#">Remove this semester</a></li>
 									<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>
 								</ul>
 							</div>
@@ -111,16 +114,23 @@ args:
 					<div class="arrow-left"></div>
 					<h3 class="moduleCode"></h2>
 					<h4 class="moduleName"></h3>
+					<h5 class="moduleFaculty"></h5>
 					<div id="moduleAccordion">
 						<h5>Description</h5>
-						<p class="moduleDesc"></p>
-						<h5>MCs:</h5>
-						<p><span class="moduleMc"></span></p>
+						<div id="descContainer">
+							<p class="moduleDesc"></p>
+						</div>
 						<h5>Preclusions:</h5>
-						<p><span class="modulePrecludes"></span></p>
+						<div id="precludeContainer">
+							<p><span class="modulePrecludes"></span></p>
+						</div>
 						<h5>Pre-requisites:</h5>
-						<p><span class="modulePrereqs"></span></p>
+						<div id="prereqContainer">
+							<p><span class="modulePrereqs"></span></p>
+						</div>
 					</div>
+					<p>MCs: <span class="moduleMc"></span></p>
+					<p>Workload: <span class="moduleWorkload"></span></p>
 				</div>
 			</div>
 		</div>
@@ -138,6 +148,15 @@ args:
 	<div class="modal-footer">
 		<button type="button" class="btn btn-primary" data-dismiss="modal">Got it!</button>
 	</div>
+</div>
+{% endif %}
+{% if student is undefined %}
+<div id="loginModal" class="modal hide fade" role="dialog">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		<h3>Login</h3>
+	</div>
+	<div class="modal-body"></div>
 </div>
 {% endif %}
 <div id="shareModal" class="modal hide fade" role="dialog">
@@ -170,6 +189,7 @@ args:
 <script type="text/javascript" src="/scripts/perfect-scrollbar-0.4.1.with-mousewheel.min.js"></script>
 <script type="text/javascript" src="/scripts/jquery.slimscroll.min.js"></script>
 <script type="text/javascript" src="/scripts/jquery.jsPlumb-1.4.1-all-min.js"></script>
+<script type="text/javascript" src="/scripts/login.js"></script>
 <script type="text/javascript" src="/scripts/skillTree.js"></script>
 <script type="text/javascript" src="/scripts/script.js"></script>
 <script type="text/javascript">

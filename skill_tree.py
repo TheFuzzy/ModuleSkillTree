@@ -21,7 +21,9 @@ import os
 from google.appengine.api import users
 import logging
 import urllib
+
 import datatypes
+import openid_login
 
 JINJA_ENVIRONMENT = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + "/templates"),
@@ -36,7 +38,7 @@ class SkillTreeHandler(webapp2.RequestHandler):
         
         guid = urllib.unquote_plus(self.request.get('id', default_value=''))
         
-        args['loginurl'] = users.create_login_url(self.request.uri)
+        args['loginurl'] = openid_login.create_login_url(self.request.uri)
         
         if guid != '':
             logging.debug("GUID %s retrieved from URL" % guid)
@@ -47,10 +49,16 @@ class SkillTreeHandler(webapp2.RequestHandler):
             student = datatypes.Student.query(datatypes.Student.user == user).get()
             
             if student is None:
+                logging.debug('Initializing student for new user')
+                logging.debug('User ID: %s' % user.user_id())
+                logging.debug('Nickname: %s' % user.nickname())
+                logging.debug('E-mail: %s' % user.email())
+                logging.debug('Federated Identity: %s' % user.federated_identity())
+                logging.debug('Federated Provider: %s' % user.federated_provider())
                 student = datatypes.Student(
-                    id = user.nickname(),
+                    id = user.email(),
                     user = user,
-                    name = user.nickname()
+                    name = user.email()
                 )
                 student.put()
                 args['isNewUser'] = True

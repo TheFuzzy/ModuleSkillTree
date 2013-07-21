@@ -1,0 +1,61 @@
+{% if embed is undefined or not embed %}
+<!DOCTYPE html>
+<!--OpenID Login Page Jinja Template
+args:
+		embed : Whether the page should be embedded.
+		redirect : A redirect URI
+-->
+<html lang="en" >
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+<!--Link all external css files here-->
+<!-- External fonts -->
+<link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
+<link href='/css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
+<!-- CSS rule definitions -->
+<link href="/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
+<link href="/css/main.css" type="text/css" rel="stylesheet" />
+<!--end of css files-->
+<title>NUS Module Skill Tree - Login</title>
+</head>
+<body>
+{% endif %}
+<div id="openid_panel"{% if embed is defined and embed %} class="embed"{% endif %}>
+	<div class="center">
+		<h4>Login via one of the following sites:</h4>
+		<div class="providers">
+			{% if providers is defined %}
+			<div class="btn-group">
+				{% for provider in providers %}<button class="btn provider" data-provider="{{ provider }}"><img src="/images/openid/{{ provider }}.png" /></button>{% endfor %}
+			</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% if embed is undefined or not embed %}
+<!--Scripts after this line-->
+<script type="text/javascript" src="/scripts/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="/scripts/jquery-ui.min.js"></script>
+<script type="text/javascript">
+	// Fix conflicts between JqueryUI and Bootstrap.
+	$.widget.bridge('uibutton', $.ui.button);
+	$.widget.bridge('uitooltip', $.ui.tooltip);
+</script>
+<script type="text/javascript" src="/bootstrap/js/bootstrap.min.js"></script>
+{% endif %}
+<script type="text/javascript">
+	$().ready(function() {
+		$("#openid_panel .provider").click(function() {
+			var provider = $(this).data('provider');
+			var redirectURL = '{% if redirect is defined %}{{ redirect }}{% endif %}'
+			if (redirectURL === '') redirectURL = '/';
+			redirectURL = encodeURIComponent(redirectURL);
+			redirectURL = redirectURL.replace(/%3D/g, '=');
+			window.location = '/login?provider=' + provider + '&continue=' + redirectURL;
+		});
+	});
+</script>
+{% if embed is undefined or not embed %}
+</body>
+</html>
+{% endif %}

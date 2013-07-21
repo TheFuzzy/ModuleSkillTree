@@ -87,9 +87,15 @@ jsPlumb.ready(function() {
 					scroll: true,
 					scrollSensitivity: 50,
 					stack: ".moduleBox",
-					containment: "parent"
+					containment: "#skillTreeView"
 				});
 			}
+			$(this).droppable(
+			{
+				accept: ".moduleBox",
+				tolerance: "pointer",
+				greedy: true
+			});
 			//this.each(function() {
 			id = $(this).attr('id');
 			sourceUUID = id + "BottomCenter";
@@ -100,6 +106,8 @@ jsPlumb.ready(function() {
 			// $(this).find('.checkbox_exception').button({ label : 'Test' });
 			
 			if (typeof module !== 'undefined' && module != null) {
+				var workload = '-';
+				if (typeof module.workload !== 'undefined' && module.workload != null) workload = module.workload;
 				$(this).data({
 					moduleCode: module.code,
 					moduleName: module.name,
@@ -107,7 +115,8 @@ jsPlumb.ready(function() {
 					moduleMc: module.mc,
 					modulePrecludes: module.preclusions_string,
 					modulePrereqs: module.prerequisites_string,
-					moduleFaculty: module.faculty
+					moduleFaculty: module.faculty,
+					moduleWorkload: workload
 				});
 			}
 			//});
@@ -156,8 +165,9 @@ jsPlumb.ready(function() {
 			var moduleCode = moduleBox.data("moduleCode");
 			var moduleName = moduleBox.data("moduleName");
 			var moduleDesc = moduleBox.data("moduleDesc");
-			//var moduleDesc = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur sit amet nunc sapien. Vestibulum posuere nisl id mi luctus interdum. Etiam sollicitudin aliquet augue sed vulputate. Sed nec nibh sollicitudin, tempor mi nec, rhoncus felis. Nunc tincidunt eget nulla et pharetra. Duis rutrum, odio et blandit vestibulum, velit elit iaculis felis, sit amet dictum enim magna ut lacus. Proin ullamcorper, eros rutrum adipiscing pretium, diam sapien ullamcorper ipsum, sit amet interdum nisi sem nec ipsum. Ut ornare, lacus mattis elementum molestie, eros odio placerat nisi, sed malesuada risus neque non nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam. ";
 			var moduleMc = moduleBox.data("moduleMc");
+			var moduleFaculty = moduleBox.data("moduleFaculty");
+			var moduleWorkload = moduleBox.data("moduleWorkload");
 			var modulePrecludes = moduleBox.data("modulePrecludes");
 			var modulePrereqs = moduleBox.data("modulePrereqs");
 			
@@ -207,6 +217,8 @@ jsPlumb.ready(function() {
 			moduleInfoBox.find(".moduleName").text(moduleName);
 			moduleInfoBox.find(".moduleDesc").text(moduleDesc);
 			moduleInfoBox.find(".moduleMc").text(moduleMc);
+			moduleInfoBox.find(".moduleWorkload").text(moduleWorkload);
+			moduleInfoBox.find(".moduleFaculty").text(moduleFaculty);
 			moduleInfoBox.find(".modulePrecludes").text(modulePrecludes);
 			moduleInfoBox.find(".modulePrereqs").text(modulePrereqs);
 			
@@ -217,20 +229,26 @@ jsPlumb.ready(function() {
 			$("#skillTree").addClass("highlight-mode");
 			
 			var connections = jsPlumb.getAllConnections()[jsPlumb.getDefaultScope()];
-			for (var i = 0; i < connections.length; i++) {
-				connections[i].setVisible(false);
+			if (typeof connections !== 'undefined'){
+				for (var i = 0; i < connections.length; i++) {
+					connections[i].setVisible(false);
+				}
 			}
 			
 			var sourceConnections = jsPlumb.getConnections({ source: this.attr('id'), flat: true });
-			for (var i = 0; i < sourceConnections.length; i++) {
-				sourceConnections[i].setVisible(true);
-				sourceConnections[i].target.addClass("highlighted");
+			if (typeof sourceConnections !== 'undefined'){
+				for (var i = 0; i < sourceConnections.length; i++) {
+					sourceConnections[i].setVisible(true);
+					sourceConnections[i].target.addClass("highlighted");
+				}
 			}
 			
 			var targetConnections = jsPlumb.getConnections({ target: this.attr('id'), flat: true });
-			for (var i = 0; i < targetConnections.length; i++) {
-				targetConnections[i].setVisible(true);
-				targetConnections[i].source.addClass("highlighted");
+			if (typeof targetConnections !== 'undefined'){
+				for (var i = 0; i < targetConnections.length; i++) {
+					targetConnections[i].setVisible(true);
+					targetConnections[i].source.addClass("highlighted");
+				}
 			}
 			
 			this.addClass("highlighted");
@@ -409,12 +427,24 @@ $(function() {
 		}
 	});*/
 	// Initialize the accordion within the #moduleInfo panel
+	
+	$('#descContainer').slimScroll({
+        height: '100px'
+    });
+	
+	$('#precludeContainer').slimScroll({
+        height: '100px'
+    });
+	
+	$('#prereqContainer').slimScroll({
+        height: '100px'
+    });
+	
 	$("#moduleAccordion").accordion({
 		header: "h5",
-		heightStyle: "fill",
-		collapsible: true,
-		active: false
+		heightStyle: "content"
 	});
+
 	
 	// Scroll!
 	$("#skillTreeView").perfectScrollbar();

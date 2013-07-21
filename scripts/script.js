@@ -17,7 +17,8 @@ var skillTree = {
 	removeModules : {},
 	numOfPrereqGroups : 0, // Incrementer to prevent overlap of any prereq groups
 	isModified: false,
-	seachTimeout: null
+	notifyTimeout: null,
+	searchTimeout: null
 };
 // Test function
 function testJSON(data) {
@@ -56,8 +57,12 @@ function createModuleBox(module, isException) {
 			'</div>');
 	return jqDiv;
 }
+function createSemester(semester) {
+	
+}
 // Alert the user
 function notify(message, type) {
+	clearTimeout(skillTree.notifyTimeout);
 	var notificationBox = $("#notification");
 	var notificationBoxContent = $("#notification .content");
 	for (var notificationType in skillTree.NOTIFICATIONS) {
@@ -67,6 +72,7 @@ function notify(message, type) {
 	notificationBoxContent.text(message);
 	if (notificationBox.is(":hidden")) notificationBox.slideDown({ duration : 500, queue : false });
 	else notificationBox.addClass('flash', 100).removeClass('flash', 300);
+	skillTree.notifyTimeout = setTimeout(hideNotification, 5000);
 }
 // Hide the notification box
 // Method is used by the box's close button.
@@ -478,25 +484,81 @@ function ensureModuleDetails(module, options) {
 	}
 }
 
+function addSemester(semesterNum) {
+	console.log("Adding semester " + semesterNum);
+	var numOfSemesters = skillTree.semesters.length;
+	if ((semesterNum <= 0) || (semesterNum > numOfSemesters+1)) return;
+	if (semesterNum <= numOfSemesters) {
+		for (var i = numOfSemesters; i >= semesterNum; i--) {
+			skillTree.semesters[i] = skillTree.semesters[i-1];
+			for (var j = 0; j < skillTree.semesters[i].length; j++) {
+				var moduleCode = skillTree.semesters[i][j];
+				var assignedModule = getAssignedModule(moduleCode);
+				assignedModule.semester++;
+			}
+		}
+	}
+	setModified(true);
+	$('.moduleBox').each(function() {
+		if ($(this).hasClass('ui-droppable')) $(this).droppable('destroy');
+	});
+	skillTree.semesters[semesterNum-1] = [];
+	var semesterDiv = $('<div class="semester" id="semester' + (numOfSemesters+1) + '">' +
+							'<h1>' + (numOfSemesters+1) + '</h1>' +
+							'<div class="input-block"></div>' +
+							'<div class="btn-group">' +
+								'<button class="btn mst-icon" title="Semester Options" data-toggle="dropdown">s</button>' +
+								'<ul class="dropdown-menu">' +
+									'<li><a class="link_addbefore" tabindex="-1" href="#">Add a semester before this one</a></li>' +
+									'<li><a class="link_addafter" tabindex="-1" href="#">Add a semester after this one</a></li>' +
+									'<li><a class="link_remove" tabindex="-1" href="#">Remove this semester</a></li>' +
+									'<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>' +
+								'</ul>' +
+							'</div>' +
+						'</div>');
+	semesterDiv.appendTo("#semesters").semester();
+	$('.moduleBox').droppable(
+	{
+		accept: ".moduleBox",
+		tolerance: "pointer",
+		greedy: true
+	});
+	repositionModules();
+}
+
+function removeSemester(semesterNum) {
+	console.log("Removing semester " + semesterNum);
+	var numOfSemesters = skillTree.semesters.length;
+	if ((semesterNum <= 0) || (semesterNum > numOfSemesters)) return;
+	if (skillTree.semesters[semesterNum-1].length > 0) {
+		notify("Semester " + semesterNum + " still contains modules.", skillTree.NOTIFICATIONS.ERROR);
+	} else {
+		if (semesterNum < numOfSemesters) {
+			for (var i = semesterNum-1; i < numOfSemesters-1; i++) {
+				skillTree.semesters[i] = skillTree.semesters[i+1];
+				for (var j = 0; j < skillTree.semesters[i].length; j++) {
+					var moduleCode = skillTree.semesters[i][j];
+					var assignedModule = getAssignedModule(moduleCode);
+					assignedModule.semester--;
+				}
+			}
+		}
+		setModified(true);
+		skillTree.semesters.splice(numOfSemesters-1, 1);
+		$('#semester' + (numOfSemesters)).remove();
+		repositionModules();
+	}
+}
 
 // Ensures that the .semester div representing the given number exists.
 // semesterNum - int
 function ensureSemester(semesterNum) {
 	if ((semesterNum > 0) && (!skillTree.semesters[semesterNum-1])) {
-		for (var i = skillTree.semesters.length; i < semesterNum; i++) {
-			skillTree.semesters[i] = [];
-			var semesterDiv = $('<div class="semester" id="semester' + (i+1) + '">' +
-									'<h1>' + (i+1) + '</h1>' +
-									'<div class="input-block"></div>' +
-									'<div class="btn-group">' +
-										'<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>' +
-										'<ul class="dropdown-menu">' +
-											'<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>' +
-										'</ul>' +
-									'</div>' +
-								'</div>');
-			semesterDiv.appendTo("#semesters").semester();
+		var numOfSemesters = skillTree.semesters.length;
+		while (numOfSemesters < semesterNum) {
+			addSemester(++numOfSemesters);
 		}
+		setModified(false);
 	}
 }
 // Trims off any excess empty semesters at the end of the skill tree.
@@ -575,6 +637,13 @@ function setException(assignedModule, isException) {
 				}
 			}
 		}
+	}
+	var div_id = '#' + assignedModule.module.code + 'box';
+	var button = $(div_id).find('.exception_button');
+	if (isException) {
+		button.addClass('checked');
+	} else {
+		button.removeClass('checked');
 	}
 	assignedModule.exception = isException;
 	repositionModules();
@@ -663,7 +732,7 @@ function assignSemester(assignedModule, semesterNum) {
 		if (assignedModuleIndex !== -1) skillTree.semesters[assignedModule.semester-1].splice(assignedModuleIndex, 1);
 	}
 	skillTree.semesters[semesterNum-1].push(module_identifier);
-	trimSemesters();
+	//trimSemesters();
 	
 	if (assignedModule.semester != semesterNum) setModified(true);
 
@@ -875,16 +944,17 @@ function removeAssignedModule(assignedModule) {
 						if ((otherAssMod.module.code != assignedModule.module.code) && (modIndex > -1)) {
 							//console.log("Joining " + module.code + " to " + assMod.module.code);
 							if (otherAssMod.module.prerequisites[j].length == 1) {
-								if (otherAssMod.exception) {
-									delete otherAssMod.prerequisites;
-								} else {
-									notify(assignedModule.module.code + " is the sole prerequisite of " + otherAssMod.module.code, skillTree.NOTIFICATIONS.ERROR);
-									return;
+								if (!otherAssMod.exception) {
+									notify(assignedModule.module.code + " is the sole prerequisite of " + otherAssMod.module.code, skillTree.NOTIFICATIONS.WARNING);
+									setException(otherAssMod, true);
 								}
+								delete otherAssMod.prerequisites;
 							} else {
-								var prereqGroup = addPrereqGroupToTree(otherAssMod.module.code, otherAssMod.module.prerequisites[j]);
-								if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
-								otherAssMod.prereqGroups.push(prereqGroup);
+								if (!otherAssMod.exception) {
+									var prereqGroup = addPrereqGroupToTree(otherAssMod.module.code, otherAssMod.module.prerequisites[j]);
+									if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
+									otherAssMod.prereqGroups.push(prereqGroup);
+								}
 								
 								var prereqIndex = otherAssMod.prerequisites.indexOf(assignedModule.module.code);
 								otherAssMod.prerequisites.splice(prereqIndex, 1);
@@ -926,7 +996,7 @@ function removeAssignedModule(assignedModule) {
 	
 	semester.splice(semesterIndex, 1);
 	if (moduleBox !== null) moduleBox.removeModuleBox();
-	trimSemesters();
+	//trimSemesters();
 	repositionModules();
 }
 
@@ -992,13 +1062,43 @@ $(function(){
 		height: '100%',
 		distance: '2px',
 		railVisible: true
+	})
+	.tooltip({
+		selector : '.module'
 	});
 	// Saves the skill tree.
 	$('#save_button').click(function() {
 		saveToServer();
 	});	
 	// Assign modules a different semester if a .moduleBox is dropped onto a different semester.
-	$("#skillTreeView").on('drop', '.semester', function(event, ui)  {
+	$("#skillTreeView").on('drop','.moduleBox', function(event, ui){
+		var targetModuleCode = $(this).attr('id').substring(0, $(this).attr('id').length-3);
+		var sourceModuleCode = ui.draggable.attr('id').substring(0, ui.draggable.attr('id').length-3);
+		console.log(targetModuleCode+','+sourceModuleCode);
+		var targetModule = getAssignedModule(targetModuleCode);
+		var sourceModule = getAssignedModule(sourceModuleCode);
+		if (targetModule.semester === sourceModule.semester) {
+			var targetIndex = skillTree.semesters[targetModule.semester-1].indexOf(targetModuleCode);
+			var sourceIndex = skillTree.semesters[sourceModule.semester-1].indexOf(sourceModuleCode);
+			console.log(skillTree.semesters[targetModule.semester-1]);
+			if(targetIndex < sourceIndex)
+			{
+				for(var i = sourceIndex; i > targetIndex; i--)
+				{
+					skillTree.semesters[targetModule.semester-1][i] = skillTree.semesters[targetModule.semester-1][i-1];
+				}
+			}
+			else
+			{
+				for(var i = sourceIndex; i < targetIndex; i++)
+				{
+					skillTree.semesters[targetModule.semester-1][i] = skillTree.semesters[targetModule.semester-1][i+1];
+				}
+			}
+			skillTree.semesters[targetModule.semester-1][targetIndex] = sourceModuleCode;
+		}
+	})
+	.on('drop', '.semester', function(event, ui)  {
 		var div_id = ui.draggable.attr('id');
 		var module_code = div_id.substring(0, div_id.length-3);
 		var semester_num = $(this).attr('id');
@@ -1058,21 +1158,35 @@ $(function(){
 	// Make an exception when the checkbox is checked.
 	.on('click', '.moduleBox .exception_button', function(event) {
 		var moduleBox = $(this).closest('.moduleBox');
-		var moduleInfoBox = moduleBox.children('.moduleInfo');
-		var moduleSettingsBox = moduleBox.children('.moduleSettings');
-		var isChecked = $(this).hasClass('checked');
+		var isChecked = !$(this).hasClass('checked');
 		var div_id = moduleBox.attr('id');
 		var module_code = div_id.substring(0, div_id.length-3);
 		var assignedModule = getAssignedModule(module_code);
-		$(this).toggleClass("checked");
 		setException(assignedModule, isChecked);
-		//moduleSettingsBox.stop().fadeOut(500).promise().done(function() {moduleInfoBox.fadeIn(500)});
 		event.stopPropagation();
+	})
+	// Handler for addition of semester before
+	.on('click', '.semester .link_addbefore', function(event) {
+		var div_id = $(this).closest('.semester').attr('id');
+		var semester_num = parseInt(div_id.substr(div_id.length-1));
+		addSemester(semester_num);
+	})
+	// Handler for addition of semester after
+	.on('click', '.semester .link_addafter', function(event) {
+		var div_id = $(this).closest('.semester').attr('id');
+		var semester_num = parseInt(div_id.substr(div_id.length-1));
+		addSemester(semester_num+1);
+	})
+	// Handler for addition of semester after
+	.on('click', '.semester .link_remove', function(event) {
+		var div_id = $(this).closest('.semester').attr('id');
+		var semester_num = parseInt(div_id.substr(div_id.length-1));
+		removeSemester(semester_num);
 	})
 	// Submit the semester to NUSMods for timetable planning.
 	.on('click', '.semester .link_nusmods', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
-		var semester_num = div_id.substr(div_id.length-1);
+		var semester_num = parseInt(div_id.substr(div_id.length-1));
 		var modules = skillTree.semesters[semester_num-1];
 		// NUSMods works if the modules are added using the following pattern:
 		// #{module_code_1}=&{module_code_2}=&{module_code_3}...
@@ -1118,9 +1232,9 @@ $(function(){
 		for (var i = 0; i < skillTree.moduleCodes.length; i++) {
 			var module_code = skillTree.moduleCodes[i];
 			var div_id = module_code.replace(/\s*\/\s*/g, '_');
-			var moduleBox = $("<div id=\"" + div_id + "\" class=\"module\" data-faculty=\"" + skillTree.modules[module_code].faculty +  "\" data-code=\"" + module_code + "\">" +
+			var moduleBox = $("<div id=\"" + div_id + "\" class=\"module\" data-faculty=\"" + skillTree.modules[module_code].faculty +  "\" data-code=\"" + module_code + "\" title=\"" + skillTree.modules[module_code].name + "\" data-placement=\"right\" data-toggle=\"tooltip\" data-container=\"#module_list_view\">" +
 					skillTree.moduleCodes[i] +
-				"</div>");
+							"</div>");
 			//timeoutCall(function(moduleBoxArg) { moduleBoxArg.appendTo("#module_list").disableSelection(); }, moduleBox, 5*i);
 			moduleBox.appendTo("#module_list").disableSelection();
 		}
