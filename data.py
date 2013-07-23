@@ -275,7 +275,7 @@ class SaveSkillTreeHandler(webapp2.RequestHandler):
                         assigned_module.prerequisites = json_assigned_module["prerequisites"]
                     assigned_module.put()
                     logging.debug("Inserted successfully")
-                if hasattr(data, "removeModules"):
+                if "removeModules" in data:
                     json_remove_modules = data["removeModules"]
                     for code, remove_module in json_remove_modules.iteritems():
                         if remove_module:

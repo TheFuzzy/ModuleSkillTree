@@ -280,6 +280,8 @@ function repositionModules(animate) {
 		var semester = skillTree.semesters[i];
 		var numModules = semester.length;
 		for (var j = 0; j < numModules; j++) {
+			// The current assigned module may not exist yet (e.g. during loading of a skill tree) so we skip any null ones.
+			if (typeof semester[j] === 'undefined' || semester[j] === null) continue;
 			var assignedModule = getAssignedModule(semester[j]);
 			var moduleBox;
 			if (isPrereqGroup(assignedModule)) moduleBox = $('#' + assignedModule.id + 'box');
@@ -484,7 +486,8 @@ function ensureModuleDetails(module, options) {
 	}
 }
 
-function addSemester(semesterNum) {
+function addSemester(semesterNum, repositionAfter) {
+	repositionAfter = typeof repositionAfter === 'undefined' ? true : repositionAfter;
 	console.log("Adding semester " + semesterNum);
 	var numOfSemesters = skillTree.semesters.length;
 	if ((semesterNum <= 0) || (semesterNum > numOfSemesters+1)) return;
@@ -523,10 +526,11 @@ function addSemester(semesterNum) {
 		tolerance: "pointer",
 		greedy: true
 	});
-	repositionModules();
+	if (repositionAfter) repositionModules();
 }
 
-function removeSemester(semesterNum) {
+function removeSemester(semesterNum, repositionAfter) {
+	repositionAfter = typeof repositionAfter === 'undefined' ? true : repositionAfter;
 	console.log("Removing semester " + semesterNum);
 	var numOfSemesters = skillTree.semesters.length;
 	if ((semesterNum <= 0) || (semesterNum > numOfSemesters)) return;
@@ -546,20 +550,23 @@ function removeSemester(semesterNum) {
 		setModified(true);
 		skillTree.semesters.splice(numOfSemesters-1, 1);
 		$('#semester' + (numOfSemesters)).remove();
-		repositionModules();
+		if (repositionAfter) repositionModules();
 	}
 }
 
 // Ensures that the .semester div representing the given number exists.
 // semesterNum - int
-function ensureSemester(semesterNum) {
+function ensureSemester(semesterNum, repositionAfter) {
+	repositionAfter = typeof repositionAfter === 'undefined' ? true : repositionAfter;
 	if ((semesterNum > 0) && (!skillTree.semesters[semesterNum-1])) {
 		var numOfSemesters = skillTree.semesters.length;
 		while (numOfSemesters < semesterNum) {
-			addSemester(++numOfSemesters);
+			// Do not reposition modules immediately after addition.
+			addSemester(++numOfSemesters, false);
 		}
 		setModified(false);
 	}
+	if (repositionAfter) repositionModules();
 }
 // Trims off any excess empty semesters at the end of the skill tree.
 // Does not do anything if there's only 1 semester remaining.
