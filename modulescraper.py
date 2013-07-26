@@ -347,8 +347,11 @@ def scrape_nusmods_data(data):
             prerequisites = ModuleParser.precludeModule(module_code, nusmods_module["prerequisite"])
         if "preclusion" in nusmods_module:
             preclusions_string = nusmods_module["preclusion"]
-            preclusion_groups = ModuleParser.precludeModule(module_code, nusmods_module["preclusion"])
-            preclusions = preclusion_groups[0]
+            # If the module preclusion contains the world "level" as in "A-level", it may be a bridging module.
+            # Do not parse preclusions for bridging modules!
+            if "level" not in preclusions_string:    
+                preclusion_groups = ModuleParser.precludeModule(module_code, nusmods_module["preclusion"])
+                preclusions = preclusion_groups[0]
         
         
         modules[module_code] = {
