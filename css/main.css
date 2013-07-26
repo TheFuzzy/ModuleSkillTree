@@ -18,6 +18,11 @@ html, body {
 body {
     background-color: #fff;
 }
+@media (max-width:1240px) {
+    body {
+        width: 1240px;
+    }
+}
 .mst-icon,
 .mst-icon-settings,
 .mst-icon-warning,

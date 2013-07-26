@@ -94,6 +94,7 @@ jsPlumb.ready(function() {
 			{
 				accept: ".moduleBox",
 				tolerance: "pointer",
+				hoverClass: "drop-hover",
 				greedy: true
 			});
 			//this.each(function() {
@@ -136,6 +137,13 @@ jsPlumb.ready(function() {
 				stack: ".moduleBox",
 				containment: "parent"
 			});
+			$(this).droppable(
+			{
+				accept: ".moduleBox",
+				tolerance: "pointer",
+				hoverClass: "drop-hover",
+				greedy: true
+			});
 			this.each(function() {
 				id = $(this).attr('id');
 				sourceUUID = id + "BottomCenter";
@@ -158,7 +166,12 @@ jsPlumb.ready(function() {
 			var moduleBox = this;
 			
 			$(".moduleBox").removeClass("selected").removeClass("highlighted");
-			moduleBox.addClass("selected");
+			moduleBox.addClass("selected").addClass("highlighted");
+			
+			if (moduleBox.hasClass("prereqGroup")) {
+				$("#moduleInfo").stop().fadeOut(200);
+				return this;
+			}
 			
 			var skillTreeBox = $("#skillTreeView");
 			var moduleInfoBox = $("#moduleInfo");
@@ -224,7 +237,7 @@ jsPlumb.ready(function() {
 			
 			// TODO: positioning
 			
-			$("#moduleInfo").stop().fadeIn(200);
+			moduleInfoBox.stop().fadeIn(200);
 			
 			$("#skillTree").addClass("highlight-mode");
 			
@@ -253,6 +266,8 @@ jsPlumb.ready(function() {
 			
 			this.addClass("highlighted");
 			
+			return this;
+			
 			//jsPlumb.show(this.attr('id'));
 		}
 	}
@@ -265,6 +280,7 @@ jsPlumb.ready(function() {
 			hoverClass: "drop-hover",
 			greedy: true
 		});
+		return this;
 	}
 	// Connects the bottom of the current div to the top of the div with the given id.
 	$.fn.connectBottomTo = function(id) {

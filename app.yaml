@@ -12,6 +12,7 @@ handlers:
 # Home page
 - url: /
   script: home.app
+  secure: always
 
 # Skill Tree Management Pages
 - url: /skilltree
@@ -65,10 +66,9 @@ handlers:
   script: admin.app
   login: admin
 
-# Any other unrecognized URL
-- url: /.*
-  static_files: not_found.html
-  upload: not_found\.html
+# Custom remote_api hanlder
+#- url: /remote_api
+#  script: remote_api.app
 
 admin_console:
   pages:
@@ -82,6 +82,3 @@ libraries:
   version: latest
 - name: django
   version: latest
-
-builtins:
-- remote_api: on

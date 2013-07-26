@@ -94,7 +94,7 @@ function stateIsInvalid() {
 // Share skill tree.
 function shareLink() {
 	var dialog = $("#shareModal");
-	var pageUrl = window.location.href.split('?')[0];
+	var pageUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
 	var linkUrl = pageUrl + "?id=" + skillTree.guid;
 	// Generate a link for Twitter
 	var twitterUrl = skillTree.SHARE_LINKS.TWITTER + '?url=' + encodeURIComponent(linkUrl) + "&text=" + encodeURIComponent("Check out my NUS skill tree!");
@@ -611,8 +611,6 @@ function setException(assignedModule, isException) {
 								// The prerequisite is satisfied for this group of prerequisites.
 								isInnerPrereqSatisfied = true;
 								console.log("Prerequisite satisfied for " + module.code + ": " + assMod.module.code);
-								// Connect the module to its prerequisite.
-								moduleBox.connectTopTo(module.prerequisites[i][j] + 'box');
 								// Store the prerequisite in our newly inserted assigned module.
 								if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
 								assignedModule.prerequisites.push(module.prerequisites[i][j]);
@@ -628,20 +626,20 @@ function setException(assignedModule, isException) {
 				console.log("Inner prerequisite of " + module.code + " is not satisfied!");
 				//
 				
-				if (module.prerequisites[i].length == 1) {
-					ensureModuleDetails(getModule(module.prerequisites[i][0]), {
-						callback  : addModuleToTree,
-						useModule : true
-					});
-					if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
-					assignedModule.prerequisites.push(module.prerequisites[i][0]);
-				} else {
+				//if (module.prerequisites[i].length == 1) {
+				//	ensureModuleDetails(getModule(module.prerequisites[i][0]), {
+				//		callback  : addModuleToTree,
+				//		useModule : true
+				//	});
+				//	if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+				//	assignedModule.prerequisites.push(module.prerequisites[i][0]);
+				//} else {
 					var prereqGroup = addPrereqGroupToTree(module.code, module.prerequisites[i]);
 					if (typeof assignedModule.prereqGroups === 'undefined') assignedModule.prereqGroups = [];
 					assignedModule.prereqGroups.push(prereqGroup);
 					// Inform the user that at least one prerequisite group needs to be satisfied.
 					notify(module.code + " is missing a pre-requisite. Please click the highlighted box to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
-				}
+				//}
 			}
 		}
 	}
@@ -810,6 +808,9 @@ function addModuleToTree(module) {
 					if ((assMod.module.code != module.code) && (modIndex > -1)) {
 						console.log("Joining " + module.code + " to " + assMod.module.code);
 						moduleBox.connectBottomTo(assMod.module.code + 'box');
+						if (assMod.prerequisites.indexOf(module.code) < 0) {
+							assMod.prerequisites.push(module.code);
+						}
 						if (assMod.semester <= 1) {
 							assignSemester(assMod, 2);
 						}
@@ -869,21 +870,19 @@ function addModuleToTree(module) {
 			console.log("Inner prerequisite of " + module.code + " is not satisfied!");
 			//
 			
-			if (module.prerequisites[i].length == 1) {
-				ensureModuleDetails(getModule(module.prerequisites[i][0]), {
-					callback  : addModuleToTree,
-					useModule : true
-				});
-				if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
-				assignedModule.prerequisites.push(module.prerequisites[i][0]);
-				//var altTargetSemester = addModuleToTree(getModule(module.prerequisites[i][0])) + 1;
-				//if (targetSemester < altTargetSemester) targetSemester = altTargetSemester;
-			} else {
+			//if (module.prerequisites[i].length == 1) {
+			//	ensureModuleDetails(getModule(module.prerequisites[i][0]), {
+			//		callback  : addModuleToTree,
+			//		useModule : true
+			//	});
+			//	if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
+			//	assignedModule.prerequisites.push(module.prerequisites[i][0]);
+			//} else {
 				var prereqGroup = addPrereqGroupToTree(module.code, module.prerequisites[i]);
 				if (typeof assignedModule.prereqGroups === 'undefined') assignedModule.prereqGroups = [];
 				assignedModule.prereqGroups.push(prereqGroup);
 				numOfUnsatisfiedPrereqs++;
-			}
+			//}
 			
 		}
 	}
@@ -952,7 +951,7 @@ function removeAssignedModule(assignedModule) {
 							//console.log("Joining " + module.code + " to " + assMod.module.code);
 							if (otherAssMod.module.prerequisites[j].length == 1) {
 								if (!otherAssMod.exception) {
-									notify(assignedModule.module.code + " is the sole prerequisite of " + otherAssMod.module.code, skillTree.NOTIFICATIONS.WARNING);
+									notify(otherAssMod.module.code + " is now set to ignore pre-requisites.", skillTree.NOTIFICATIONS.WARNING);
 									setException(otherAssMod, true);
 								}
 								delete otherAssMod.prerequisites;
@@ -1171,24 +1170,28 @@ $(function(){
 		var assignedModule = getAssignedModule(module_code);
 		setException(assignedModule, isChecked);
 		event.stopPropagation();
+		event.preventDefault();
 	})
 	// Handler for addition of semester before
 	.on('click', '.semester .link_addbefore', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
 		var semester_num = parseInt(div_id.substr(div_id.length-1));
 		addSemester(semester_num);
+		event.preventDefault();
 	})
 	// Handler for addition of semester after
 	.on('click', '.semester .link_addafter', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
 		var semester_num = parseInt(div_id.substr(div_id.length-1));
 		addSemester(semester_num+1);
+		event.preventDefault();
 	})
 	// Handler for addition of semester after
 	.on('click', '.semester .link_remove', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
 		var semester_num = parseInt(div_id.substr(div_id.length-1));
 		removeSemester(semester_num);
+		event.preventDefault();
 	})
 	// Submit the semester to NUSMods for timetable planning.
 	.on('click', '.semester .link_nusmods', function(event) {

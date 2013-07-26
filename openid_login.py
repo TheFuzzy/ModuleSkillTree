@@ -85,6 +85,9 @@ class OpenIdLoginHandler(webapp2.RequestHandler):
                 else:
                     # TODO: Render login page
                     args = {}
+                    args['host'] = self.request.host_url
+                    args['url'] = self.request.url
+                    
                     args['providers'] = [Providers.NUS, Providers.GOOGLE, Providers.YAHOO, Providers.MYOPENID]
                     if embed == '1':
                         args['embed'] = True

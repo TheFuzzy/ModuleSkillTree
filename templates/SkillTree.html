@@ -6,9 +6,18 @@ args:
 		skilltree : Skill Tree data entity
 
 -->
-<html lang="en" >
+<html lang="en" prefix="og: http://ogp.me/ns#">
 <head>
 	<meta content="text/html; charset=utf-8" http-equiv="Content-Type" ></meta>
+	<!-- Meta tags -->
+	<meta property="og:title" content="NUS Module Skill Tree" />
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content="{{ url }}" />
+	<meta property="og:image" content="{{ host }}/images/thumbnail.jpg" />
+	<meta property="og:description" content="Plan out your modules for your life in NUS!" />
+	<meta name="twitter:card" content="summary" />
+	<meta name="description" content="Plan out your modules for your life in NUS!" />
+	<link rel="image_src" href="/images/thumbnail.jpg" />
 	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 	<meta http-equiv="Pragma" content="no-cache" />
 	<meta http-equiv="Expires" content="0" />
@@ -24,7 +33,7 @@ args:
 	<!--end of css files-->
 
 	<script id="nicknameContent" type="text/html">Would you like to change your nickname?</script>
-	<title>Module Skill Tree</title>
+	<title>NUS Module Skill Tree</title>
 </head>
 <body>
 <div id="backgroundProgress" style="background-size: 0%">
@@ -101,10 +110,10 @@ args:
 							<div class="btn-group">
 								<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>
 								<ul class="dropdown-menu">
-									<li><a class="link_addbefore" tabindex="-1" href="#">Add a semester before this one</a></li>
-									<li><a class="link_addafter" tabindex="-1" href="#">Add a semester after this one</a></li>
-									<li><a class="link_remove" tabindex="-1" href="#">Remove this semester</a></li>
-									<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>
+									<li><a class="link_addbefore" tabindex="-1" href="javascript:;">Add a semester before this one</a></li>
+									<li><a class="link_addafter" tabindex="-1" href="javascript:;">Add a semester after this one</a></li>
+									<li><a class="link_remove" tabindex="-1" href="javascript:;">Remove this semester</a></li>
+									<li><a class="link_nusmods" tabindex="-1" href="javascript:;">Export to NUSMods</a></li>
 								</ul>
 							</div>
 						</div>
@@ -167,7 +176,7 @@ args:
 	<div class="modal-body">
 		<div><label for="shareUrl">Your Skill Tree Link:</label><input id="shareUrl" class="input-block-level" type="text" value="" readonly="readonly" /></div>
 		<span class="btn-group"><a class="btn twitter-btn mst-icon-twitter" target="_blank" title="Post on Twitter"></a><a class="btn facebook-btn mst-icon-facebook" target="_blank" title="Share on Facebook"></a><a class="btn gplus-btn mst-icon-gplus" target="_blank" title="Share on Google+"></a></span>
-		<a class="btn copy-btn pull-right">Copy Link</a>
+		<a class="btn copy-btn pull-right">Select Link</a>
 	</div>
 </div>
 <!--

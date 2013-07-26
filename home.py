@@ -31,6 +31,9 @@ class MainHandler(webapp2.RequestHandler):
         template = JINJA_ENVIRONMENT.get_template('Home.html')
         args = {}
         
+        args['host'] = self.request.host_url
+        args['url'] = self.request.url
+        
         if user:
             student = datatypes.Student.query(datatypes.Student.user == user).get()
             if student is not None:

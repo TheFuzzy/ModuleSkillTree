@@ -39,6 +39,8 @@ class SkillTreeHandler(webapp2.RequestHandler):
         guid = urllib.unquote_plus(self.request.get('id', default_value=''))
         
         args['loginurl'] = openid_login.create_login_url(self.request.uri)
+        args['host'] = self.request.host_url
+        args['url'] = self.request.url
         
         if guid != '':
             logging.debug("GUID %s retrieved from URL" % guid)
