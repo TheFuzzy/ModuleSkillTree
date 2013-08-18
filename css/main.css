@@ -8,7 +8,7 @@
 }
 */
 * {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto';
 }
 html, body {
     height: 100%;
@@ -126,12 +126,45 @@ div.center {
     height: 200px;
     background: transparent;
     text-shadow: -2px -2px 0 #101010;
-}
-#title_panel .hero-unit h1 {
-    color: #fff;
+	font-weight: 400;
 }
 #title_panel .hero-unit p {
     color: #ccc;
+}
+#title_panel #title_header {
+    font-size: 20pt;
+}
+#top_panel #title_header {
+	display: inline-block;
+	font-size: 8pt;
+	margin-top: -14px;
+    margin-left: 20px;
+    cursor: pointer;
+}
+#title_header .header-left {
+	display: inline-block;
+	font-size: 4em;
+	font-weight: 100;
+	color: blue;
+}
+#title_header .header-center {
+	display: inline-block;
+	width: 2px;
+	height: 4em;
+	margin: -0.5em auto;
+	background-color: orange;
+}
+#title_header .header-right {
+	display: inline-block;
+	text-transform: uppercase;
+	color: white;
+}
+
+#title_header .header-right h2 {
+    font-size: 1.5em;
+    line-height: 1;
+    margin: auto 0;
+    height: 1.2em;
 }
 #openid_panel {
 	background-color: #FFF;

@@ -23,7 +23,7 @@ args:
 	<meta http-equiv="Expires" content="0" />
 	<!--Link all external css files here-->
 	<!-- External fonts -->
-	<link href='https://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css' />
+	<link href='https://fonts.googleapis.com/css?family=Roboto:100,400' rel='stylesheet' type='text/css' />
 	<link href='/css/fonts/NUSMST-icons.css' rel='stylesheet' type='text/css' />
 	<!-- CSS rule definitions -->
 	<link href="/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet" />
@@ -38,7 +38,14 @@ args:
 <body>
 <div id="main_container">
 	<div id="top_panel" class="row-fluid">
-		<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
+		<div id="title_header" onclick="window.location.href = '/'">
+			<h1 class="header-left">NUS</h1>
+			<div class="header-center"></div>
+			<div class="header-right">
+				<h2>module</h2>
+				<h2>skill tree</h2>
+			</div>
+		</div>
 		<div id="userBox" class="pull-right">
 			{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>
 			{% else %}<span class="welcome-text">Welcome, friend!</span>{% endif %}
