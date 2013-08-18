@@ -36,116 +36,120 @@ args:
 	<title>NUS Module Skill Tree</title>
 </head>
 <body>
-<div id="backgroundProgress" style="background-size: 0%">
-	<div id="main_container">
-		<div id="top_panel" class="row-fluid">
-			<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
-			<div id="userBox" class="pull-right">
-				{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>
-				{% else %}<span class="welcome-text">Welcome, friend!</span>{% endif %}
-				<input class="btn btn-small btn-primary{% if student is undefined %} sign_in_button{% endif %}" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
-			</div>
+<div id="main_container">
+	<div id="top_panel" class="row-fluid">
+		<h3 class="title" style="display:inline"><a href="/">NUS Module Skill Tree</a></h3>
+		<div id="userBox" class="pull-right">
+			{% if student is defined %}<span class="welcome-text">Welcome, <a class="nickname">{{ student.name }}</a>!</span>
+			{% else %}<span class="welcome-text">Welcome, friend!</span>{% endif %}
+			<input class="btn btn-small btn-primary{% if student is undefined %} sign_in_button{% endif %}" type="button" value="Sign {% if student is defined %}out{% else %}in{% endif %}" onclick="window.location='{{ loginurl }}'">
 		</div>
-		<div id="notification_panel">
-			<div id="notification"><span class="mst-icon-success"></span><span class="mst-icon-warning"></span><span class="mst-icon-error"></span> <span class="content"></span><button class="close">&times;</button></div>
-		</div>
-		<div id="bottom_panel_group" class="row-fluid">
-			<div id="left_panel" class="span2">
-				<div id="edit_panel"{% if (student is not defined) or (ownskilltree is defined and not isownskilltree) %} style="display:none;"{% endif %}>
-					<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
-					<select id="faculty_filter" class = "">
-						<option>ALL FACULTIES</option>
-						<option>ARTS & SOCIAL SCIENCES</option>
-						<option>DENTISTRY</option>
-						<option>ENGINEERING</option>
-						<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
-						<option>LAW</option>
-						<option>NON-FACULTY-BASED DEPARTMENTS</option>
-						<option>SCHOOL OF BUSINESS</option>
-						<option>SCHOOL OF COMPUTING</option>
-						<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
-						<option>SCIENCE</option>
-						<option>UNIVERSITY ADMINISTRATION</option>
-						<option>UNIVERSITY SCHOLARS PROGRAMME</option>
-						<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
-						<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
-					</select>
-					<div id="module_list_view">
-						<div id="module_list">
-							<!--Modules will be inserted dynamically here-->
-						</div>
-					</div>
-					<div id="control_panel">
-						<form class="form-inline">
-							<div class="button_group">
-								<input id="save_button" class="btn btn-primary" type="button" disabled="disabled" value="Save"/>
-								<input id="share_button" class="btn btn-primary" type="button" value="Share"/>
-							</div>
-						</form>
-					</div>
-				</div>
-				<div id="view_panel"{% if isownskilltree is defined and isownskilltree %} style="display:none;"{% endif %}>
-					<h4>Now Viewing:</h4>
-					<p>{{ skilltreeowner }}'s skill tree</p>
-					{% if student is defined %}<a href="/skilltree" class="btn btn-primary btn-block">View Your Own</a>
-					<input id="edit_button" type="button" class="btn btn-warning btn-block" value="Edit This Tree" data-trigger="hover" data-content="Warning, your own skill tree will be overwritten if you do this!" />
-					{% else %}
-					<input type="button" class="btn btn-primary sign_in_button" value="Sign in" onclick="window.location='{{ loginurl }}'" />
-					<p>to edit this skill tree, or make your own!</p>
-					{% endif %}
-				</div>
-			</div>
-			<div id="right_panel" class="span10">
-				<div id="skillTreeView" class="{% if isownskilltree is defined and isownskilltree %}editMode{% endif %}">
-					<div id="skillTree">
-						{% if skilltree is defined and skilltree is not none %}
-						<span style="display : none">{{ skilltree.name }}</span>
-						{% endif %}
+	</div>
+	<div id="notification_panel">
+		<div id="notification"><span class="mst-icon-success"></span><span class="mst-icon-warning"></span><span class="mst-icon-error"></span> <span class="content"></span><button class="close">&times;</button></div>
+	</div>
+	<div id="bottom_panel_group" class="row-fluid">
+		<div id="left_panel" class="span2">
+			<div id="edit_panel"{% if (student is not defined) or (ownskilltree is defined and not isownskilltree) %} style="display:none;"{% endif %}>
+				<input id="module_search" class="span2" type="text" placeholder="e.g. CS1010" autocomplete="off">
+				<select id="faculty_filter" class = "">
+					<option>ALL FACULTIES</option>
+					<option>ARTS & SOCIAL SCIENCES</option>
+					<option>DENTISTRY</option>
+					<option>ENGINEERING</option>
+					<option>JOINT MULTI-DISCIPLINARY PROGRAMMES</option>
+					<option>LAW</option>
+					<option>NON-FACULTY-BASED DEPARTMENTS</option>
+					<option>SCHOOL OF BUSINESS</option>
+					<option>SCHOOL OF COMPUTING</option>
+					<option>SCHOOL OF DESIGN AND ENVIRONMENT</option>
+					<option>SCIENCE</option>
+					<option>UNIVERSITY ADMINISTRATION</option>
+					<option>UNIVERSITY SCHOLARS PROGRAMME</option>
+					<option>YONG LOO LIN SCHOOL OF MEDICINE</option>
+					<option>YONG SIEW TOH CONSERVATORY OF MUSIC</option>
+				</select>
+				<div id="module_list_view">
+					<div id="module_list">
 						<!--Modules will be inserted dynamically here-->
 					</div>
-					<div id="semesters">
-						<div class="semester" id="semester1">
-							<h1>1</h1>
-							<div class="input-block"></div>
-							<div class="btn-group">
-								<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>
-								<ul class="dropdown-menu">
-									<li><a class="link_addbefore" tabindex="-1" href="javascript:;">Add a semester before this one</a></li>
-									<li><a class="link_addafter" tabindex="-1" href="javascript:;">Add a semester after this one</a></li>
-									<li><a class="link_remove" tabindex="-1" href="javascript:;">Remove this semester</a></li>
-									<li><a class="link_nusmods" tabindex="-1" href="javascript:;">Export to NUSMods</a></li>
-								</ul>
-							</div>
+				</div>
+				<div id="control_panel">
+					<form class="form-inline">
+						<div class="button_group">
+							<input id="save_button" class="btn btn-primary" type="button" disabled="disabled" value="Save"/>
+							<input id="share_button" class="btn btn-primary" type="button" value="Share"/>
+						</div>
+					</form>
+				</div>
+			</div>
+			<div id="view_panel"{% if isownskilltree is defined and isownskilltree %} style="display:none;"{% endif %}>
+				<h4>Now Viewing:</h4>
+				<p>{{ skilltreeowner }}'s skill tree</p>
+				{% if student is defined %}<a href="/skilltree" class="btn btn-primary btn-block">View Your Own</a>
+				<input id="edit_button" type="button" class="btn btn-warning btn-block" value="Edit This Tree" data-trigger="hover" data-content="Warning, your own skill tree will be overwritten if you do this!" />
+				{% else %}
+				<input type="button" class="btn btn-primary sign_in_button" value="Sign in" onclick="window.location='{{ loginurl }}'" />
+				<p>to edit this skill tree, or make your own!</p>
+				{% endif %}
+			</div>
+		</div>
+		<div id="right_panel" class="span10">
+			<div id="skillTreeView" class="{% if isownskilltree is defined and isownskilltree %}editMode{% endif %}">
+				<div id="skillTree">
+					{% if skilltree is defined and skilltree is not none %}
+					<span style="display : none">{{ skilltree.name }}</span>
+					{% endif %}
+					<!--Modules will be inserted dynamically here-->
+				</div>
+				<div id="semesters">
+					<div class="semester" id="semester1">
+						<h1>1</h1>
+						<div class="input-block"></div>
+						<div class="btn-group">
+							<button class="btn mst-icon-settings" title="Semester Options" data-toggle="dropdown"></button>
+							<ul class="dropdown-menu">
+								<li><a class="link_addbefore" tabindex="-1" href="javascript:;">Add a semester before this one</a></li>
+								<li><a class="link_addafter" tabindex="-1" href="javascript:;">Add a semester after this one</a></li>
+								<li><a class="link_remove" tabindex="-1" href="javascript:;">Remove this semester</a></li>
+								<li><a class="link_nusmods" tabindex="-1" href="javascript:;">Export to NUSMods</a></li>
+							</ul>
 						</div>
 					</div>
 				</div>
-				<div id="moduleInfo" style="display:none">
-					<div class="arrow-left"></div>
-					<h3 class="moduleCode"></h2>
-					<h4 class="moduleName"></h3>
-					<h5 class="moduleFaculty"></h5>
-					<div id="moduleAccordion">
-						<h5>Description</h5>
-						<div id="descContainer">
-							<p class="moduleDesc"></p>
-						</div>
-						<h5>Preclusions:</h5>
-						<div id="precludeContainer">
-							<p><span class="modulePrecludes"></span></p>
-						</div>
-						<h5>Pre-requisites:</h5>
-						<div id="prereqContainer">
-							<p><span class="modulePrereqs"></span></p>
-						</div>
+			</div>
+			<div id="moduleInfo" style="display:none">
+				<div class="arrow-left"></div>
+				<h3 class="moduleCode"></h2>
+				<h4 class="moduleName"></h3>
+				<h5 class="moduleFaculty"></h5>
+				<div id="moduleAccordion">
+					<h5>Description</h5>
+					<div id="descContainer">
+						<p class="moduleDesc"></p>
 					</div>
-					<p>MCs: <span class="moduleMc"></span></p>
-					<p>Workload: <span class="moduleWorkload"></span></p>
+					<h5>Preclusions:</h5>
+					<div id="precludeContainer">
+						<p><span class="modulePrecludes"></span></p>
+					</div>
+					<h5>Pre-requisites:</h5>
+					<div id="prereqContainer">
+						<p><span class="modulePrereqs"></span></p>
+					</div>
 				</div>
+				<p>MCs: <span class="moduleMc"></span></p>
+				<p>Workload: <span class="moduleWorkload"></span></p>
 			</div>
 		</div>
 	</div>
 </div>
-<div id="hiddenOverlay"></div>
+<div id="loadingOverlay">
+	<div id="loadingContent" class="center">
+		<img src="/images/progress.gif" width="128px" height="124px" />
+		<p id="progressText">Reticulating splines...</p>
+		<p id="progress"></p>
+	</div>
+</div>
 {% if isNewUser is defined %}
 <div id="disclaimerModal" class="modal hide fade" role="dialog">
 	<div class="modal-header">

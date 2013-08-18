@@ -320,22 +320,37 @@ div.pull-right input.btn.btn-small{
 	position:   fixed;
 }
 
-#hiddenOverlay {
-	background: #transparent; 
+#loadingOverlay {
+	opacity:    0.8; 
+	background: #000; 
 	width:      100%;
 	height:     100%; 
-	z-index:    200;
+	z-index:    900;
 	top:        0; 
 	left:       0; 
 	position:   fixed;
 }
 
-#progress {
-	color: #fff;
-	font-size: 30pt;
+#loadingContent {
+	width: 400px;
+	height: 200px;
 	text-align: center;
-	width: 3em;
+}
+
+#progressText {
 	height:1em;
+	color: #fff;
+	font-size: 16pt;
+	line-height:1;
+}
+
+#progress {
+	height:1em;
+	width: 70px;
+	margin: 0 auto;
+	color: #fff;
+	font-size: 18pt;
+	text-align: right;
 	line-height:1;
 }
 

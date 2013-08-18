@@ -17,6 +17,7 @@ var skillTree = {
 	removeModules : {},
 	numOfPrereqGroups : 0, // Incrementer to prevent overlap of any prereq groups
 	isModified: false,
+	isLoadingSkillTree: false,
 	notifyTimeout: null,
 	searchTimeout: null
 };
@@ -32,18 +33,22 @@ function timeoutCall(fn, data, timeout) {
 	setTimeout(function() {fn.call(null, data);}, timeout);
 }
 // Generates a jQuery DOM object representing the given module.
-function createModuleBox(module, isException) {
+function createModuleBox(module, isException, isHelper) {
 	var id = module.code + 'box';
 	var settingsHTML = '';
+	var buttonsHTML = '';
 	isException = typeof isException === 'undefined' ? false : isException;
+	isHelper = typeof isHelper === 'undefined' ? false : isHelper;
 	var isChecked = isException ? ' checked' : '';
-	var buttonsHTML = '<button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>';
-	// Generate an exception checkbox if there are any prerequisites.
-	if (typeof module.prerequisites !== 'undefined' && module.prerequisites.length > 0 && module.prerequisites[0].length > 0) {
-		settingsHTML = '<div class="moduleSettings">' +
-							'<button class="btn exception_button' + isChecked + '"><div class="indicator"></div>Ignore Pre-requisites</button>' +
-						'</div>';
-		buttonsHTML = '<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button> ' + buttonsHTML;
+	if (!isHelper) {
+		buttonsHTML = '<button class="remove mst-icon-close" title="Remove this module" data-toggle="tooltip"></button>';
+		// Generate an exception checkbox if there are any prerequisites.
+		if (typeof module.prerequisites !== 'undefined' && module.prerequisites.length > 0 && module.prerequisites[0].length > 0) {
+			settingsHTML = '<div class="moduleSettings">' +
+								'<button class="btn exception_button' + isChecked + '"><div class="indicator"></div>Ignore Pre-requisites</button>' +
+							'</div>';
+			buttonsHTML = '<button class="settings mst-icon-settings" title="Settings" data-toggle="tooltip"></button> ' + buttonsHTML;
+		}
 	}
 	var jqDiv = $('<div id="'+id+'">' +
 				'<div class="moduleInfo">' +
@@ -166,7 +171,11 @@ function saveToServer(callback) {
 }
 // Load skill tree. Should be called by embedded javascript in the HTML itself.
 function loadFromServer(guid, ownGuid) {
+	isLoadingSkillTree = true;
 	var editMode = true;
+	var loadingOverlayBox = $("#loadingOverlay");
+	var progressTextBox = $("#progressText");
+	var progressBox = $("#progress");
 	if (typeof ownGuid !== 'undefined') {
 		if (typeof ownGuid === 'string') {
 			skillTree.overwrite = true;
@@ -179,30 +188,35 @@ function loadFromServer(guid, ownGuid) {
 	} else {
 		skillTree.guid = guid;
 	}
-	var backgroundProgressBox = $("#backgroundProgress").addClass("active").css("background-size", "0%");
-	var hiddenOverlayBox = $("#hiddenOverlay").show();
 	console.log("Loading skill tree with GUID " + guid);
-	//$("#overlayBG").show();
-	//$("#progress").text("0%");
 	$.ajaxQueue({
 		url : "/data/GetSkillTree",
 		type : "POST",
 		data : { guid : guid },
+		beforeSend: function() {
+			loadingOverlayBox.show();
+			progressTextBox.text("Loading skill tree");
+			progressBox.text("0%");
+		},
 		progress: function(e) {
-        //make sure we can compute the length
-        if(e.lengthComputable) {
-            //calculate the percentage loaded
-            var percent = (e.loaded / e.total) * 100;
-            //log percentage loaded
-            console.log(percent);
-			$("#backgroundProgress").css('background-size', percent + "%");
-        }
-        //this usually happens when Content-Length isn't set
-        else {
-            console.warn('Content Length not reported!');
-        }
-    }
+			//make sure we can compute the length
+			if(e.lengthComputable) {
+				//calculate the percentage loaded
+				var percent = Math.round((e.loaded / e.total) * 100);
+				//log percentage loaded
+				console.log(percent);
+				//display percentage
+				progressBox.text(percent + "%");
+			}
+			//this usually happens when Content-Length isn't set
+			else {
+				console.warn('Content Length not reported!');
+				progressBox.text("");
+			}
+		}
 	}).done(function (data, textStatus) {
+		progressTextBox.text("Generating skill tree");
+		progressBox.text("");
 		for (var code in data.assignedModules) {
 			if (data.assignedModules.hasOwnProperty(code)) {
 				var assignedModule  = data.assignedModules[code];
@@ -243,9 +257,8 @@ function loadFromServer(guid, ownGuid) {
 			}
 		}
 		repositionModules(false);
-		//$("#overlayBG").hide();
-		backgroundProgressBox.removeClass("active");
-		hiddenOverlayBox.hide();
+		loadingOverlayBox.hide();
+		isLoadingSkillTree = false;
 	});
 }
 
@@ -441,13 +454,18 @@ function filter()
 function ensureModuleDetails(module, options) {
 	options = typeof options !== 'undefined' ? options : {}
 	options.useModule = typeof options.useModule !== 'undefined' ? options.useModule : false;
+	options.moduleFirstArg = typeof options.moduleFirstArg !== 'undefined' ? options.moduleFirstArg : false;
 	if (isFullyLoaded(module)) {
 		if (typeof options.callback !== 'undefined') {
 			if (typeof options.params !== 'undefined') {
 				if (options.useModule) {
-					options.params.module = module;
+					if (options.moduleFirstArg) {
+						options.params.unshift(module);
+					} else {
+						options.params.push(module);
+					}
 				}
-				return options.callback.apply(params);
+				return options.callback.apply(this, options.params);
 			} else {
 				if (options.useModule) {
 					options.callback(module);
@@ -463,11 +481,16 @@ function ensureModuleDetails(module, options) {
 			skillTree.modules[module.code] = json;
 			console.log(module.code + " retrieved from server.");
 			if (typeof options.callback !== 'undefined') {
-				if (typeof params !== 'undefined') {
+				if (typeof options.params !== 'undefined') {
 					if (options.useModule) {
-						options.params.module = getModule(module.code);
+						module = getModule(module.code);
+						if (options.moduleFirstArg) {
+							options.params.unshift(module);
+						} else {
+							options.params.push(module);
+						}
 					}
-					options.callback.apply(options.params);
+					options.callback.apply(this, options.params);
 				} else {
 					if (options.useModule) {
 						module = getModule(module.code);
@@ -745,7 +768,9 @@ function assignSemester(assignedModule, semesterNum) {
 	return semesterNum;
 }
 // Returns the semester the module will be in.
-function addModuleToTree(module) {
+function addModuleToTree(module, semester) {
+	// Modules are added to semester 1 unless specified otherwise
+	semester = typeof semester === 'undefined' ? 1 : semester;
 	// Verify that the module can be added to the tree without any conflicts.
 	// Check that the module itself isn't already inserted.
 	if (getAssignedModule(module.code)) {
@@ -783,7 +808,7 @@ function addModuleToTree(module) {
 	deselectAllModuleBoxes();
 	
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
-	if (!assignSemester(assignedModule, 1)) {
+	if (!assignSemester(assignedModule, semester)) {
 		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
 	}
 	
@@ -808,11 +833,13 @@ function addModuleToTree(module) {
 					if ((assMod.module.code != module.code) && (modIndex > -1)) {
 						console.log("Joining " + module.code + " to " + assMod.module.code);
 						moduleBox.connectBottomTo(assMod.module.code + 'box');
+						// Store the prerequisite in the assigned module.
+						if (typeof assMod.prerequisites === 'undefined') assMod.prerequisites = [];
 						if (assMod.prerequisites.indexOf(module.code) < 0) {
 							assMod.prerequisites.push(module.code);
 						}
-						if (assMod.semester <= 1) {
-							assignSemester(assMod, 2);
+						if (assMod.semester <= semester) {
+							assignSemester(assMod, semester+1);
 						}
 					}
 				}
@@ -1102,19 +1129,37 @@ $(function(){
 				}
 			}
 			skillTree.semesters[targetModule.semester-1][targetIndex] = sourceModuleCode;
+			setModified(true);
 		}
 	})
 	.on('drop', '.semester', function(event, ui)  {
 		var div_id = ui.draggable.attr('id');
-		var module_code = div_id.substring(0, div_id.length-3);
 		var semester_num = $(this).attr('id');
-		// Forced cast from string to Number.
+		// Forced cast from string to int.
 		semester_num = parseInt(semester_num.substr(semester_num.length-1));
-		console.log(module_code + " assigned to " + semester_num);
-		var assignedModule = getAssignedModule(module_code);
-		assignSemester(assignedModule, semester_num);
-		//repositionModules();
-		//alert(module_code + " dropped into " + $(this).attr('id'));
+		if (ui.draggable.hasClass('module')) {
+			var module_code = ui.draggable.data('code');
+			console.log("Module " + module_code + " was dragged in!");
+			var module = getModule(module_code);
+			// Retrieve the complete module from the server, and then add it to the tree.
+			if (!module.isLoading) {
+				ensureModuleDetails(module, {
+					callback : addModuleToTree,
+					params: [semester_num],
+					useModule : true,
+					moduleFirstArg : true
+				});
+				// If the modules were being filtered via a prerequisite group, clear the filter.
+				$('.module').removeClass('not_prerequisite');
+			}
+		} else if (ui.draggable.hasClass('moduleBox')) {
+			var module_code = div_id.substring(0, div_id.length-3);
+			console.log(module_code + " assigned to " + semester_num);
+			var assignedModule = getAssignedModule(module_code);
+			assignSemester(assignedModule, semester_num);
+			//repositionModules();
+			//alert(module_code + " dropped into " + $(this).attr('id'));
+		}
 	})
 	// Reposition modules if a .moduleBox is dropped anywhere within the skillTree, including outside of a semester.
 	.on('drop', function(event, ui) {
@@ -1226,9 +1271,34 @@ $(function(){
 		$('.module').removeClass('not_prerequisite');
 	});
 	// Load the modules from json.
+	var loadingOverlayBox = $("#loadingOverlay");
+	var progressTextBox = $("#progressText");
+	var progressBox = $("#progress");
+	
 	$.ajaxQueue({
 		url : "/data/GetModuleList",
-		type : "GET"
+		type : "GET",
+		beforeSend : function() {
+			loadingOverlayBox.show();
+			progressTextBox.text("Retrieving modules");
+			progressBox.text("0%");
+		},
+		progress: function(e) {
+			//make sure we can compute the length
+			if(e.lengthComputable) {
+				//calculate the percentage loaded
+				var percent = Math.round((e.loaded / e.total) * 100);
+				//log percentage loaded
+				console.log(percent);
+				//display percentage
+				progressBox.text(percent + "%");
+			}
+			//this usually happens when Content-Length isn't set
+			else {
+				console.warn('Content Length not reported!');
+				progressBox.text("");
+			}
+		}
 	}).done(function(json) {
 		for (var moduleCode in json) {
 			if (json.hasOwnProperty(moduleCode)) {
@@ -1246,9 +1316,20 @@ $(function(){
 					skillTree.moduleCodes[i] +
 							"</div>");
 			//timeoutCall(function(moduleBoxArg) { moduleBoxArg.appendTo("#module_list").disableSelection(); }, moduleBox, 5*i);
-			moduleBox.appendTo("#module_list").disableSelection();
+			moduleBox.appendTo("#module_list").disableSelection().draggable({
+				distance: 15,
+				scroll: true,
+				scrollSensitivity: 50,
+				appendTo: "#bottom_panel_group",
+				helper: function(event) {
+					return createModuleBox(getModule($(this).attr('data-code')), false, true).addClass('moduleBox');
+				}
+			});
 		}
 		console.log("Modules added!");
+		if (!isLoadingSkillTree) {
+			loadingOverlayBox.hide();
+		}
 	});
 	//Faculty Filter
 	$('#faculty_filter').val(0).on('change', function(){	
