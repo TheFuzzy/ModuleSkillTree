@@ -145,23 +145,24 @@ div.center {
 	display: inline-block;
 	font-size: 4em;
 	font-weight: 100;
-	color: blue;
+	color: #0072e6;
 }
 #title_header .header-center {
 	display: inline-block;
 	width: 2px;
 	height: 4em;
 	margin: -0.5em auto;
-	background-color: orange;
+	background-color: #f3ca28;
 }
 #title_header .header-right {
 	display: inline-block;
 	text-transform: uppercase;
-	color: white;
+	color: #b5b5b5;
 }
 
 #title_header .header-right h2 {
     font-size: 1.5em;
+	font-weight: 400;
     line-height: 1;
     margin: auto 0;
     height: 1.2em;
