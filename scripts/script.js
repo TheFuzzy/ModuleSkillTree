@@ -196,15 +196,18 @@ function loadFromServer(guid, ownGuid) {
 		beforeSend: function() {
 			loadingOverlayBox.show();
 			progressTextBox.text("Loading skill tree");
-			progressBox.text("0%");
+			progressBox.text("");
 		},
 		progress: function(e) {
 			//make sure we can compute the length
-			if(e.lengthComputable) {
+			// XMLHTTPRequest bugs out with gzipped files
+			//if(e.lengthComputable) {
+			if (false) {
 				//calculate the percentage loaded
 				var percent = Math.round((e.loaded / e.total) * 100);
 				//log percentage loaded
-				console.log(percent);
+				console.log(e.loaded + " / " + e.total + " loaded");
+				console.log(percent + "%");
 				//display percentage
 				progressBox.text(percent + "%");
 			}
@@ -1281,15 +1284,18 @@ $(function(){
 		beforeSend : function() {
 			loadingOverlayBox.show();
 			progressTextBox.text("Retrieving modules");
-			progressBox.text("0%");
+			progressBox.text("");
 		},
 		progress: function(e) {
 			//make sure we can compute the length
-			if(e.lengthComputable) {
+			// XMLHTTPRequest bugs out with gzipped files
+			//if(e.lengthComputable) {
+			if (false) {
 				//calculate the percentage loaded
 				var percent = Math.round((e.loaded / e.total) * 100);
 				//log percentage loaded
-				console.log(percent);
+				console.log(e.loaded + " / " + e.total + " loaded");
+				console.log(percent + "%");
 				//display percentage
 				progressBox.text(percent + "%");
 			}
