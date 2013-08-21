@@ -149,9 +149,11 @@ div.center {
 }
 #title_header .header-center {
 	display: inline-block;
-	width: 2px;
+	width: 0.1em;
 	height: 4em;
-	margin: -0.5em auto;
+	margin: -0.5em;
+	margin-left: 0.4em;
+	margin-right: 0.5em;
 	background-color: #f3ca28;
 }
 #title_header .header-right {
