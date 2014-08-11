@@ -1,5 +1,5 @@
 application: module-skill-tree
-version: 0-4
+version: 0-5
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -8,7 +8,7 @@ handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
-  
+
 # Home page
 - url: /
   script: home.app
