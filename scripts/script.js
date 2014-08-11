@@ -541,7 +541,8 @@ function addSemester(semesterNum, repositionAfter) {
 									'<li><a class="link_addbefore" tabindex="-1" href="#">Add a semester before this one</a></li>' +
 									'<li><a class="link_addafter" tabindex="-1" href="#">Add a semester after this one</a></li>' +
 									'<li><a class="link_remove" tabindex="-1" href="#">Remove this semester</a></li>' +
-									'<li><a class="link_nusmods" tabindex="-1" href="#">Export to NUSMods</a></li>' +
+									'<li><a class="link_nusmods sem1" tabindex="-1" href="#">Export to NUSMods (Semester 1)</a></li>' +
+									'<li><a class="link_nusmods sem2" tabindex="-1" href="#">Export to NUSMods (Semester 2)</a></li>' +
 								'</ul>' +
 							'</div>' +
 						'</div>');
@@ -1244,18 +1245,20 @@ $(function(){
 	// Submit the semester to NUSMods for timetable planning.
 	.on('click', '.semester .link_nusmods', function(event) {
 		var div_id = $(this).closest('.semester').attr('id');
+        var is_semester_1 = $(this).hasClass('sem1');
 		var semester_num = parseInt(div_id.substr(div_id.length-1));
 		var modules = skillTree.semesters[semester_num-1];
 		// NUSMods works if the modules are added using the following pattern:
-		// #{module_code_1}=&{module_code_2}=&{module_code_3}...
-		var url = "http://nusmods.com/#";
+		// ?{module_code_1}&{module_code_2}&{module_code_3}...
+		var url = "http://nusmods.com/timetable/2014-2015/";
+        url = url.concat(is_semester_1 ? "sem1" : "sem2");
 		var isValid = true;
 		for (var i = 0; i < modules.length; i++) {
 			if (modules[i].indexOf("GROUP") < 0) {
 				if (i == 0) {
-					url = url.concat(modules[i],"=");
+					url = url.concat("?", modules[i]);
 				} else {
-					url = url.concat("&", modules[i],"=");
+					url = url.concat("&", modules[i]);
 				}
 			} else {
 				isValid = false;
