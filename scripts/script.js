@@ -625,12 +625,18 @@ function setException(assignedModule, isException) {
 			var isInnerPrereqSatisfied = module.prerequisites[i].length == 0;
 			if (module.prerequisites[i][0] == '-') isInnerPrereqSatisfied = true;
 			var moduleExists = false;
+			var newAssignedModulePosition = assignedModule.semester;
 			if (!isInnerPrereqSatisfied) {
 				for (var j = 0; j < module.prerequisites[i].length; j++) {
 					if (typeof skillTree.modules[module.prerequisites[i][j]] !== 'undefined') {
 						moduleExists = true;
 						if (typeof assignedModule.prerequisites !== 'undefined' && assignedModule.prerequisites.indexOf(module.prerequisites[i][j]) > -1) {
 							isInnerPrereqSatisfied = true;
+							var assMod = getAssignedModule(module.prerequisites[i][j]);
+							// Ensure that the assignedModule isn't actually a prerequisite group (impossible)
+							if (assMod != null && !isPrereqGroup(assMod)) {
+								if (assMod.semester >= newAssignedModulePosition) newAssignedModulePosition = assMod.semester + 1;
+							}
 						} else {
 							var assMod = getAssignedModule(module.prerequisites[i][j]);
 							// Ensure that the assignedModule isn't actually a prerequisite group (impossible)
@@ -641,6 +647,7 @@ function setException(assignedModule, isException) {
 								// Store the prerequisite in our newly inserted assigned module.
 								if (typeof assignedModule.prerequisites === 'undefined') assignedModule.prerequisites = [];
 								assignedModule.prerequisites.push(module.prerequisites[i][j]);
+								if (assMod.semester >= newAssignedModulePosition) newAssignedModulePosition = assMod.semester + 1;
 							}
 						}
 					}
@@ -678,14 +685,16 @@ function setException(assignedModule, isException) {
 		button.removeClass('checked');
 	}
 	assignedModule.exception = isException;
+	assignSemester(assignedModule, newAssignedModulePosition);
 	repositionModules();
 }
 // Recursively shift modules. Returns the semester the module is assigned to (or left at).
 function assignSemester(assignedModule, semesterNum) {
 	if (semesterNum === assignedModule.semester) return semesterNum;
 	var calculatedSemesterNum = semesterNum;
-	//process prerequisites if module is being shifted backwards
-	if (typeof assignedModule.semester === 'undefined' || semesterNum < assignedModule.semester) {
+	//process prerequisites if module is being shifted backwards, and does not ignore pre-requisites
+	if (!assignedModule.exception &&
+        (typeof assignedModule.semester === 'undefined' || semesterNum < assignedModule.semester)) {
 		// Iterate through all the prerequisites
 		if (!isPrereqGroup(assignedModule)) {
 			for (var i = 0; i < assignedModule.module.prerequisites.length; i++) {
@@ -736,7 +745,10 @@ function assignSemester(assignedModule, semesterNum) {
 						if (!isPrereqGroup(postreqMod)) {
 							for (var j = 0; j < postreqMod.module.prerequisites.length; j++) {
 								// If the assigned mod requires our current module and is on a lesser or same semester as the target, reassign it.
-								if ((postreqMod.module.prerequisites[j].indexOf(assignedModule.module.code) > -1) && (postreqMod.semester <= semesterNum)) {
+                                // Additionally, if the assigned mod ignores exceptions, don't re-assign it.
+								if ((postreqMod.module.prerequisites[j].indexOf(assignedModule.module.code) > -1) &&
+                                    (postreqMod.semester <= semesterNum) &&
+                                    (!postreqMod.exception)) {
 									semesterNum = assignSemester(postreqMod, semesterNum+1) - 1;
 								}
 							}
