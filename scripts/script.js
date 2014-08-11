@@ -63,7 +63,7 @@ function createModuleBox(module, isException, isHelper) {
 	return jqDiv;
 }
 function createSemester(semester) {
-	
+
 }
 // Alert the user
 function notify(message, type) {
@@ -107,12 +107,12 @@ function shareLink() {
 	var facebookUrl = skillTree.SHARE_LINKS.FACEBOOK + '?u=' + encodeURIComponent(linkUrl);
 	// Generate a link for Google+
 	var gplusUrl = skillTree.SHARE_LINKS.GPLUS + '?url=' + encodeURIComponent(linkUrl);
-	
+
 	$("#shareUrl").val(linkUrl);
 	dialog.find(".twitter-btn").attr("href", twitterUrl);
 	dialog.find(".facebook-btn").attr("href", facebookUrl);
 	dialog.find(".gplus-btn").attr("href", gplusUrl);
-	
+
 	dialog.modal("show");
 }
 // Save skill tree.
@@ -234,7 +234,7 @@ function loadFromServer(guid, ownGuid) {
 					skillTree.assignedModules[code].prerequisites = assignedModule.prerequisites;
 				}
 				skillTree.removeModules[code] = false;
-				
+
 				ensureSemester(assignedModule.semester);
 				skillTree.semesters[assignedModule.semester-1][assignedModule.semesterIndex] = code;
 				var newDivId = code + 'box';
@@ -244,9 +244,9 @@ function loadFromServer(guid, ownGuid) {
 				$('.module').filter(function() {
 					return $(this).data("code") == code;
 				}).addClass('added');
-				
+
 				//var position = calculatePosition(assignedModule.semester-1, assignedModule.semesterIndex);
-				
+
 				//moduleBox.css('left', position.left + 'px');
 				//moduleBox.css('top', position.top + 'px');
 			}
@@ -303,22 +303,22 @@ function repositionModules(animate) {
 			if (isPrereqGroup(assignedModule)) moduleBox = $('#' + assignedModule.id + 'box');
 			else moduleBox = $('#' + assignedModule.module.code + 'box');
 			moduleBox.stop(true);
-			
+
 			var position = calculatePosition(i, j);
 			var topOffset = position.top;
 			var leftOffset = position.left;
-			
+
 			//console.log(assignedModule.module.code + ": left=" + leftOffset + ",top=" + topOffset);
 			// Check if a position was already set programmatically. If not, set a position outside the viewport.
 			if (animate && moduleBox[0].style.left == "") {
 				moduleBox.css('left', -500 + 'px');
 				moduleBox.css('top', 50 + 'px');
 			}
-			
+
 			var currLeft = moduleBox.css('left');
 			var currTop = moduleBox.css('top');
-			
-			if ((currLeft !== leftOffset + 'px') || (currTop !== topOffset + 'px')) {			
+
+			if ((currLeft !== leftOffset + 'px') || (currTop !== topOffset + 'px')) {
 				if (!animate) {
 					moduleBox.css('left', leftOffset + 'px');
 					moduleBox.css('top', topOffset + 'px');
@@ -412,7 +412,7 @@ function filter()
 {
 	// Clear any delayed search
 	clearTimeout(skillTree.searchTimeout);
-	var searchText = $('#module_search').val().replace('_', '').toLowerCase();	
+	var searchText = $('#module_search').val().replace('_', '').toLowerCase();
 	var fac = $('#faculty_filter').children(':selected').text();
 	$('.module').massAddClass('hidden');
 	if(fac === 'ALL FACULTIES')
@@ -430,7 +430,7 @@ function filter()
 		}
 	}
 	else
-	{	
+	{
 		if(searchText)
 		{
 			var divs =search(searchText);
@@ -447,7 +447,7 @@ function filter()
 				if($(this).attr('data-faculty') === fac)
 				{
 					$(this).massRemoveClass('hidden');
-				} 
+				}
 			});
 		}
 	}
@@ -659,7 +659,7 @@ function setException(assignedModule, isException) {
 				// needs to be altered to insert all modules in the group as suggestions.
 				console.log("Inner prerequisite of " + module.code + " is not satisfied!");
 				//
-				
+
 				//if (module.prerequisites[i].length == 1) {
 				//	ensureModuleDetails(getModule(module.prerequisites[i][0]), {
 				//		callback  : addModuleToTree,
@@ -767,9 +767,9 @@ function assignSemester(assignedModule, semesterNum) {
 	ensureSemester(semesterNum);
 	var module_identifier;
 	if (isPrereqGroup(assignedModule)) {
-		module_identifier = assignedModule.id; 
+		module_identifier = assignedModule.id;
 	} else {
-		module_identifier = assignedModule.module.code; 
+		module_identifier = assignedModule.module.code;
 	}
 	if (assignedModule.semester && skillTree.semesters[assignedModule.semester-1]) {
 		var assignedModuleIndex = skillTree.semesters[assignedModule.semester-1].indexOf(module_identifier);
@@ -777,7 +777,7 @@ function assignSemester(assignedModule, semesterNum) {
 	}
 	skillTree.semesters[semesterNum-1].push(module_identifier);
 	//trimSemesters();
-	
+
 	if (assignedModule.semester != semesterNum) setModified(true);
 
 	assignedModule.semester = semesterNum;
@@ -814,20 +814,20 @@ function addModuleToTree(module, semester) {
 	$('.module').filter(function() {
 		return $(this).data("code") == module.code;
 	}).addClass('added');
-	
+
 	// Remove the filter
 	$("#module_search").val("");
 	filter();
-	
+
 	setModified(true);
-	
+
 	deselectAllModuleBoxes();
-	
+
 	// Always try for first semester. If an exception happens, log it. This shouldn't happen, though.
 	if (!assignSemester(assignedModule, semester)) {
 		console.error("Warning, " + assignedModule.module.code + " could not be assigned a semester!");
 	}
-	
+
 	// Connect the inserted module to any modules in the tree that requires it.
 	// Only occurs during recursive addition of modules.
 	console.log("Checking whether " + module.code + " is a prerequisite of any module already in the tree.");
@@ -912,7 +912,7 @@ function addModuleToTree(module, semester) {
 			// needs to be altered to insert all modules in the group as suggestions.
 			console.log("Inner prerequisite of " + module.code + " is not satisfied!");
 			//
-			
+
 			//if (module.prerequisites[i].length == 1) {
 			//	ensureModuleDetails(getModule(module.prerequisites[i][0]), {
 			//		callback  : addModuleToTree,
@@ -926,14 +926,14 @@ function addModuleToTree(module, semester) {
 				assignedModule.prereqGroups.push(prereqGroup);
 				numOfUnsatisfiedPrereqs++;
 			//}
-			
+
 		}
 	}
-	
+
 	if (typeof skillTree.removeModules[assignedModule.module.code] !== 'undefined') {
 		skillTree.removeModules[module.code] = false;
 	}
-	
+
 	if (numOfUnsatisfiedPrereqs == 1) {
 		// Inform the user that at least one prerequisite group needs to be satisfied.
 		notify(module.code + " is missing a pre-requisite. Please click the highlighted box to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
@@ -972,7 +972,7 @@ function removeAssignedModule(assignedModule) {
 		var prereqGroupIndex = parentAssignedModule.prereqGroups.indexOf(assignedModule.id);
 		semesterIndex = semester.indexOf(assignedModule.id);
 		moduleBox = $('#' + assignedModule.id + 'box');
-		
+
 		parentAssignedModule.prereqGroups.splice(prereqGroupIndex, 1);
 		if (parentAssignedModule.prereqGroups.length == 0) delete parentAssignedModule.prereqGroups;
 		delete skillTree.assignedModules[assignedModule.id];
@@ -980,7 +980,7 @@ function removeAssignedModule(assignedModule) {
 		var numOfInvalidModules = 0;
 		semesterIndex = semester.indexOf(assignedModule.module.code);
 		moduleBox = $('#' + assignedModule.module.code + 'box');
-		
+
 		for (var i in skillTree.assignedModules) {
 			if (skillTree.assignedModules.hasOwnProperty(i)) {
 				var otherAssMod = skillTree.assignedModules[i];
@@ -1004,7 +1004,7 @@ function removeAssignedModule(assignedModule) {
 									if (typeof otherAssMod.prereqGroups === 'undefined') otherAssMod.prereqGroups = [];
 									otherAssMod.prereqGroups.push(prereqGroup);
 								}
-								
+
 								var prereqIndex = otherAssMod.prerequisites.indexOf(assignedModule.module.code);
 								otherAssMod.prerequisites.splice(prereqIndex, 1);
 								if (otherAssMod.prerequisites.length == 0) delete otherAssMod.prerequisites;
@@ -1016,12 +1016,12 @@ function removeAssignedModule(assignedModule) {
 				}
 			}
 		}
-		
+
 		while (typeof assignedModule.prereqGroups !== 'undefined') {
 			var prereqGroup = getAssignedModule(assignedModule.prereqGroups[0]);
 			removeAssignedModule(prereqGroup);
 		}
-		
+
 		if (numOfInvalidModules == 1) {
 			// Inform the user that at least one prerequisite group needs to be satisfied.
 			notify("A module now has a missing pre-requisite. Please click the highlighted box to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
@@ -1029,20 +1029,20 @@ function removeAssignedModule(assignedModule) {
 			// Inform the user that at least one prerequisite group needs to be satisfied.
 			notify(numOfInvalidModules + " modules now have missing pre-requisites. Please click the highlighted boxes to select your preferred modules.", skillTree.NOTIFICATIONS.WARNING);
 		}
-		
+
 		if (typeof skillTree.removeModules[assignedModule.module.code] !== 'undefined') {
 			skillTree.removeModules[assignedModule.module.code] = true;
 		}
-		
+
 		$('.module').filter(function() {
 			return $(this).data("code") == assignedModule.module.code;
 		}).removeClass('added');
-		
+
 		setModified(true);
-		
+
 		delete skillTree.assignedModules[assignedModule.module.code];
 	}
-	
+
 	semester.splice(semesterIndex, 1);
 	if (moduleBox !== null) moduleBox.removeModuleBox();
 	//trimSemesters();
@@ -1087,7 +1087,7 @@ $(function(){
 	});
 	// Hide the alert box when the close button is clicked.
 	$("#notification .close").click(hideNotification);
-	
+
 	// Filters the module list based on the input of the search box
 	$('#module_search').val('').on('input',function(){
 		clearTimeout(skillTree.searchTimeout);
@@ -1118,7 +1118,7 @@ $(function(){
 	// Saves the skill tree.
 	$('#save_button').click(function() {
 		saveToServer();
-	});	
+	});
 	// Assign modules a different semester if a .moduleBox is dropped onto a different semester.
 	$("#skillTreeView").on('drop','.moduleBox', function(event, ui){
 		var targetModuleCode = $(this).attr('id').substring(0, $(this).attr('id').length-3);
@@ -1187,7 +1187,7 @@ $(function(){
 		var moduleSelectId = div_id.substring(0, div_id.length-3);
 		var moduleSelection = getAssignedModule(moduleSelectId);
 		console.log('Filtering pre-requisites for ' + moduleSelection.module);
-		
+
 		$('.module').addClass('not_prerequisite');
 		var divs = [];
 		for (var code in skillTree.modules) {
@@ -1292,7 +1292,7 @@ $(function(){
 	var loadingOverlayBox = $("#loadingOverlay");
 	var progressTextBox = $("#progressText");
 	var progressBox = $("#progress");
-	
+
 	$.ajaxQueue({
 		url : "/data/GetModuleList",
 		type : "GET",
@@ -1353,12 +1353,12 @@ $(function(){
 		}
 	});
 	//Faculty Filter
-	$('#faculty_filter').val(0).on('change', function(){	
+	$('#faculty_filter').val(0).on('change', function(){
 		filter();
 	});
 	// Disable the save button on load
 	$("#save_button").attr("disabled", "disabled");
-	
+
 	$("#shareUrl").add("#shareModal .copy-btn").click(function() { $("#shareUrl").select(); } );
 	$("#share_button").click(function() {
 		if (skillTree.isModified) {
@@ -1377,8 +1377,8 @@ $(function(){
 	});
 	// Show the disclaimer modal (if there's one)
 	$("#disclaimerModal").modal("show");
-	
-	
+
+
 	// Resize elements to fit the screen
 	$(window).resize(function() {
 		moduleListHeight = $("body").innerHeight()
